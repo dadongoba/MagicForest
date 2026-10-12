@@ -1,6 +1,8 @@
 #include "PotionMimicWorldSubsystem.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -52,7 +54,6 @@ void UPotionMimicWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	Super::OnWorldBeginPlay(InWorld);
 	TimeSinceBeginPlay = 0.0f;
 	TimeSinceLastDiscovery = PotionMimic::DiscoveryIntervalSeconds;
-	FlightBlend = 0.0f;
 	FlightClock = 0.0f;
 	DiscoverWorkbenchPotions();
 	DiscoverMimicBook();
@@ -105,9 +106,9 @@ void UPotionMimicWorldSubsystem::StopWorkbenchPotionFlight(bool bSnapHome)
 	bFlightRequested = false;
 	if (bSnapHome)
 	{
-		FlightBlend = 0.0f;
 		for (FBoundPotion& Potion : BoundPotions)
 		{
+			Potion.LocalFlightBlend = 0.0f;
 			RestorePotion(Potion, true);
 		}
 	}
@@ -135,6 +136,48 @@ void UPotionMimicWorldSubsystem::SetAutomaticWorkbenchFlight(bool bEnabled)
 int32 UPotionMimicWorldSubsystem::GetBoundWorkbenchPotionCount() const
 {
 	return BoundPotions.Num();
+}
+
+bool UPotionMimicWorldSubsystem::SetWorkbenchPotionInactive(int32 PotionIndex, bool bInactive)
+{
+	return BoundPotions.IsValidIndex(PotionIndex)
+		? SetPotionInactive(BoundPotions[PotionIndex], bInactive)
+		: false;
+}
+
+bool UPotionMimicWorldSubsystem::SetWorkbenchPotionActorInactive(AActor* PotionActor, bool bInactive)
+{
+	for (FBoundPotion& Potion : BoundPotions)
+	{
+		if (Potion.Actor.Get() == PotionActor)
+		{
+			return SetPotionInactive(Potion, bInactive);
+		}
+	}
+	return false;
+}
+
+void UPotionMimicWorldSubsystem::SetAllWorkbenchPotionsInactive(bool bInactive)
+{
+	for (FBoundPotion& Potion : BoundPotions)
+	{
+		SetPotionInactive(Potion, bInactive);
+	}
+}
+
+bool UPotionMimicWorldSubsystem::IsWorkbenchPotionInactive(int32 PotionIndex) const
+{
+	return BoundPotions.IsValidIndex(PotionIndex) && BoundPotions[PotionIndex].bInactive;
+}
+
+int32 UPotionMimicWorldSubsystem::GetInactiveWorkbenchPotionCount() const
+{
+	int32 Count = 0;
+	for (const FBoundPotion& Potion : BoundPotions)
+	{
+		Count += Potion.bInactive ? 1 : 0;
+	}
+	return Count;
 }
 
 void UPotionMimicWorldSubsystem::DiscoverWorkbenchPotions()
@@ -229,10 +272,19 @@ void UPotionMimicWorldSubsystem::DiscoverWorkbenchPotions()
 		FBoundPotion& Bound = BoundPotions.AddDefaulted_GetRef();
 		Bound.Actor = PotionActor;
 		Bound.HomeTransform = PotionActor->GetActorTransform();
+		Bound.InactiveTransform = Bound.HomeTransform;
 		Bound.HomeCollision = MeshComponent->GetCollisionEnabled();
 		Bound.Phase = (2.0f * PI * Index) / PotionMimic::DesiredWorkbenchBottleCount;
 		Bound.Radius = 62.0f + 8.0f * (Index % 3);
 		Bound.Height = 78.0f + 7.0f * (Index % 2);
+		const float LeanDirection = (Index % 2 == 0) ? 1.0f : -1.0f;
+		const FQuat InactiveLean = FRotator(0.0f, 7.0f * LeanDirection, 32.0f * LeanDirection).Quaternion();
+		Bound.InactiveTransform.SetRotation(Bound.HomeTransform.GetRotation() * InactiveLean);
+		Bound.InactiveTransform.AddToTranslation(FVector(0.0f, 2.5f * LeanDirection, -1.5f));
+		for (int32 MaterialIndex = 0; MaterialIndex < MeshComponent->GetNumMaterials(); ++MaterialIndex)
+		{
+			Bound.HomeMaterials.Add(MeshComponent->GetMaterial(MaterialIndex));
+		}
 		MeshComponent->SetMobility(EComponentMobility::Movable);
 	}
 }
@@ -289,9 +341,6 @@ void UPotionMimicWorldSubsystem::UpdatePotionTransforms(float DeltaTime)
 		return;
 	}
 
-	const float TargetBlend = bFlightRequested ? 1.0f : 0.0f;
-	FlightBlend = FMath::FInterpConstantTo(FlightBlend, TargetBlend, DeltaTime, 0.55f);
-	const float EasedBlend = FMath::InterpEaseInOut(0.0f, 1.0f, FlightBlend, 2.2f);
 	const float SpeedBoost = 1.0f + 0.85f * FMath::Clamp(
 		MimicBookSpeed / PotionMimic::MaximumBookSpeedForBoost,
 		0.0f,
@@ -310,7 +359,10 @@ void UPotionMimicWorldSubsystem::UpdatePotionTransforms(float DeltaTime)
 		}
 
 		UStaticMeshComponent* MeshComponent = Actor->GetStaticMeshComponent();
-		if (FlightBlend > KINDA_SMALL_NUMBER)
+		const float TargetBlend = bFlightRequested && !Potion.bInactive ? 1.0f : 0.0f;
+		Potion.LocalFlightBlend = FMath::FInterpConstantTo(Potion.LocalFlightBlend, TargetBlend, DeltaTime, 0.55f);
+		const float EasedBlend = FMath::InterpEaseInOut(0.0f, 1.0f, Potion.LocalFlightBlend, 2.2f);
+		if (Potion.LocalFlightBlend > KINDA_SMALL_NUMBER)
 		{
 			MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
@@ -322,17 +374,18 @@ void UPotionMimicWorldSubsystem::UpdatePotionTransforms(float DeltaTime)
 			FMath::Sin(Angle) * BreathingRadius,
 			Potion.Height + 18.0f * FMath::Sin(Angle * 1.9f + Potion.Phase * 0.5f));
 		const FVector FlyingLocation = Centre + OrbitOffset;
-		const FVector TargetLocation = FMath::Lerp(Potion.HomeTransform.GetLocation(), FlyingLocation, EasedBlend);
+		const FTransform& RestTransform = Potion.bInactive ? Potion.InactiveTransform : Potion.HomeTransform;
+		const FVector TargetLocation = FMath::Lerp(RestTransform.GetLocation(), FlyingLocation, EasedBlend);
 
-		const FRotator HomeRotation = Potion.HomeTransform.Rotator();
+		const FRotator RestRotation = RestTransform.Rotator();
 		const FRotator FlyingRotation(
 			12.0f * FMath::Sin(Angle * 1.4f),
 			FMath::RadiansToDegrees(Angle) + 90.0f,
 			10.0f * FMath::Cos(Angle * 1.1f + Potion.Phase));
-		const FQuat TargetRotation = FQuat::Slerp(HomeRotation.Quaternion(), FlyingRotation.Quaternion(), EasedBlend);
+		const FQuat TargetRotation = FQuat::Slerp(RestRotation.Quaternion(), FlyingRotation.Quaternion(), EasedBlend);
 		Actor->SetActorLocationAndRotation(TargetLocation, TargetRotation, false, nullptr, ETeleportType::TeleportPhysics);
 
-		if (FlightBlend <= KINDA_SMALL_NUMBER && !bFlightRequested)
+		if (Potion.LocalFlightBlend <= KINDA_SMALL_NUMBER && (!bFlightRequested || Potion.bInactive))
 		{
 			RestorePotion(Potion, true);
 		}
@@ -349,9 +402,89 @@ void UPotionMimicWorldSubsystem::RestorePotion(FBoundPotion& Potion, bool bSnapH
 
 	if (bSnapHome)
 	{
-		Actor->SetActorTransform(Potion.HomeTransform, false, nullptr, ETeleportType::TeleportPhysics);
+		Actor->SetActorTransform(
+			Potion.bInactive ? Potion.InactiveTransform : Potion.HomeTransform,
+			false,
+			nullptr,
+			ETeleportType::TeleportPhysics);
 	}
 	Actor->GetStaticMeshComponent()->SetCollisionEnabled(Potion.HomeCollision);
+}
+
+void UPotionMimicWorldSubsystem::ApplyInactiveAppearance(FBoundPotion& Potion)
+{
+	AStaticMeshActor* Actor = Potion.Actor.Get();
+	if (!Actor)
+	{
+		return;
+	}
+
+	UStaticMeshComponent* MeshComponent = Actor->GetStaticMeshComponent();
+	const FLinearColor InactiveLiquid(0.045f, 0.055f, 0.065f, 1.0f);
+	for (int32 MaterialIndex = 0; MaterialIndex < MeshComponent->GetNumMaterials(); ++MaterialIndex)
+	{
+		UMaterialInstanceDynamic* DynamicMaterial = MeshComponent->CreateAndSetMaterialInstanceDynamic(MaterialIndex);
+		if (!DynamicMaterial)
+		{
+			continue;
+		}
+
+		DynamicMaterial->SetScalarParameterValue(TEXT("Final Liquid Emissive Multi"), 0.0f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Main Liquid Speed"), 0.0f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Second Liquid Speed"), 0.0f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Third Liquid Speed"), 0.0f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Main Liquid Contrast"), 0.15f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Second Liquid Contrast"), 0.15f);
+		DynamicMaterial->SetScalarParameterValue(TEXT("Third Liquid Contrast"), 0.15f);
+		for (const FName ParameterName : {
+			FName(TEXT("Main Liquid Color")),
+			FName(TEXT("Main Liquid Color 1")),
+			FName(TEXT("Second Liquid Color")),
+			FName(TEXT("Second Liquid Color 1")),
+			FName(TEXT("Third Liquid Color")),
+			FName(TEXT("Third Liquid Color 1")) })
+		{
+			DynamicMaterial->SetVectorParameterValue(ParameterName, InactiveLiquid);
+		}
+	}
+}
+
+void UPotionMimicWorldSubsystem::RestoreActiveAppearance(FBoundPotion& Potion)
+{
+	AStaticMeshActor* Actor = Potion.Actor.Get();
+	if (!Actor)
+	{
+		return;
+	}
+
+	UStaticMeshComponent* MeshComponent = Actor->GetStaticMeshComponent();
+	for (int32 MaterialIndex = 0; MaterialIndex < Potion.HomeMaterials.Num(); ++MaterialIndex)
+	{
+		MeshComponent->SetMaterial(MaterialIndex, Potion.HomeMaterials[MaterialIndex]);
+	}
+}
+
+bool UPotionMimicWorldSubsystem::SetPotionInactive(FBoundPotion& Potion, bool bInactive)
+{
+	if (!Potion.Actor.IsValid())
+	{
+		return false;
+	}
+	if (Potion.bInactive == bInactive)
+	{
+		return true;
+	}
+
+	Potion.bInactive = bInactive;
+	if (bInactive)
+	{
+		ApplyInactiveAppearance(Potion);
+	}
+	else
+	{
+		RestoreActiveAppearance(Potion);
+	}
+	return true;
 }
 
 bool UPotionMimicWorldSubsystem::IsMimicBookFolded(const AActor* Actor) const

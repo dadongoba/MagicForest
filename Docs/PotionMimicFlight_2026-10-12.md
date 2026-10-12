@@ -25,6 +25,16 @@
 - `GetBoundWorkbenchPotionCount()`：正常应返回 7。
 - `IsWorkbenchPotionFlightActive()`：读取当前目标状态。
 
+### 失活接口
+
+- `SetWorkbenchPotionInactive(PotionIndex, bInactive)`：按绑定序号切换一瓶。
+- `SetWorkbenchPotionActorInactive(PotionActor, bInactive)`：按 Actor 切换一瓶，适合任务或元素系统保存明确引用。
+- `SetAllWorkbenchPotionsInactive(bInactive)`：切换工作台全部七瓶。
+- `IsWorkbenchPotionInactive(PotionIndex)`：读取单瓶状态。
+- `GetInactiveWorkbenchPotionCount()`：读取失活数量。
+
+失活与耗尽是两个独立概念。失活不会更换为空瓶模型，也不会删除药液：瓶子退出 MimicBook 飞舞，缓动回到桌面后明显倾斜；动态材质把三层药液流速和发光强度降为零，降低对比度，并把药液改成暗灰浑浊色。恢复时还原原始材质、站立姿态、碰撞和飞舞资格。
+
 ## MimicBook 迁移边界
 
 本地 MimicBook 演示蓝图没有可复用的独立 `CurveFloat` 资产；原逻辑主要使用 Flying Movement、速度切换和直接更新 Actor 位置。本批将这些运动原则迁移为静态瓶子可使用的 C++ 缓动与正弦轨迹，没有复制书的骨骼攻击动画或输入绑定。
@@ -39,4 +49,5 @@
 
 - UE 5.8 `demo3_UE58Editor Mac Development` 源码构建成功。
 - 从女巫房间 114 个药瓶的关卡 Actor 元数据复核，工作台锅附近识别结果为七个；其余瓶子分属多层药架、高柜与两个橱窗展示架。
-- 按用户要求没有启动 UE 编辑器，因此尚未进行 PIE 视觉节奏、碰撞与折叠/展开联动实测。
+- 增加失活材质、倾斜回位与恢复接口后再次完成 UE 5.8 Editor 模块构建。
+- 按用户要求没有启动 UE 编辑器，因此尚未进行 PIE 视觉节奏、材质效果、碰撞与折叠/展开联动实测。

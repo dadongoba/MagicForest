@@ -7,6 +7,7 @@
 
 class AActor;
 class AStaticMeshActor;
+class UMaterialInterface;
 
 /**
  * Finds the seven potion bottles placed around the Witch House workbench cauldron
@@ -50,15 +51,39 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Witch House|Potion Mimic")
 	bool IsWorkbenchPotionFlightActive() const { return bFlightRequested; }
 
+	/**
+	 * Marks one of the seven bottles as magically inactive. Inactive is distinct
+	 * from empty: the liquid remains, but darkens and stops moving while the bottle
+	 * drops out of the MimicBook flight.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Witch House|Potion Mimic|Inactive")
+	bool SetWorkbenchPotionInactive(int32 PotionIndex, bool bInactive);
+
+	UFUNCTION(BlueprintCallable, Category = "Witch House|Potion Mimic|Inactive")
+	bool SetWorkbenchPotionActorInactive(AActor* PotionActor, bool bInactive);
+
+	UFUNCTION(BlueprintCallable, Category = "Witch House|Potion Mimic|Inactive")
+	void SetAllWorkbenchPotionsInactive(bool bInactive);
+
+	UFUNCTION(BlueprintPure, Category = "Witch House|Potion Mimic|Inactive")
+	bool IsWorkbenchPotionInactive(int32 PotionIndex) const;
+
+	UFUNCTION(BlueprintPure, Category = "Witch House|Potion Mimic|Inactive")
+	int32 GetInactiveWorkbenchPotionCount() const;
+
 private:
 	struct FBoundPotion
 	{
 		TWeakObjectPtr<AStaticMeshActor> Actor;
 		FTransform HomeTransform;
+		FTransform InactiveTransform;
 		TEnumAsByte<ECollisionEnabled::Type> HomeCollision = ECollisionEnabled::QueryAndPhysics;
+		TArray<TObjectPtr<UMaterialInterface>> HomeMaterials;
 		float Phase = 0.0f;
 		float Radius = 70.0f;
 		float Height = 85.0f;
+		float LocalFlightBlend = 0.0f;
+		bool bInactive = false;
 	};
 
 	TArray<FBoundPotion> BoundPotions;
@@ -67,7 +92,6 @@ private:
 	FVector LastMimicBookLocation = FVector::ZeroVector;
 	float TimeSinceBeginPlay = 0.0f;
 	float TimeSinceLastDiscovery = 0.0f;
-	float FlightBlend = 0.0f;
 	float FlightClock = 0.0f;
 	float MimicBookSpeed = 0.0f;
 	bool bFlightRequested = false;
@@ -79,6 +103,9 @@ private:
 	void UpdateBookDrivenState(float DeltaTime);
 	void UpdatePotionTransforms(float DeltaTime);
 	void RestorePotion(FBoundPotion& Potion, bool bSnapHome);
+	void ApplyInactiveAppearance(FBoundPotion& Potion);
+	void RestoreActiveAppearance(FBoundPotion& Potion);
+	bool SetPotionInactive(FBoundPotion& Potion, bool bInactive);
 	bool IsMimicBookFolded(const AActor* Actor) const;
 	FVector GetFlightCentre() const;
 };
