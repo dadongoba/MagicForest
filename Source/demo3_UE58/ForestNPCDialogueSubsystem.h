@@ -21,6 +21,7 @@ class DEMO3_UE58_API UForestConversationSave : public USaveGame
  GENERATED_BODY()
 public:
  UPROPERTY() TArray<FForestConversationRow> Rows;
+ UPROPERTY() bool bFirstDayMessengerTutorialDelivered=false;
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FForestConversationUpdated);
 UCLASS()
@@ -45,6 +46,8 @@ public:
  virtual void Deinitialize() override;
  UPROPERTY(BlueprintAssignable) FForestConversationUpdated OnConversationUpdated;
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool BeginConversation(FName NpcId);
+ UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool BeginFirstDayMessengerTutorial();
+ UFUNCTION(BlueprintPure,Category="NPC Dialogue") bool IsFirstDayMessengerTutorialPending() const;
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool SendPlayerMessage(const FString& Text);
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") void EndConversation();
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") void SetOfflineTestMode(bool Enabled){bOfflineTest=Enabled;}

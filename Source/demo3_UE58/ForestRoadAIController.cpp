@@ -47,7 +47,7 @@ void AForestRoadAIController::OnPossess(APawn* InPawn)
  if(!UGameplayStatics::GetActorOfClass(this,AForestNPCInteraction::StaticClass()))GetWorld()->SpawnActor<AForestNPCInteraction>();
 }
 void AForestRoadAIController::OnUnPossess()
-{EndInteraction();bSuppressCompletion=true;StopMovement();Request=FAIRequestID::InvalidRequest;Super::OnUnPossess();bSuppressCompletion=false;}
+{EndInteraction();CancelPlayerApproach();bSuppressCompletion=true;StopMovement();Request=FAIRequestID::InvalidRequest;Super::OnUnPossess();bSuppressCompletion=false;}
 void AForestRoadAIController::DisableLegacyWanderTimer()
 {
  if(GetPawn() && GetPawn()->FindFunction(TEXT("ChooseNextWanderTarget_0")))
@@ -119,10 +119,47 @@ void AForestRoadAIController::CompleteWalk()
  UE_LOG(LogForestRoadAI,Log,TEXT("%s: ROAM_REACHED %d, choose next road"),*GetNameSafe(GetPawn()),CompletedWalks);
 }
 void AForestRoadAIController::OnMoveCompleted(FAIRequestID ID,const FPathFollowingResult& Result)
-{Super::OnMoveCompleted(ID,Result);if(bSuppressCompletion || bInteracting || !Request.IsValid() || ID!=Request)return;if(Result.IsSuccess())CompleteWalk();else HandleRouteFailure(TEXT("Path following failed"));}
+{
+ Super::OnMoveCompleted(ID,Result);if(bSuppressCompletion || bInteracting || !Request.IsValid() || ID!=Request)return;
+ if(bApproachingPlayer){Request=FAIRequestID::InvalidRequest;NextDecision=GetWorld()->GetTimeSeconds()+(Result.IsSuccess()?0.1:0.6);StatusNote=Result.IsSuccess()?TEXT("Reached player"):TEXT("Finding another path to player");return;}
+ if(Result.IsSuccess())CompleteWalk();else HandleRouteFailure(TEXT("Path following failed"));
+}
+bool AForestRoadAIController::BeginPlayerApproach(AActor* PlayerActor)
+{
+ if(!PlayerActor || !GetPawn() || bInteracting)return false;
+ bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;
+ ApproachTarget=PlayerActor;bApproachingPlayer=true;RecoveryUntil=0;NextDecision=0;StatusNote=TEXT("Looking for player");return true;
+}
+void AForestRoadAIController::CancelPlayerApproach()
+{
+ if(!bApproachingPlayer)return;
+ bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;
+ bApproachingPlayer=false;ApproachTarget.Reset();NextDecision=GetWorld()?GetWorld()->GetTimeSeconds()+0.3:0;StatusNote=TEXT("Resume road roaming");
+}
+void AForestRoadAIController::UpdatePlayerApproach(const double Now)
+{
+ auto* Target=ApproachTarget.Get();if(!Target || !GetPawn()){CancelPlayerApproach();return;}
+ const FVector Here=GetPawn()->GetActorLocation();const float Distance=FVector::Dist2D(Here,Target->GetActorLocation());
+ if(Distance<=140.f)
+ {
+  if(Request.IsValid()){bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;}
+  const FRotator Facing=(Target->GetActorLocation()-GetPawn()->GetActorLocation()).GetSafeNormal2D().Rotation();GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(),Facing,GetWorld()->GetDeltaSeconds(),5));StatusNote=TEXT("Waiting to greet player");return;
+ }
+ if(Request.IsValid())
+ {
+  if(FVector::Dist2D(ProgressLocation,Here)>25){ProgressLocation=Here;ProgressTime=Now;}
+  else if(Now-ProgressTime>StuckTimeout){bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;NextDecision=Now+0.5;StatusNote=TEXT("Retrying path to player");}
+  return;
+ }
+ if(Now<NextDecision)return;
+ FAIMoveRequest Move;Move.SetGoalActor(Target);Move.SetAcceptanceRadius(120);Move.SetReachTestIncludesAgentRadius(false);Move.SetReachTestIncludesGoalRadius(false);Move.SetAllowPartialPath(false);Move.SetNavigationFilter(DefaultNavigationFilterClass);Move.SetUsePathfinding(true);
+ const auto Result=MoveTo(Move);Request=Result.MoveId;NextDecision=Now+0.5;ProgressLocation=Here;ProgressTime=Now;
+ if(Result.Code==EPathFollowingRequestResult::Failed){Request=FAIRequestID::InvalidRequest;NextDecision=Now+0.8;StatusNote=TEXT("Finding a path to player");}else StatusNote=TEXT("Looking for player");
+}
 bool AForestRoadAIController::BeginInteraction(AActor* Interactor)
 {
  if(!Interactor || !GetPawn() || bInteracting)return false;if(const auto* C=GetPawn()->FindComponentByClass<UForestAutoCrouchComponent>();C && C->IsInPassage())return false;
+ CancelPlayerApproach();
  bInteracting=true;InteractionPartner=Interactor;bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;RecoveryUntil=0;StatusNote=TEXT("Talking to player");OnInteractionChanged.Broadcast(Interactor,true);
  UE_LOG(LogForestRoadAI,Log,TEXT("%s: INTERACTION_BEGIN"),*GetNameSafe(GetPawn()));return true;
 }
@@ -137,6 +174,7 @@ void AForestRoadAIController::Tick(float DT)
 {
  Super::Tick(DT);DisableLegacyWanderTimer();if(!GetPawn())return;const double Now=GetWorld()->GetTimeSeconds();
  if(bInteracting){if(!InteractionPartner.IsValid()){EndInteraction();return;}const FRotator Facing=(InteractionPartner->GetActorLocation()-GetPawn()->GetActorLocation()).GetSafeNormal2D().Rotation();GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(),Facing,DT,5));return;}
+ if(bApproachingPlayer){UpdatePlayerApproach(Now);return;}
  if(Now>=NextHistorySample){const FVector P=GetPawn()->GetActorLocation();if(MovementHistory.IsEmpty() || FVector::Dist2D(P,MovementHistory.Last())>50){MovementHistory.Add(P);if(MovementHistory.Num()>12)MovementHistory.RemoveAt(0);}NextHistorySample=Now+0.5;}
  if(auto* C=GetPawn()->FindComponentByClass<UForestAutoCrouchComponent>();C && C->IsInPassage()){ProgressTime=Now;ProgressLocation=GetPawn()->GetActorLocation();return;}
  if(Now<RecoveryUntil){StatusNote=TEXT("Backing away from obstruction");GetPawn()->AddMovementInput((RecoveryPoint-GetPawn()->GetActorLocation()).GetSafeNormal2D());if(FVector::Dist2D(RecoveryPoint,GetPawn()->GetActorLocation())<60)RecoveryUntil=0;return;}

@@ -51,12 +51,16 @@ private:
  TWeakObjectPtr<APlayerController> Player;
  TWeakObjectPtr<AForestRoadAIController> Active;
  TWeakObjectPtr<ACharacter> Nearby;
+ TWeakObjectPtr<ACharacter> TutorialMessenger;
  UPROPERTY(Transient) TObjectPtr<UForestNPCInteractionWidget> Widget;
  UPROPERTY(Transient) TObjectPtr<UForestNPCDialogueSubsystem> Dialogue;
- bool bLockedMovement=false,bPreviousMouse=false,bSuppressInteractUntilRelease=false,bInputBound=false;
+ bool bLockedMovement=false,bPreviousMouse=false,bSuppressInteractUntilRelease=false,bInputBound=false,bTutorialSearchIssued=false;
+ double TutorialSearchAfter=0;
  bool CanReach(ACharacter* Character) const;
  FString CharacterName(const ACharacter* Character) const;
  FName PersonaId(const ACharacter* Character) const;
+ bool OpenInteraction(ACharacter* Character,bool bFirstDayTutorial);
+ void UpdateFirstDayTutorial();
  UFUNCTION() void RefreshConversation();
  UFUNCTION() void InteractNearby();
 };

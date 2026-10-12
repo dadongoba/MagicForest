@@ -75,6 +75,21 @@ bool UForestNPCDialogueSubsystem::BeginConversation(FName Id)
  Status=bOfflineTest?TEXT("离线联调：模拟回复，不调用 AI"):TEXT("输入内容，按 Enter 发送");
  OnConversationUpdated.Broadcast();RetryPendingSummaries();return true;
 }
+bool UForestNPCDialogueSubsystem::IsFirstDayMessengerTutorialPending() const
+{
+ if(!bPersistenceReady || !Save || Save->bFirstDayMessengerTutorialDelivered || !ActiveNpc.IsNone())return false;
+ const auto* Day=GetGameInstance()?GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>():nullptr;
+ return Day && Day->GetCurrentDay()==1;
+}
+bool UForestNPCDialogueSubsystem::BeginFirstDayMessengerTutorial()
+{
+ if(!IsFirstDayMessengerTutorialPending() || !BeginConversation(TEXT("fawnia")))return false;
+ const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；干锅里确认成品，这一天才算过完。路和人我熟，下一步找不着就来问我。");
+ auto& R=Row(TEXT("fawnia"));const auto Message=ForestDialogue::Message(TEXT("assistant"),Opening);
+ R.History.Add(Message);SessionTranscript.Add(Message);while(R.History.Num()>16)R.History.RemoveAt(0);
+ Save->bFirstDayMessengerTutorialDelivered=true;Status=TEXT("Fawnia 找到了你。可以继续问她，或按 Esc 结束交谈。");
+ Persist();OnConversationUpdated.Broadcast();return true;
+}
 FString UForestNPCDialogueSubsystem::GetTranscript() const
 {
  if(!Save)return TEXT("");FString Out;

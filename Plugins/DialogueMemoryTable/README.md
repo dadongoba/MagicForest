@@ -118,3 +118,7 @@ the target project.
 ## Forest NPC integration (2026-10-07)
 
 Custom three-layer profiles can be installed with RegisterPersonaProfile. Memory patches validate against registered profiles, including the original three personas. MagicForest registers forest_witch, natta and fawnia and owns the dialogue UI, request lifecycle and conversation saves. See [integration and test report](../../Docs/NPC_Dialogue_Integration_2026-10-07.md).
+
+On world day 1, Fawnia leaves her patrol, finds the player, and opens the first
+conversation with the fixed tutorial message. The delivery flag lives in the
+conversation SaveGame, so loading the level does not replay the introduction.

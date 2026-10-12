@@ -24,6 +24,9 @@ public:
  UFUNCTION(BlueprintCallable,Category="NPC Interaction") bool BeginInteraction(AActor* Interactor);
  UFUNCTION(BlueprintCallable,Category="NPC Interaction") void EndInteraction();
  UFUNCTION(BlueprintPure,Category="NPC Interaction") bool IsInteracting() const {return bInteracting;}
+ UFUNCTION(BlueprintCallable,Category="NPC Interaction") bool BeginPlayerApproach(AActor* PlayerActor);
+ UFUNCTION(BlueprintCallable,Category="NPC Interaction") void CancelPlayerApproach();
+ UFUNCTION(BlueprintPure,Category="NPC Interaction") bool IsApproachingPlayer() const{return bApproachingPlayer;}
  void DrawRoadDebug() const;
 protected:
  virtual void OnPossess(APawn* InPawn) override;
@@ -34,11 +37,12 @@ private:
  TArray<FVector> RoadPoints,RecentGoals,MovementHistory;
  TArray<FCooldownPoint> AvoidedPoints;
  TWeakObjectPtr<AActor> InteractionPartner;
+ TWeakObjectPtr<AActor> ApproachTarget;
  FAIRequestID Request=FAIRequestID::InvalidRequest;
  FVector ApproachPoint=FVector::ZeroVector,ProgressLocation=FVector::ZeroVector,RecoveryPoint=FVector::ZeroVector;
  double ProgressTime=0,NextDecision=0,RecoveryUntil=0,NextHistorySample=0;
  int32 CompletedWalks=0,RouteFailures=0;
- bool bSuppressCompletion=false,bInteracting=false;
+ bool bSuppressCompletion=false,bInteracting=false,bApproachingPlayer=false;
  FString StatusNote;
  void StartRoaming();
  void HandleRouteFailure(const FString& Reason);
@@ -46,4 +50,5 @@ private:
  void DisableLegacyWanderTimer();
  bool ResolvePoint(const FVector& Desired,FVector& OutPoint,float& OutLength) const;
  bool IsRecentlyUsed(const FVector& Point) const;
+ void UpdatePlayerApproach(double Now);
 };
