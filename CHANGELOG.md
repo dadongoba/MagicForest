@@ -2,6 +2,20 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-10-12-03：一键寻找 NPC（交付物品代价）
+
+- **目的 / 基线**：让玩家在正式游戏中用背包里的一件物品作为代价，指定一位森林 NPC 并让玩家角色自动寻路过去；基于 main `986dc9c` 与批次 2026-10-12-02。
+- **修改**：`Source/demo3_UE58/ForestNPCInteraction.h`、`Source/demo3_UE58/ForestNPCInteraction.cpp`。
+- **新增**：`Docs/NPC_Finder_2026-10-12.md`。
+- **行为**：按 V 打开“要寻找谁？”面板，三选一（小说家/森林女巫、铁匠 Natta、传信人 Fawnia）；选中后进入第二页确认，显示需要交付 1 个物品以及本次将被扣除的具体物品名，背包为空时确认按钮禁用。点“确认交付并寻找”后才校验并扣费，点“返回”回到第一步且不扣费。校验通过后扣除物品，玩家沿导航自动走向目标，进入交互距离后停止移动并直接打开该 NPC 的对话。
+- **校验顺序**：目标不存在 → 提示“这位 NPC 当前不在场景中，没有扣除物品。”；既不能直接交互又没有完整可达路径 → 提示“目前没有可到达这位 NPC 的完整路线，没有扣除物品。”两种情况都不扣费。完整路径判定使用 `FindPathToActorSynchronously(World, 玩家位置, 目标, InteractionRange*0.7, 玩家 Pawn)`，要求路径有效、非 Partial、路径点大于 1。
+- **取消 / 退回**：行进中按 WASD 或 Esc 主动取消，已交付物品不退回；目标离开场景或路线中断时自动退回物品。行进期间每 1 秒重发一次 `SimpleMoveToActor`。
+- **代价实现**：反射读取玩家 Pawn 的 `Backpack`（键 `FStrProperty`、值 `FIntProperty`），优先取仍在背包内的 `LastPicked`，否则按名称排序取第一个可用物品；数量大于 1 减 1，等于 1 移除该项；随后重建 `BackpackList` 并调用 `RefreshHUD`。不新增第二套库存。
+- **输入 / 界面**：V 键绑定在本 Actor 输入组件上并设置 `bConsumeInput`，与既有 E 交谈并列；面板打开时切换为 UI 输入模式并恢复鼠标光标，结束或取消后还原。Esc 在面板内为返回/取消，在交谈窗口内仍为结束交谈。
+- **验证 / 未验证**：UE 5.8 `demo3_UE58Editor Mac Development` 构建成功，末次编译 `ForestNPCInteraction.cpp` 并链接 `libUnrealEditor-demo3_UE58.dylib`（`Result: Succeeded`）；玩家蓝图 `BP_FirstPersonCharacter` 中确认存在 `Backpack`、`BackpackList`、`LastPicked`、`RefreshHUD`。按仓库约定未启动 UE 编辑器，未做 PIE 的界面显示、扣费、寻路中断与退回回归。
+- **未包含**：三选一面板固定列出三位现有森林 NPC，未做动态 NPC 列表；代价物品只显示名称、无图标；未接入评分惩罚或元素禁用机制。详见 [一键寻找 NPC 说明](NPC_Finder_2026-10-12.md)。
+- **上传状态**：待上传。
+
 ## 2026-10-12-02：工作台药瓶失活状态
 
 - **目的 / 基线**：在不消耗、不替换为空瓶且不摔碎的情况下，让工作台药瓶具有明显的不可用状态；基于 main `7d98c51` 与批次 2026-10-12-01。
