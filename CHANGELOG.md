@@ -14,7 +14,7 @@
 - **输入 / 界面**：V 键绑定在本 Actor 输入组件上并设置 `bConsumeInput`，与既有 E 交谈并列；面板打开时切换为 UI 输入模式并恢复鼠标光标，结束或取消后还原。Esc 在面板内为返回/取消，在交谈窗口内仍为结束交谈。
 - **验证 / 未验证**：UE 5.8 `demo3_UE58Editor Mac Development` 构建成功，末次编译 `ForestNPCInteraction.cpp` 并链接 `libUnrealEditor-demo3_UE58.dylib`（`Result: Succeeded`）；玩家蓝图 `BP_FirstPersonCharacter` 中确认存在 `Backpack`、`BackpackList`、`LastPicked`、`RefreshHUD`。按仓库约定未启动 UE 编辑器，未做 PIE 的界面显示、扣费、寻路中断与退回回归。
 - **未包含**：三选一面板固定列出三位现有森林 NPC，未做动态 NPC 列表；代价物品只显示名称、无图标；未接入评分惩罚或元素禁用机制。详见 [一键寻找 NPC 说明](NPC_Finder_2026-10-12.md)。
-- **上传状态**：待上传。
+- **上传状态**：已上传 `main`，功能提交 `a8e08e3`，远程分支已核对。
 
 ## 2026-10-12-02：工作台药瓶失活状态
 
