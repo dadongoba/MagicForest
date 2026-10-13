@@ -1,63 +1,40 @@
-# 寻找 NPC：AI 涌现路引叙事框架
+# 寻找 NPC：交出物品的 AI 带路故事
 
-本批为“交付一个物品寻找 NPC”增加叙事生成层。它只生成一件临时路引的名称和一段短叙事，用于玩家自动寻路期间的界面文字；不会向背包添加新物品，也不会改变寻路、扣费、退款或 NPC 对话结果。
+2026-10-13-04 更新：替换原先另起路引名称的占位规则。历史行为见 CHANGELOG 2026-10-13-01；以下是当前实现。
 
-## 玩家可见流程
+玩家确认交付实际背包物品并开始自动寻路后，界面显示交出物品名以及它带着玩家找到目标 NPC 的短故事。网络请求不阻塞移动，先显示本地故事，玩家仍在移动时用合格 AI 结果替换。到达、取消和路线失效仍沿用原规则，结束后的迟到回复不更新本次界面。
 
-玩家确认交付物品并开始寻找后，寻路提示增加两行：
+## 生成规则
 
-1. 已交付的真实背包物品名称；
-2. `涌现路引名称：短叙事`。
+输入冻结物品名称、道具描述、采摘属性快照，以及已经选定的 NPC 名称与 ID。
 
-请求开始时立即显示本地兜底文本，不等待网络。共享 AI 接口成功返回后，在玩家仍处于寻路状态时替换为 AI 结果。到达 NPC、玩家主动取消、目标失效或路线中断，都按原寻找系统的规则结束；AI 请求不会阻塞这些状态。
+- 带路主体只能是交出的物品本身、已有部件，或它发生变化后的形态。
+- 变化必须明确从原物品发生，来源连续可追溯；禁止凭空新增衣袖、精灵、动物、陌生人或另一件道具代替它引路。
+- 根据名称和道具描述设计具体动作；不再按元素套用抽象路引，不重新命名。
+- 第二人称，2–4 句、50–120 汉字，连接交出物品、引路、跟随、找到选定 NPC、物品耗散。
+- 必须包含完整物品名与目标 NPC 名。不得新增职业动作、对白、地图路线事实、奖励或游戏机制。
+- 童话语气、具象自然，不使用实验室用词。正例为纽扣滚动、其火苗指向；反例为凭空生成衣袖接替纽扣牵引。
 
-## 输入契约
-
-`FForestTravelNarrativeInput` 是一次请求的冻结快照：
-
-| 字段 | 用途 |
-|---|---|
-| `RequestId` | 拒绝旧请求的迟到结果 |
-| `ConsumedItemId` / `ConsumedItemName` | 实际扣除的背包物品 |
-| `bHasElementValue` | 是否已有可用的元素数值 |
-| `Element` | 火 / 风 / 水 |
-| `PipValue` | 当前 1–9 点数入口 |
-| `Value` | 火、风、水三轴数值，给后续复杂规则留口 |
-| `TargetNpcId` / `TargetNpcName` | 本次寻找目标 |
-| `bUsesPlaceholderValue` / `ValueSource` | 标记当前数值是否仍为临时接线 |
-
-当前背包只保存物品名和数量，没有保存采摘当天的数值快照。因此现阶段若消耗的是每日蘑菇表中的物品，就临时读取**当前日**的 `Element`、`PipValue` 和 `FAlchemyVector`，并写入 `ValueSource=current_day_mushroom_table_placeholder`。该来源明确标为占位；后续背包条目保存真实元素快照后，直接填充同一输入结构并把 `bUsesPlaceholderValue` 设为 `false`。
-
-无法在每日蘑菇表中解析的物品不会被猜成火元素：`bHasElementValue=false`，本地结果为“未定形路引”，叙事明确说明数值仍待补全。
-
-## AI 接口与输出
-
-`UForestTravelNarrativeSubsystem` 负责提示词、JSON 解析、兜底与最后结果；网络仍统一调用 `UDialogueAIServiceSubsystem::RequestChatCompletion`，沿用 NPC 对话和世界后果功能的 Base URL、模型与 `FOREST_DIALOGUE_API_KEY`。
-
-要求 AI 只返回：
+共享 UDialogueAIServiceSubsystem::RequestChatCompletion 负责网络，沿用原地址、模型和 Key；temperature 0.85，max_tokens 320。只要求 JSON：
 
 ```json
-{"item_name":"2–10个汉字的名称","narrative":"35–80个汉字的短叙事"}
+{"narrative":"简短带路故事"}
 ```
 
-解析后的 `FForestTravelNarrativeResult` 包含 `EmergentItemName`、`ShortNarrative`、`bGeneratedByAI`、`bUsedPlaceholderValue` 和 `Error`。名称与叙事设置长度上限，Markdown 围栏会被清理；缺字段、非法 JSON、网络错误和无 Key 都转入确定性本地兜底。
+结构检查要求 narrative 为字符串、长度 35–180 字符，同时包含完整物品名和目标 NPC 名；超长不直接截断，避免故事断句。输出字段 EmergentItemName 为兼容旧界面保留，但由程序固定为实际消耗物品名，不采信 AI 提供的新名称。
 
-## 本地兜底
+主体来源规则通过提示词约束；格式和名称检查不能证明每一条 AI 文案语义都符合规则，仍需实际生成验收。
 
-- 火：生成“微/鸣/盛烬路签”，用余烬落点指路。
-- 风：生成“微/鸣/盛风路羽”，用风羽沿可走道路飘行。
-- 水：生成“微/鸣/盛潮引露”，用水痕绕开阻碍延伸。
-- 未解析元素：生成“未定形路引”。
+## 本地故事与快照
 
-前缀暂按点数 `1–3 / 4–6 / 7–9` 分为微、鸣、盛，只是可运行占位，不代表最终数值平衡。
+无 Key、网络失败、非法 JSON、遗漏名称或长度不合格时使用原物品直接引路的本地故事：铃铛自身飘行并鸣响；纽扣/胡桃自身滚动；其他物品自身悬浮并等待玩家。所有版本都以原物品耗散收尾，不生成另一件主导物品。
 
-## 接入位置
+魔法道具通过 ForestMagicItemLedger 读取名称、描述、元素、点数和三轴快照，ValueSource 为 harvest_snapshot，换天不会改写。历史蘑菇条目仍可临时使用当前日表；没有描述时只按原物品名推知形态，不猜元素。
 
-`AForestNPCInteraction::ConfirmNpcFinding` 在目标和路径校验通过、背包扣费成功后调用 `RequestTravelNarrative`。本地兜底立即写入寻路 HUD；异步结果通过带 `RequestId` 的回调更新。取消或结束寻找时清除活动请求编号，迟到结果不会覆盖后续一次寻找。
+扣费成功后调用 RequestTravelNarrative，RequestId 隔离迟到结果。文案只在行进 HUD 显示，不朗读、不产生新 Actor 或改变真实导航路径，本批不改物品选择流程。
 
-## 验证与限制
+## 应用与验证
 
-- UE 5.8 `demo3_UE58Editor Mac Development` 构建成功，已编译新子系统、交互接线并链接编辑器模块。
-- 按既有约定未启动 UE 编辑器，未做 PIE 界面换行、异步返回时序或真实 DeepSeek 请求验证。
-- 当前没有真实背包元素快照；当前日蘑菇表接线只用于占位。
-- 生成的路引只有名称和叙事，不创建 Actor、图标、特效、可拾取物或背包条目。
+合并 Source/demo3_UE58 下 ForestTravelNarrativeSubsystem.h/.cpp 与 ForestNPCInteraction.cpp，保留采摘魔法道具批次的依赖，重新编译。
+
+UE 5.8 demo3_UE58Editor Mac Development 构建、生成代码与链接通过。未开编辑器，未做 PIE 的行进文案、取消/到达时序以及真实 AI 生成质量验收。

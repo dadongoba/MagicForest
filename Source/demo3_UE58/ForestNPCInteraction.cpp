@@ -171,7 +171,7 @@ void AForestNPCInteraction::RequestTravelNarrative(const FString& ConsumedItem,A
  FForestTravelNarrativeInput Input;Input.RequestId=NextTravelNarrativeRequestId++;Input.ConsumedItemId=ConsumedItem;Input.ConsumedItemName=ConsumedItem;Input.TargetNpcId=PersonaId(Target);Input.TargetNpcName=CharacterName(Target);
  FForestMagicItem MagicItem;
  if(auto* Harvest=GetWorld()->GetSubsystem<UForestHarvestMagic>(); Harvest && Harvest->FindItem(ConsumedItem,MagicItem))
- {Input.ConsumedItemId=MagicItem.Id;Input.ConsumedItemName=MagicItem.Name;Input.bHasElementValue=true;Input.Element=MagicItem.Element;Input.PipValue=MagicItem.PipValue;Input.Value=MagicItem.Value;Input.bUsesPlaceholderValue=false;Input.ValueSource=TEXT("harvest_snapshot");}
+ {Input.ConsumedItemId=MagicItem.Id;Input.ConsumedItemName=MagicItem.Name;Input.ConsumedItemDescription=MagicItem.Description;Input.bHasElementValue=true;Input.Element=MagicItem.Element;Input.PipValue=MagicItem.PipValue;Input.Value=MagicItem.Value;Input.bUsesPlaceholderValue=false;Input.ValueSource=TEXT("harvest_snapshot");}
  else if(auto* Daily=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>())
  {
   FDailyMushroomCardRow Row;if(Daily->GetDailyMushroom(FName(*ConsumedItem),Row)){Input.bHasElementValue=true;Input.Element=Row.Element;Input.PipValue=Row.PipValue;Input.Value=Row.Value;Input.ValueSource=TEXT("current_day_mushroom_table_placeholder");}

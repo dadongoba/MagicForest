@@ -16,6 +16,7 @@ struct DEMO3_UE58_API FForestTravelNarrativeInput
  UPROPERTY(BlueprintReadWrite) int64 RequestId=0;
  UPROPERTY(BlueprintReadWrite) FString ConsumedItemId;
  UPROPERTY(BlueprintReadWrite) FString ConsumedItemName;
+ UPROPERTY(BlueprintReadWrite) FString ConsumedItemDescription;
  UPROPERTY(BlueprintReadWrite) bool bHasElementValue=false;
  UPROPERTY(BlueprintReadWrite) EAlchemyElement Element=EAlchemyElement::Fire;
  UPROPERTY(BlueprintReadWrite) int32 PipValue=0;
@@ -79,6 +80,6 @@ private:
  int64 LatestRequestedId=0;
  static FString ElementName(EAlchemyElement Element);
  static FString CleanJson(FString Text);
- static bool ParseResult(const FString& Text,FForestTravelNarrativeResult& OutResult);
+ static bool ParseResult(const FString& Text,const FForestTravelNarrativeInput& Input,FForestTravelNarrativeResult& OutResult);
  static FString BuildPrompt(const FForestTravelNarrativeInput& Input);
 };
