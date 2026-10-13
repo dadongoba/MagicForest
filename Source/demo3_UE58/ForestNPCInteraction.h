@@ -62,6 +62,7 @@ public:
  UFUNCTION(BlueprintCallable,Category="NPC Interaction") void FinishInteraction();
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool SubmitDialogueText(const FString& Text);
  UFUNCTION(BlueprintPure,Category="NPC Interaction") bool IsDialogueOpen() const{return Active.IsValid();}
+ bool IsFinderMenuOpen() const{return FinderStage==EFinderStage::Selecting || FinderStage==EFinderStage::Confirming;}
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") FString GetDialogueStatus() const;
  UFUNCTION(BlueprintCallable,Category="NPC Finder") void OpenNpcFinder();
  UFUNCTION(BlueprintCallable,Category="NPC Finder") void CancelNpcFinder();
@@ -111,9 +112,14 @@ private:
 
 /** Keeps player shortcuts available independently of an NPC controller spawning them. */
 UCLASS()
-class DEMO3_UE58_API UForestNPCInteractionWorldSubsystem : public UWorldSubsystem
+class DEMO3_UE58_API UForestNPCInteractionWorldSubsystem : public UTickableWorldSubsystem
 {
  GENERATED_BODY()
 public:
  virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+ virtual void Tick(float DeltaTime) override;
+ virtual TStatId GetStatId() const override;
+ virtual bool IsTickableInEditor() const override{return false;}
+private:
+ float BootstrapDelay=0;
 };

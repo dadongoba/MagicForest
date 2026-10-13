@@ -286,3 +286,27 @@ void UForestNPCInteractionWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
   InWorld.SpawnActor<AForestNPCInteraction>(AForestNPCInteraction::StaticClass(),FTransform::Identity,Params);
  }
 }
+
+void UForestNPCInteractionWorldSubsystem::Tick(float DeltaTime)
+{
+ UWorld* World=GetWorld();if(!World || !World->IsGameWorld() || !World->GetGameInstance() || World->GetGameInstance()->GetWorld()!=World || World->GetNetMode()==NM_DedicatedServer)return;
+ BootstrapDelay+=DeltaTime;if(BootstrapDelay<1.f)return;BootstrapDelay=0;
+ if(!UGameplayStatics::GetActorOfClass(World,AForestNPCInteraction::StaticClass()))
+ {FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;World->SpawnActor<AForestNPCInteraction>(AForestNPCInteraction::StaticClass(),FTransform::Identity,Params);}
+ // Existing level blueprints may still have the old generic controller. Bind the actual
+ // scene NPCs to the controller used by approach, tutorial, stop/resume and dialogue.
+ for(TActorIterator<ACharacter> It(World);It;++It)
+ {
+  ACharacter* Character=*It;const FString Name=Character->GetName();
+  const bool Supported=Name.Contains(TEXT("NPC_WanderTest")) || Name.Contains(TEXT("NPC_Natta_Wander")) || Name.Contains(TEXT("NPC_Fawnia_Wander"));
+  if(!Supported || Character->IsPlayerControlled() || Cast<AForestRoadAIController>(Character->GetController()))continue;
+  FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  auto* Controller=World->SpawnActor<AForestRoadAIController>(AForestRoadAIController::StaticClass(),Character->GetActorTransform(),Params);
+  if(!Controller)continue;
+  if(auto* Previous=Character->GetController())Previous->UnPossess();
+  Controller->Possess(Character);
+  UE_LOG(LogTemp,Log,TEXT("Forest NPC runtime connected: %s -> %s"),*Name,*Controller->GetName());
+ }
+}
+TStatId UForestNPCInteractionWorldSubsystem::GetStatId() const
+{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestNPCInteractionWorldSubsystem,STATGROUP_Tickables);}

@@ -1,4 +1,5 @@
 #include "ForestHarvestMagic.h"
+#include "ForestNPCInteraction.h"
 #include "DailyMushroomSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
 #include "Blueprint/WidgetTree.h"
@@ -111,7 +112,7 @@ void UForestHarvestMagic::Setup()
 void UForestHarvestMagic::ToggleInventory()
 {
  auto* PC=Player.Get();if(!PC)return;if(Inventory && Inventory->IsInViewport()){Inventory->RemoveFromParent();PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bOldCursor;return;}
- if(PC->bShowMouseCursor)return;
+ if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));Manager && (Manager->IsDialogueOpen() || Manager->IsFinderMenuOpen()))return;
  if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);Inventory->SetDesiredSizeInViewport(FVector2D(720,560));Inventory->SetPositionInViewport(FVector2D(60,60));Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
 }
 FString UForestHarvestMagic::Prompt(const FForestMagicItem& I)
