@@ -51,6 +51,14 @@ namespace HarvestMagic
 void UForestHarvestRequest::Completed(bool Success,const FString& Text){if(Owner.IsValid())Owner->HandleResponse(this,Success,Text);}
 FString UForestHarvestMagic::ElementText(EAlchemyElement E){return E==EAlchemyElement::Wind?TEXT("风"):E==EAlchemyElement::Water?TEXT("水"):TEXT("火");}
 void UForestMagicItemButton::Clicked(){if(Owner.IsValid())Owner->Select(Key);}
+TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
+{
+ if(!WidgetTree)WidgetTree=NewObject<UWidgetTree>(this,TEXT("HarvestNoticeTree"));
+ auto* Border=WidgetTree->ConstructWidget<UBorder>();WidgetTree->RootWidget=Border;
+ Border->SetBrushColor(FLinearColor(.02,.03,.025,.9));Border->SetPadding(FMargin(16));
+ Text=WidgetTree->ConstructWidget<UTextBlock>();Text->SetWrapTextAt(600);Border->SetContent(Text);
+ return Super::RebuildWidget();
+}
 TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
 {
  SetIsFocusable(true);if(!WidgetTree)WidgetTree=NewObject<UWidgetTree>(this);
@@ -97,7 +105,8 @@ void UForestHarvestMagic::Setup()
  Ledger=Cast<UForestMagicItemSave>(UGameplayStatics::LoadGameFromSlot(HarvestMagic::Slot,0));if(!Ledger)Ledger=NewObject<UForestMagicItemSave>(this);
  Input=NewObject<UInputComponent>(PC);Input->RegisterComponent();Input->Priority=50;Input->BindKey(EKeys::B,IE_Pressed,this,&UForestHarvestMagic::ToggleInventory);PC->PushInputComponent(Input);Previous=ReadBag();bReady=true;
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))MushroomVisibility.Add(M,It->IsHidden());
- NoticeWidget=CreateWidget<UUserWidget>(PC,UUserWidget::StaticClass());NoticeWidget->WidgetTree=NewObject<UWidgetTree>(NoticeWidget);auto* Border=NoticeWidget->WidgetTree->ConstructWidget<UBorder>();NoticeWidget->WidgetTree->RootWidget=Border;Border->SetBrushColor(FLinearColor(.02,.03,.025,.9));Border->SetPadding(FMargin(16));Notice=NoticeWidget->WidgetTree->ConstructWidget<UTextBlock>();Notice->SetWrapTextAt(600);Border->SetContent(Notice);NoticeWidget->AddToViewport(30);NoticeWidget->SetAlignmentInViewport(FVector2D(.5,0));int32 ScreenX,ScreenY;PC->GetViewportSize(ScreenX,ScreenY);NoticeWidget->SetPositionInViewport(FVector2D(ScreenX*.5f,60),false);NoticeWidget->SetDesiredSizeInViewport(FVector2D(620,160));NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);
+ auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
+ if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetAlignmentInViewport(FVector2D(.5,0));int32 ScreenX,ScreenY;PC->GetViewportSize(ScreenX,ScreenY);NoticeWidget->SetPositionInViewport(FVector2D(ScreenX*.5f,60),false);NoticeWidget->SetDesiredSizeInViewport(FVector2D(620,160));NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
 }
 void UForestHarvestMagic::ToggleInventory()
 {

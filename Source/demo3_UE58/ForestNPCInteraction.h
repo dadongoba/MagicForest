@@ -3,10 +3,11 @@
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
 #include "Types/SlateEnums.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "ForestTravelNarrativeSubsystem.h"
 #include "ForestNPCInteraction.generated.h"
-class UTextBlock;class UEditableTextBox;class UButton;class UScrollBox;class UVerticalBox;
-class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
+class UComboBoxString;class UTextBlock;class UEditableTextBox;class UButton;class UScrollBox;class UVerticalBox;
+class AAIController;class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
 UCLASS()
 class DEMO3_UE58_API UForestNPCInteractionWidget : public UUserWidget
 {
@@ -16,7 +17,8 @@ public:
  void ShowMessage(const FString& Name,const FString& Body,const FString& Hint);
  void ShowConversation(const FString& Name,const FString& Body,const FString& Status,bool Waiting);
  void ShowFinderSelection();
- void ShowFinderConfirmation(const FString& CharacterName,const FString& FeeItem);
+ void ShowFinderConfirmation(const FString& CharacterName,const TArray<FString>& Items);
+ void ShowSelectedFee(const FString& FeeItem);
  bool IsFinderVisible() const{return bFinderVisible;}
  void FocusInput();
 protected:
@@ -35,6 +37,7 @@ private:
  UPROPERTY(Transient) TObjectPtr<UVerticalBox> FinderConfirmation;
  UPROPERTY(Transient) TObjectPtr<UTextBlock> FinderFee;
  UPROPERTY(Transient) TObjectPtr<UButton> FinderConfirm;
+ UPROPERTY(Transient) TObjectPtr<UComboBoxString> FinderItems;
  bool bFinderVisible=false;
  UFUNCTION() void SendClicked();
  UFUNCTION() void CloseClicked();
@@ -42,6 +45,7 @@ private:
  UFUNCTION() void FindBlacksmithClicked();
  UFUNCTION() void FindMessengerClicked();
  UFUNCTION() void FinderConfirmClicked();
+ UFUNCTION() void FeeItemChanged(FString Item,ESelectInfo::Type SelectionType);
  UFUNCTION() void FinderCancelClicked();
  UFUNCTION() void TextCommitted(const FText& Text,ETextCommit::Type Method);
 };
@@ -63,11 +67,12 @@ public:
  UFUNCTION(BlueprintCallable,Category="NPC Finder") void CancelNpcFinder();
  void SelectNpcForFinding(FName PersonaId);
  void ConfirmNpcFinding();
+ void SelectFeeItem(const FString& Item);
 protected:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 private:
  TWeakObjectPtr<APlayerController> Player;
- TWeakObjectPtr<AForestRoadAIController> Active;
+ TWeakObjectPtr<AAIController> Active;
  TWeakObjectPtr<ACharacter> Nearby;
  TWeakObjectPtr<ACharacter> TutorialMessenger;
  UPROPERTY(Transient) TObjectPtr<UForestNPCInteractionWidget> Widget;
@@ -93,7 +98,7 @@ private:
  void CloseNpcFinderMenu();
  void StopNpcFinder(const FString& Notice,bool bRefundFee);
  ACharacter* FindCharacterByPersona(FName Persona) const;
- bool FindFeeItem(FString& OutItem) const;
+ TArray<FString> GetFeeItems() const;
  bool ConsumeFeeItem(const FString& Item);
  void RefundFeeItem(const FString& Item);
  void RebuildBackpackList() const;
@@ -102,4 +107,13 @@ private:
  UFUNCTION() void HandleTravelNarrative(const FForestTravelNarrativeResult& Result);
  UFUNCTION() void RefreshConversation();
  UFUNCTION() void InteractNearby();
+};
+
+/** Keeps player shortcuts available independently of an NPC controller spawning them. */
+UCLASS()
+class DEMO3_UE58_API UForestNPCInteractionWorldSubsystem : public UWorldSubsystem
+{
+ GENERATED_BODY()
+public:
+ virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 };

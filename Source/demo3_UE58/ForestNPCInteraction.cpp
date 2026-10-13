@@ -12,6 +12,7 @@
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Button.h"
+#include "Components/ComboBoxString.h"
 #include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/InputComponent.h"
@@ -23,6 +24,7 @@
 #include "NavigationSystem.h"
 #include "UObject/UnrealType.h"
 #include "EngineUtils.h"
+#include "Engine/GameInstance.h"
 #include "InputCoreTypes.h"
 TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
 {
@@ -54,6 +56,7 @@ TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
  auto* SelectionCancel=WidgetTree->ConstructWidget<UButton>();auto* SelectionCancelText=WidgetTree->ConstructWidget<UTextBlock>();SelectionCancelText->SetText(FText::FromString(TEXT("取消")));SelectionCancel->SetContent(SelectionCancelText);FinderSelection->AddChildToVerticalBox(SelectionCancel);SelectionCancel->OnClicked.AddDynamic(this,&UForestNPCInteractionWidget::FinderCancelClicked);
  FinderConfirmation=WidgetTree->ConstructWidget<UVerticalBox>();Box->AddChildToVerticalBox(FinderConfirmation);FinderConfirmation->SetVisibility(ESlateVisibility::Collapsed);
  FinderFee=WidgetTree->ConstructWidget<UTextBlock>();FinderFee->SetWrapTextAt(550);FinderConfirmation->AddChildToVerticalBox(FinderFee);
+ FinderItems=WidgetTree->ConstructWidget<UComboBoxString>();FinderConfirmation->AddChildToVerticalBox(FinderItems);FinderItems->OnSelectionChanged.AddDynamic(this,&UForestNPCInteractionWidget::FeeItemChanged);
  auto* FinderButtons=WidgetTree->ConstructWidget<UHorizontalBox>();FinderConfirmation->AddChildToVerticalBox(FinderButtons);
  FinderConfirm=WidgetTree->ConstructWidget<UButton>();auto* ConfirmText=WidgetTree->ConstructWidget<UTextBlock>();ConfirmText->SetText(FText::FromString(TEXT("确认交付并寻找")));FinderConfirm->SetContent(ConfirmText);FinderButtons->AddChildToHorizontalBox(FinderConfirm);FinderConfirm->OnClicked.AddDynamic(this,&UForestNPCInteractionWidget::FinderConfirmClicked);
  auto* FinderCancel=WidgetTree->ConstructWidget<UButton>();auto* FinderCancelText=WidgetTree->ConstructWidget<UTextBlock>();FinderCancelText->SetText(FText::FromString(TEXT("返回")));FinderCancel->SetContent(FinderCancelText);FinderButtons->AddChildToHorizontalBox(FinderCancel);FinderCancel->OnClicked.AddDynamic(this,&UForestNPCInteractionWidget::FinderCancelClicked);
@@ -74,11 +77,19 @@ void UForestNPCInteractionWidget::ShowFinderSelection()
 {
  if(!Title)return;bFinderVisible=true;SetVisibility(ESlateVisibility::Visible);Title->SetVisibility(ESlateVisibility::Visible);Title->SetText(FText::FromString(TEXT("要寻找谁？")));Conversation->SetVisibility(ESlateVisibility::Collapsed);FinderConfirmation->SetVisibility(ESlateVisibility::Collapsed);FinderSelection->SetVisibility(ESlateVisibility::Visible);Prompt->SetText(FText::FromString(TEXT("选择一位 NPC。下一步会说明需要交付的物品。")));SetKeyboardFocus();
 }
-void UForestNPCInteractionWidget::ShowFinderConfirmation(const FString& CharacterName,const FString& FeeItem)
+void UForestNPCInteractionWidget::ShowFinderConfirmation(const FString& CharacterName,const TArray<FString>& Items)
 {
  if(!Title)return;bFinderVisible=true;SetVisibility(ESlateVisibility::Visible);Title->SetVisibility(ESlateVisibility::Visible);Title->SetText(FText::FromString(FString::Printf(TEXT("寻找 %s"),*CharacterName)));Conversation->SetVisibility(ESlateVisibility::Collapsed);FinderSelection->SetVisibility(ESlateVisibility::Collapsed);FinderConfirmation->SetVisibility(ESlateVisibility::Visible);
- const bool bCanPay=!FeeItem.IsEmpty();FinderFee->SetText(FText::FromString(bCanPay?FString::Printf(TEXT("需要交付背包中的 1 个物品。\n本次将交付：%s"),*FeeItem):TEXT("需要交付背包中的 1 个物品。\n背包为空，暂时无法寻找。")));FinderConfirm->SetIsEnabled(bCanPay);Prompt->SetText(FText::FromString(TEXT("确认后才会检查路线并扣除物品；取消不会扣除。")));SetKeyboardFocus();
+ FinderItems->ClearSelection();FinderItems->ClearOptions();for(const FString& Item:Items)FinderItems->AddOption(Item);FinderItems->SetIsEnabled(!Items.IsEmpty());FinderConfirm->SetIsEnabled(false);
+ FinderFee->SetText(FText::FromString(Items.IsEmpty()?TEXT("需要交付 1 个物品。背包为空，暂时无法寻找。"):TEXT("需要交付 1 个物品。请选择背包中要交付的物品：")));
+ Prompt->SetText(FText::FromString(TEXT("选择物品后才能确认；确认时检查路线并扣除，取消不会扣除。")));SetKeyboardFocus();
 }
+void UForestNPCInteractionWidget::ShowSelectedFee(const FString& FeeItem)
+{
+ if(!FinderFee)return;FinderConfirm->SetIsEnabled(!FeeItem.IsEmpty());FinderFee->SetText(FText::FromString(FeeItem.IsEmpty()?TEXT("请选择要交付的物品。"):FString::Printf(TEXT("将交付 1 个：%s"),*FeeItem)));
+}
+void UForestNPCInteractionWidget::FeeItemChanged(FString Item,ESelectInfo::Type)
+{if(Manager.IsValid())Manager->SelectFeeItem(Item);}
 void UForestNPCInteractionWidget::FocusInput(){if(Input && Input->GetIsEnabled())Input->SetKeyboardFocus();}
 void UForestNPCInteractionWidget::SendClicked(){if(Manager.IsValid() && Input && Manager->SubmitDialogueText(Input->GetText().ToString()))Input->SetText(FText::GetEmpty());FocusInput();}
 void UForestNPCInteractionWidget::CloseClicked(){if(Manager.IsValid())Manager->FinishInteraction();}
@@ -94,7 +105,7 @@ AForestNPCInteraction::AForestNPCInteraction(){PrimaryActorTick.bCanEverTick=tru
 FString AForestNPCInteraction::CharacterName(const ACharacter* C) const
 {const FString Name=GetNameSafe(C);return Name.Contains(TEXT("Natta"))?TEXT("Natta"):Name.Contains(TEXT("Fawnia"))?TEXT("Fawnia"):TEXT("森林女巫");}
 FName AForestNPCInteraction::PersonaId(const ACharacter* C) const
-{const FString Name=GetNameSafe(C);return Name.Contains(TEXT("Natta"))?TEXT("natta"):Name.Contains(TEXT("Fawnia"))?TEXT("fawnia"):TEXT("forest_witch");}
+{const FString Name=GetNameSafe(C);if(Name.Contains(TEXT("Natta")))return TEXT("natta");if(Name.Contains(TEXT("Fawnia")))return TEXT("fawnia");if(Name.Contains(TEXT("NPC_WanderTest")) || Name.Contains(TEXT("KindWitch")))return TEXT("forest_witch");return NAME_None;}
 bool AForestNPCInteraction::CanReach(ACharacter* C) const
 {
  auto* PC=Player.Get();if(!PC || !PC->GetPawn() || !C || PC->GetViewTarget()!=PC->GetPawn())return false;
@@ -125,16 +136,12 @@ void AForestNPCInteraction::CancelNpcFinder()
  FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));
 }
 ACharacter* AForestNPCInteraction::FindCharacterByPersona(const FName Persona) const
-{for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(PersonaId(*It)==Persona && Cast<AForestRoadAIController>(It->GetController()))return *It;return nullptr;}
-bool AForestNPCInteraction::FindFeeItem(FString& OutItem) const
+{for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(!Persona.IsNone() && PersonaId(*It)==Persona)return *It;return nullptr;}
+TArray<FString> AForestNPCInteraction::GetFeeItems() const
 {
- OutItem.Reset();const auto* PC=Player.Get();APawn* Pawn=nullptr;if(PC)Pawn=PC->GetPawn();if(!Pawn)return false;
- auto* Map=FindFProperty<FMapProperty>(Pawn->GetClass(),TEXT("Backpack"));auto* Key=Map?CastField<FStrProperty>(Map->KeyProp):nullptr;auto* Value=Map?CastField<FIntProperty>(Map->ValueProp):nullptr;if(!Map || !Key || !Value)return false;
- FScriptMapHelper Helper(Map,Map->ContainerPtrToValuePtr<void>(Pawn));TArray<FString> Available;
- for(int32 I=0;I<Helper.GetMaxIndex();++I)if(Helper.IsValidIndex(I) && Value->GetPropertyValue(Helper.GetValuePtr(I))>0)Available.Add(Key->GetPropertyValue(Helper.GetKeyPtr(I)));
- if(Available.IsEmpty())return false;
- if(auto* Last=FindFProperty<FStrProperty>(Pawn->GetClass(),TEXT("LastPicked"))){const FString Preferred=Last->GetPropertyValue_InContainer(Pawn);if(Available.Contains(Preferred)){OutItem=Preferred;return true;}}
- Available.Sort();OutItem=Available[0];return true;
+ TArray<FString> Items;const auto* PC=Player.Get();APawn* Pawn=nullptr;if(PC)Pawn=PC->GetPawn();if(!Pawn)return Items;
+ auto* Map=FindFProperty<FMapProperty>(Pawn->GetClass(),TEXT("Backpack"));auto* Key=Map?CastField<FStrProperty>(Map->KeyProp):nullptr;auto* Value=Map?CastField<FIntProperty>(Map->ValueProp):nullptr;if(!Key || !Value)return Items;
+ FScriptMapHelper Helper(Map,Map->ContainerPtrToValuePtr<void>(Pawn));for(int32 I=0;I<Helper.GetMaxIndex();++I)if(Helper.IsValidIndex(I) && Value->GetPropertyValue(Helper.GetValuePtr(I))>0)Items.Add(Key->GetPropertyValue(Helper.GetKeyPtr(I)));Items.Sort();return Items;
 }
 void AForestNPCInteraction::RebuildBackpackList() const
 {
@@ -185,15 +192,19 @@ void AForestNPCInteraction::HandleTravelNarrative(const FForestTravelNarrativeRe
 }
 void AForestNPCInteraction::SelectNpcForFinding(const FName Persona)
 {
- if(FinderStage!=EFinderStage::Selecting && FinderStage!=EFinderStage::Confirming)return;PendingFinderPersona=Persona;FindFeeItem(PendingFeeItem);FinderStage=EFinderStage::Confirming;
- if(Widget){auto* Character=FindCharacterByPersona(Persona);Widget->ShowFinderConfirmation(Character?CharacterName(Character):(Persona==TEXT("natta")?TEXT("Natta"):Persona==TEXT("fawnia")?TEXT("Fawnia"):TEXT("森林女巫")),PendingFeeItem);}
+ if(FinderStage!=EFinderStage::Selecting && FinderStage!=EFinderStage::Confirming)return;PendingFinderPersona=Persona;PendingFeeItem.Reset();FinderStage=EFinderStage::Confirming;
+ if(Widget){auto* Character=FindCharacterByPersona(Persona);Widget->ShowFinderConfirmation(Character?CharacterName(Character):(Persona==TEXT("natta")?TEXT("Natta"):Persona==TEXT("fawnia")?TEXT("Fawnia"):TEXT("森林女巫")),GetFeeItems());}
+}
+void AForestNPCInteraction::SelectFeeItem(const FString& Item)
+{
+ if(FinderStage!=EFinderStage::Confirming)return;PendingFeeItem=GetFeeItems().Contains(Item)?Item:FString();if(Widget)Widget->ShowSelectedFee(PendingFeeItem);
 }
 void AForestNPCInteraction::ConfirmNpcFinding()
 {
- if(FinderStage!=EFinderStage::Confirming)return;auto* Target=FindCharacterByPersona(PendingFinderPersona);
+ if(FinderStage!=EFinderStage::Confirming || PendingFeeItem.IsEmpty())return;auto* Target=FindCharacterByPersona(PendingFinderPersona);
  if(!Target){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();FinderNotice=TEXT("这位 NPC 当前不在场景中，没有扣除物品。");FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;if(Widget)Widget->ShowMessage(TEXT("无法寻找"),TEXT(""),FinderNotice);return;}
  if(!CanReach(Target) && !HasCompletePathTo(Target)){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();FinderNotice=TEXT("目前没有可到达这位 NPC 的完整路线，没有扣除物品。");FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;if(Widget)Widget->ShowMessage(TEXT("无法寻找"),TEXT(""),FinderNotice);return;}
- FString Fee;if(!FindFeeItem(Fee) || !ConsumeFeeItem(Fee)){PendingFeeItem.Reset();if(Widget)Widget->ShowFinderConfirmation(CharacterName(Target),PendingFeeItem);return;}
+ const FString Fee=PendingFeeItem;if(!GetFeeItems().Contains(Fee) || !ConsumeFeeItem(Fee)){PendingFeeItem.Reset();if(Widget)Widget->ShowFinderConfirmation(CharacterName(Target),GetFeeItems());return;}
  SpentFeeItem=Fee;FinderTarget=Target;FinderStage=EFinderStage::Travelling;FinderNextMove=0;CloseNpcFinderMenu();if(auto* AI=Cast<AForestRoadAIController>(Target->GetController()))AI->CancelPlayerApproach();RequestTravelNarrative(Fee,Target);UpdateNpcFinder();
 }
 void AForestNPCInteraction::StopNpcFinder(const FString& Notice,const bool bRefundFee)
@@ -218,9 +229,10 @@ void AForestNPCInteraction::UpdateNpcFinder()
 }
 bool AForestNPCInteraction::OpenInteraction(ACharacter* C,const bool bFirstDayTutorial)
 {
- auto* PC=Player.Get();auto* AI=C?Cast<AForestRoadAIController>(C->GetController()):nullptr;
- if(!PC || Active.IsValid() || !AI || !Dialogue || !CanReach(C) || !AI->BeginInteraction(PC->GetPawn()))return false;
- Dialogue->SetOfflineTestMode(bOfflineTestMode);const bool Began=bFirstDayTutorial?Dialogue->BeginFirstDayMessengerTutorial():Dialogue->BeginConversation(PersonaId(C));if(!Began){AI->EndInteraction();return false;}
+ auto* PC=Player.Get();auto* AI=C?Cast<AAIController>(C->GetController()):nullptr;auto* RoadAI=Cast<AForestRoadAIController>(AI);
+ if(!PC || Active.IsValid() || !AI || !Dialogue || PersonaId(C).IsNone() || !CanReach(C))return false;
+ if(RoadAI){if(!RoadAI->BeginInteraction(PC->GetPawn()))return false;}else AI->StopMovement();
+ Dialogue->SetOfflineTestMode(bOfflineTestMode);const bool Began=bFirstDayTutorial?Dialogue->BeginFirstDayMessengerTutorial():Dialogue->BeginConversation(PersonaId(C));if(!Began){if(RoadAI)RoadAI->EndInteraction();return false;}
  Active=AI;PC->SetIgnoreMoveInput(true);PC->SetIgnoreLookInput(true);bLockedMovement=true;bPreviousMouse=PC->bShowMouseCursor;PC->bShowMouseCursor=true;
  RefreshConversation();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Widget->TakeWidget());Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);PC->SetInputMode(Mode);Widget->FocusInput();return true;
 }
@@ -242,7 +254,7 @@ void AForestNPCInteraction::RefreshConversation(){if(Widget && Dialogue && Activ
 void AForestNPCInteraction::InteractNearby(){if(!bSuppressInteractUntilRelease && Nearby.IsValid() && !Active.IsValid())TryInteractWith(Nearby.Get());}
 void AForestNPCInteraction::FinishInteraction()
 {
- if(Dialogue && Active.IsValid())Dialogue->EndConversation();if(auto* AI=Active.Get())AI->EndInteraction();Active.Reset();bSuppressInteractUntilRelease=true;
+ if(Dialogue && Active.IsValid())Dialogue->EndConversation();if(auto* AI=Cast<AForestRoadAIController>(Active.Get()))AI->EndInteraction();Active.Reset();bSuppressInteractUntilRelease=true;
  if(bLockedMovement){if(auto* PC=Player.Get()){PC->SetIgnoreMoveInput(false);PC->SetIgnoreLookInput(false);PC->bShowMouseCursor=bPreviousMouse;PC->SetInputMode(FInputModeGameOnly());}bLockedMovement=false;}
  if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));
 }
@@ -251,16 +263,26 @@ void AForestNPCInteraction::Tick(float DT)
  Super::Tick(DT);auto* PC=Player.Get();if(!PC){PC=UGameplayStatics::GetPlayerController(this,0);Player=PC;}if(!PC || !PC->GetPawn())return;
  if(!Dialogue){Dialogue=GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();if(Dialogue)Dialogue->OnConversationUpdated.AddDynamic(this,&AForestNPCInteraction::RefreshConversation);}
  if(!Widget){Widget=CreateWidget<UForestNPCInteractionWidget>(PC);if(Widget){Widget->Manager=this;Widget->AddToViewport(20);Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));}}if(!Widget)return;
- EnableInput(PC);if(InputComponent && !bInputBound){auto& InteractBinding=InputComponent->BindKey(EKeys::E,IE_Pressed,this,&AForestNPCInteraction::InteractNearby);InteractBinding.bConsumeInput=true;auto& FinderBinding=InputComponent->BindKey(EKeys::V,IE_Pressed,this,&AForestNPCInteraction::ToggleNpcFinder);FinderBinding.bConsumeInput=true;bInputBound=true;}
+ EnableInput(PC);if(InputComponent && !bInputBound){auto& InteractBinding=InputComponent->BindKey(EKeys::E,IE_Pressed,this,&AForestNPCInteraction::InteractNearby);InteractBinding.bConsumeInput=false;auto& FinderBinding=InputComponent->BindKey(EKeys::V,IE_Pressed,this,&AForestNPCInteraction::ToggleNpcFinder);FinderBinding.bConsumeInput=true;bInputBound=true;}
  if(FinderStage==EFinderStage::Travelling){UpdateNpcFinder();return;}
  if(FinderStage==EFinderStage::Selecting || FinderStage==EFinderStage::Confirming)return;
  UpdateFirstDayTutorial();
- if(Active.IsValid()){if(PC->WasInputKeyJustPressed(EKeys::Escape) || PC->GetViewTarget()!=PC->GetPawn() || !Active->GetPawn() || FVector::Dist(Active->GetPawn()->GetActorLocation(),PC->GetPawn()->GetActorLocation())>InteractionRange*1.8f)FinishInteraction();return;}
+ if(Active.IsValid()){if(!Cast<AForestRoadAIController>(Active.Get()))Active->StopMovement();if(PC->WasInputKeyJustPressed(EKeys::Escape) || PC->GetViewTarget()!=PC->GetPawn() || !Active->GetPawn() || FVector::Dist(Active->GetPawn()->GetActorLocation(),PC->GetPawn()->GetActorLocation())>InteractionRange*1.8f)FinishInteraction();return;}
  if(bLockedMovement)FinishInteraction();if(bSuppressInteractUntilRelease){if(!PC->IsInputKeyDown(EKeys::E))bSuppressInteractUntilRelease=false;else return;}
- ACharacter* Nearest=nullptr;float Distance=InteractionRange;for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(Cast<AForestRoadAIController>(It->GetController())){const float D=FVector::Dist(It->GetActorLocation(),PC->GetPawn()->GetActorLocation());if(D<Distance && CanReach(*It)){Distance=D;Nearest=*It;}}
+ ACharacter* Nearest=nullptr;float Distance=InteractionRange;for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(!PersonaId(*It).IsNone() && Cast<AAIController>(It->GetController())){const float D=FVector::Dist(It->GetActorLocation(),PC->GetPawn()->GetActorLocation());if(D<Distance && CanReach(*It)){Distance=D;Nearest=*It;}}
  Nearby=Nearest;
  const double Now=GetWorld()->GetTimeSeconds();if(Now<FinderNoticeUntil){Widget->ShowMessage(TEXT("寻找 NPC"),TEXT(""),FinderNotice);return;}
  Widget->ShowMessage(TEXT(""),TEXT(""),Nearest?FString::Printf(TEXT("E：与 %s 交谈　V：寻找 NPC"),*CharacterName(Nearest)):TEXT("V：寻找 NPC"));
 }
 void AForestNPCInteraction::EndPlay(const EEndPlayReason::Type Reason)
 {if(auto* Messenger=TutorialMessenger.Get())if(auto* AI=Cast<AForestRoadAIController>(Messenger->GetController()))AI->CancelPlayerApproach();if(FinderStage==EFinderStage::Travelling)StopNpcFinder(TEXT(""),false);else if(FinderStage!=EFinderStage::Closed){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();}FinishInteraction();if(Dialogue)Dialogue->OnConversationUpdated.RemoveDynamic(this,&AForestNPCInteraction::RefreshConversation);if(Widget)Widget->RemoveFromParent();Super::EndPlay(Reason);}
+
+void UForestNPCInteractionWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+ Super::OnWorldBeginPlay(InWorld);
+ if(InWorld.IsGameWorld() && InWorld.GetGameInstance() && InWorld.GetGameInstance()->GetWorld()==&InWorld && InWorld.GetNetMode()!=NM_DedicatedServer && !UGameplayStatics::GetActorOfClass(&InWorld,AForestNPCInteraction::StaticClass()))
+ {
+  FActorSpawnParameters Params;Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  InWorld.SpawnActor<AForestNPCInteraction>(AForestNPCInteraction::StaticClass(),FTransform::Identity,Params);
+ }
+}

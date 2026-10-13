@@ -56,6 +56,15 @@ public:
  UFUNCTION() void Clicked();
 };
 UCLASS()
+class DEMO3_UE58_API UForestHarvestNoticeWidget : public UUserWidget
+{
+ GENERATED_BODY()
+public:
+ UPROPERTY(Transient) TObjectPtr<UTextBlock> Text;
+protected:
+ virtual TSharedRef<SWidget> RebuildWidget() override;
+};
+UCLASS()
 class DEMO3_UE58_API UForestMagicInventoryWidget : public UUserWidget
 {
  GENERATED_BODY()
