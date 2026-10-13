@@ -3,17 +3,16 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "GameFramework/SaveGame.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Button.h"
 #include "AlchemyGameplayTypes.h"
 #include "ForestHarvestMagic.generated.h"
 
 class UForestHarvestMagic;
-class UVerticalBox;
-class UTextBlock;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UNiagaraComponent;
+class STextBlock;
+class SVerticalBox;
 
 USTRUCT(BlueprintType)
 struct DEMO3_UE58_API FForestMagicItem
@@ -47,20 +46,21 @@ public:
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };
 UCLASS()
-class DEMO3_UE58_API UForestMagicItemButton : public UButton
-{
- GENERATED_BODY()
-public:
- TWeakObjectPtr<class UForestMagicInventoryWidget> Owner;
- FString Key;
- UFUNCTION() void Clicked();
-};
-UCLASS()
 class DEMO3_UE58_API UForestHarvestNoticeWidget : public UUserWidget
 {
  GENERATED_BODY()
 public:
- UPROPERTY(Transient) TObjectPtr<UTextBlock> Text;
+ TSharedPtr<STextBlock> Text;
+protected:
+ virtual TSharedRef<SWidget> RebuildWidget() override;
+};
+UCLASS()
+class DEMO3_UE58_API UForestFieldHUDWidget : public UUserWidget
+{
+ GENERATED_BODY()
+public:
+ TSharedPtr<STextBlock> Counts;
+ TSharedPtr<STextBlock> Action;
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
 };
@@ -76,8 +76,8 @@ public:
  void Select(const FString& Key);
  UFUNCTION() void Close();
 private:
- UPROPERTY() TObjectPtr<UVerticalBox> List;
- UPROPERTY() TObjectPtr<UTextBlock> Detail;
+ TSharedPtr<SVerticalBox> List;
+ TSharedPtr<STextBlock> Detail;
  FString Selected;
 };
 
@@ -101,7 +101,8 @@ private:
  UPROPERTY() TArray<TObjectPtr<UForestHarvestRequest>> Requests;
  UPROPERTY() TObjectPtr<UForestMagicInventoryWidget> Inventory;
  UPROPERTY() TObjectPtr<UUserWidget> NoticeWidget;
- UPROPERTY() TObjectPtr<UTextBlock> Notice;
+ UPROPERTY() TObjectPtr<UForestFieldHUDWidget> FieldHUD;
+ TSharedPtr<STextBlock> Notice;
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  TWeakObjectPtr<class APlayerController> Player;
  TWeakObjectPtr<class APawn> BagOwner;
@@ -110,6 +111,7 @@ private:
  bool bOldCursor=false;
  float NoticeUntil=0;
  float PollTime=0;
+ float FieldUITime=0;
  struct FVisual
  {
   TWeakObjectPtr<AActor> Actor;
@@ -126,6 +128,7 @@ private:
  TMap<TWeakObjectPtr<UStaticMeshComponent>,bool> MushroomVisibility;
  TMap<FString,TWeakObjectPtr<UStaticMeshComponent>> JustHarvested;
  void Setup();
+ void RefreshFieldUI();
  void Harvest(const FString& Source,int32 Count);
  void Adjust(const FString& Key,int32 Delta);
  void RefreshLegacyHUD();

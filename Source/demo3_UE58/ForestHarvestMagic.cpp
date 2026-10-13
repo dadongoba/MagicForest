@@ -2,13 +2,6 @@
 #include "ForestNPCInteraction.h"
 #include "DailyMushroomSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
-#include "Blueprint/WidgetTree.h"
-#include "Components/Border.h"
-#include "Components/VerticalBox.h"
-#include "Components/HorizontalBox.h"
-#include "Components/TextBlock.h"
-#include "Components/ScrollBox.h"
-#include "Components/SizeBox.h"
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -30,6 +23,19 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "InputCoreTypes.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/TextBlock.h"
+#include "Components/Button.h"
+#include "Components/Border.h"
+#include "Styling/CoreStyle.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/SOverlay.h"
+#include "Widgets/Text/STextBlock.h"
 
 namespace HarvestMagic
 {
@@ -48,40 +54,112 @@ namespace HarvestMagic
   auto* System=LoadObject<UNiagaraSystem>(nullptr,*Path);
   return System?UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,System,Location,FRotator::ZeroRotator,FVector(Scale),true,true):nullptr;
  }
+ const FLinearColor Ink(0.012f,0.022f,0.018f,0.98f);
+ const FLinearColor Moss(0.055f,0.11f,0.075f,0.98f);
+ const FLinearColor Gold(0.72f,0.56f,0.25f,1.f);
+ const FLinearColor Parchment(0.93f,0.87f,0.68f,1.f);
+ const FLinearColor Muted(0.62f,0.70f,0.58f,1.f);
+ FSlateFontInfo Font(const int32 Size,const bool bBold=false){return FCoreStyle::GetDefaultFontStyle(bBold?TEXT("Bold"):TEXT("Regular"),Size);}
+ const FSlateBrush* Fill(){return FCoreStyle::Get().GetBrush(TEXT("WhiteBrush"));}
 }
 void UForestHarvestRequest::Completed(bool Success,const FString& Text){if(Owner.IsValid())Owner->HandleResponse(this,Success,Text);}
 FString UForestHarvestMagic::ElementText(EAlchemyElement E){return E==EAlchemyElement::Wind?TEXT("风"):E==EAlchemyElement::Water?TEXT("水"):TEXT("火");}
-void UForestMagicItemButton::Clicked(){if(Owner.IsValid())Owner->Select(Key);}
+TSharedRef<SWidget> UForestFieldHUDWidget::RebuildWidget()
+{
+ return SNew(SOverlay)
+ +SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(FMargin(28,24))
+ [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Ink).Padding(FMargin(16,10))
+  [SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("森林手札 · 采集记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Gold)]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)[SAssignNew(Counts,STextBlock).Font(HarvestMagic::Font(15,true)).ColorAndOpacity(HarvestMagic::Parchment)]]]
+ +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(FMargin(0,0,0,115))
+ [SAssignNew(Action,STextBlock).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Parchment).ShadowOffset(FVector2D(1,1)).ShadowColorAndOpacity(FLinearColor::Black)];
+}
+void UForestHarvestMagic::RefreshFieldUI()
+{
+ if(!FieldHUD || !FieldHUD->Counts.IsValid())return;
+ int32 Total=0,Kinds=0;for(const auto& Pair:ReadBag())if(Pair.Value>0){Total+=Pair.Value;++Kinds;}
+ FieldHUD->Counts->SetText(FText::FromString(FString::Printf(TEXT("背包  %d 件  ·  %d 种"),Total,Kinds)));
+ FString Action;
+ TArray<UUserWidget*> Widgets;UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(),Widgets,UUserWidget::StaticClass(),false);
+ for(auto* Widget:Widgets)
+ {
+  if(!Widget || !Widget->WidgetTree || Widget==Inventory || Widget==NoticeWidget || Widget==FieldHUD || Widget->IsA<UForestNPCInteractionWidget>())continue;
+  Widget->WidgetTree->ForEachWidget([&](UWidget* Child)
+  {
+   if(auto* Text=Cast<UTextBlock>(Child))
+   {
+    const FString Value=Text->GetText().ToString();
+    if(Value.Contains(TEXT("已采蘑菇"))){Text->SetVisibility(ESlateVisibility::Collapsed);return;}
+    if(Value.Contains(TEXT("对准蘑菇"))){if(Text->GetVisibility()!=ESlateVisibility::Hidden)Action=Value.Replace(TEXT("\\n"),TEXT(" · "));Text->SetRenderOpacity(0.f);return;}
+    if(Widget->GetClass()->GetName().Contains(TEXT("Cauldron"))){Text->SetColorAndOpacity(HarvestMagic::Parchment);auto Font=Text->GetFont();Font.Size=16;Text->SetFont(Font);}
+   }
+   if(Widget->GetClass()->GetName().Contains(TEXT("Cauldron")))
+   {
+    if(auto* Border=Cast<UBorder>(Child))Border->SetBrushColor(HarvestMagic::Ink);
+    if(auto* Button=Cast<UButton>(Child)){FButtonStyle Style=Button->GetStyle();Style.Normal.TintColor=HarvestMagic::Moss;Style.Hovered.TintColor=HarvestMagic::Gold;Style.Pressed.TintColor=FLinearColor(0.2f,0.3f,0.18f,1.f);Button->SetStyle(Style);}
+   }
+  });
+ }
+ FieldHUD->Action->SetText(FText::FromString(Action));
+}
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
 {
- if(!WidgetTree)WidgetTree=NewObject<UWidgetTree>(this,TEXT("HarvestNoticeTree"));
- auto* Border=WidgetTree->ConstructWidget<UBorder>();WidgetTree->RootWidget=Border;
- Border->SetBrushColor(FLinearColor(.02,.03,.025,.9));Border->SetPadding(FMargin(16));
- Text=WidgetTree->ConstructWidget<UTextBlock>();Text->SetWrapTextAt(600);Border->SetContent(Text);
- return Super::RebuildWidget();
+ return SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Gold).Padding(1.f)
+ [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Ink).Padding(FMargin(16,12))
+  [SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT("✦"))).Font(HarvestMagic::Font(22,true)).ColorAndOpacity(HarvestMagic::Gold)]
+   +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("MIMIC BOOK · 魔法书回响"))).Font(HarvestMagic::Font(9,true)).ColorAndOpacity(HarvestMagic::Muted)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(13)).ColorAndOpacity(HarvestMagic::Parchment).AutoWrapText(true)]]]];
 }
 TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
 {
- SetIsFocusable(true);if(!WidgetTree)WidgetTree=NewObject<UWidgetTree>(this);
- auto* Border=WidgetTree->ConstructWidget<UBorder>();WidgetTree->RootWidget=Border;Border->SetPadding(FMargin(28));Border->SetBrushColor(FLinearColor(.025,.035,.04,.97));
- auto* Box=WidgetTree->ConstructWidget<UVerticalBox>();Border->SetContent(Box);
- auto* Title=WidgetTree->ConstructWidget<UTextBlock>();Title->SetText(FText::FromString(TEXT("背包 · 点击物品查看描述（B / Esc 关闭）")));Box->AddChildToVerticalBox(Title);
- auto* Size=WidgetTree->ConstructWidget<USizeBox>();Size->SetHeightOverride(350);Box->AddChildToVerticalBox(Size);
- auto* Scroll=WidgetTree->ConstructWidget<UScrollBox>();Size->SetContent(Scroll);List=WidgetTree->ConstructWidget<UVerticalBox>();Scroll->AddChild(List);
- Detail=WidgetTree->ConstructWidget<UTextBlock>();Detail->SetWrapTextAt(650);Box->AddChildToVerticalBox(Detail);
- auto* Button=WidgetTree->ConstructWidget<UButton>();auto* Text=WidgetTree->ConstructWidget<UTextBlock>();Text->SetText(FText::FromString(TEXT("合上背包")));Button->SetContent(Text);Box->AddChildToVerticalBox(Button);Button->OnClicked.AddDynamic(this,&UForestMagicInventoryWidget::Close);
- return Super::RebuildWidget();
+ SetIsFocusable(true);
+ return SNew(SOverlay)
+ +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+ [SNew(SBox).WidthOverride(940.f).HeightOverride(560.f)
+  [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Gold).Padding(1.f)
+   [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Ink).Padding(0.f)
+    [SNew(SVerticalBox)
+     +SVerticalBox::Slot().AutoHeight()
+     [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Moss).Padding(FMargin(22,15))
+      [SNew(SHorizontalBox)
+       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT("◇"))).Font(HarvestMagic::Font(24,true)).ColorAndOpacity(HarvestMagic::Gold)]
+       +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("THE FORAGER'S SATCHEL"))).Font(HarvestMagic::Font(9,true)).ColorAndOpacity(HarvestMagic::Muted)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("采集者背包"))).Font(HarvestMagic::Font(24,true)).ColorAndOpacity(HarvestMagic::Parchment)]]
+       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("B / ESC 关闭"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Muted)]]]
+     +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(22,18))
+     [SNew(SHorizontalBox)
+      +SHorizontalBox::Slot().FillWidth(.43f).Padding(0,0,12,0)
+      [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor(0.025f,0.045f,0.035f,1.f)).Padding(FMargin(12))
+       [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(List,SVerticalBox)]]]
+      +SHorizontalBox::Slot().FillWidth(.57f).Padding(12,0,0,0)
+      [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor(0.045f,0.065f,0.048f,1.f)).Padding(FMargin(22))
+       [SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("物品记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Gold)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Parchment).AutoWrapText(true)]]]]
+     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(22,0,22,18))
+     [SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.16f,0.18f,0.15f,1.f)).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
+      [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(HarvestMagic::Parchment)]]
+    ]]]];
 }
 void UForestMagicInventoryWidget::Refresh()
 {
- if(!List || !Owner.IsValid())return;List->ClearChildren();auto Bag=Owner->ReadBag();TArray<FString> Keys;Bag.GetKeys(Keys);Keys.Sort();
- for(const auto& Key:Keys){if(Bag[Key]<=0)continue;auto* Button=WidgetTree->ConstructWidget<UForestMagicItemButton>();Button->Owner=this;Button->Key=Key;auto* Label=WidgetTree->ConstructWidget<UTextBlock>();Label->SetText(FText::FromString(FString::Printf(TEXT("%s  ×%d"),*Key,Bag[Key])));Button->SetContent(Label);List->AddChildToVerticalBox(Button);Button->OnClicked.AddDynamic(Button,&UForestMagicItemButton::Clicked);}
- if(Keys.IsEmpty()){Detail->SetText(FText::FromString(TEXT("背包里还没有物品。采摘蘑菇，让魔法书唤出其中的元素。")));Selected.Reset();}
+ if(!List.IsValid() || !Owner.IsValid())return;List->ClearChildren();auto Bag=Owner->ReadBag();TArray<FString> AllKeys;Bag.GetKeys(AllKeys);AllKeys.Sort();TArray<FString> Keys;
+ for(const auto& Key:AllKeys)if(Bag[Key]>0){Keys.Add(Key);List->AddSlot().AutoHeight().Padding(0,0,0,7)
+  [SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.07f,0.12f,0.085f,1.f)).ContentPadding(FMargin(12,9)).OnClicked_Lambda([this,Key](){Select(Key);return FReply::Handled();})
+   [SNew(SHorizontalBox)
+    +SHorizontalBox::Slot().AutoWidth().Padding(0,0,9,0)[SNew(STextBlock).Text(FText::FromString(TEXT("✦"))).Font(HarvestMagic::Font(13,true)).ColorAndOpacity(HarvestMagic::Gold)]
+    +SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(Key)).Font(HarvestMagic::Font(12,true)).ColorAndOpacity(HarvestMagic::Parchment).AutoWrapText(true)]
+    +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("×%d"),Bag[Key]))).Font(HarvestMagic::Font(11,true)).ColorAndOpacity(HarvestMagic::Muted)]]];}
+ if(Keys.IsEmpty()){Detail->SetText(FText::FromString(TEXT("背包里还没有物品。\n\n采摘蘑菇后，魔法书会把其中的火、风或水凝成一件可以交付、查看和记住的小物。")));Selected.Reset();}
  else if(Selected.IsEmpty() || !Bag.Contains(Selected))Select(Keys[0]);else Select(Selected);
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
 {
- Selected=Key;FForestMagicItem Item;if(Owner.IsValid() && Owner->FindItem(Key,Item))Detail->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s%d\n%s"),*Item.Name,*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue,*Item.Description)));else Detail->SetText(FText::FromString(Key+TEXT("\n这件物品尚未留下魔法书的记录。")));
+ Selected=Key;FForestMagicItem Item;if(Owner.IsValid() && Owner->FindItem(Key,Item))Detail->SetText(FText::FromString(FString::Printf(TEXT("%s\n\n%s元素 · %d 点\n采集于第 %d 天\n\n%s\n\n%s"),*Item.Name,*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue,Item.HarvestDay,*Item.Description,Item.bGeneratedByAI?TEXT("由 DeepSeek 为这件小物留下名字与描述。 "):TEXT("魔法书保留的本地记录。"))));else Detail->SetText(FText::FromString(Key+TEXT("\n\n这件物品尚未留下魔法书的详细记录。")));
 }
 void UForestMagicInventoryWidget::Close(){if(Owner.IsValid())Owner->ToggleInventory();}
 FReply UForestMagicInventoryWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape || E.GetKey()==EKeys::B){Close();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
@@ -105,6 +183,7 @@ void UForestHarvestMagic::Setup()
  auto* PC=UGameplayStatics::GetPlayerController(GetWorld(),0);if(!PC || !PC->GetPawn())return;Player=PC;BagOwner=PC->GetPawn();if(!FindFProperty<FMapProperty>(BagOwner->GetClass(),TEXT("Backpack")))return;
  Ledger=Cast<UForestMagicItemSave>(UGameplayStatics::LoadGameFromSlot(HarvestMagic::Slot,0));if(!Ledger)Ledger=NewObject<UForestMagicItemSave>(this);
  Input=NewObject<UInputComponent>(PC);Input->RegisterComponent();Input->Priority=50;Input->BindKey(EKeys::B,IE_Pressed,this,&UForestHarvestMagic::ToggleInventory);PC->PushInputComponent(Input);Previous=ReadBag();bReady=true;
+ FieldHUD=CreateWidget<UForestFieldHUDWidget>(PC);if(FieldHUD){FieldHUD->AddToViewport(10);FieldHUD->SetVisibility(ESlateVisibility::HitTestInvisible);}
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))MushroomVisibility.Add(M,It->IsHidden());
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
  if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetAlignmentInViewport(FVector2D(.5,0));int32 ScreenX,ScreenY;PC->GetViewportSize(ScreenX,ScreenY);NoticeWidget->SetPositionInViewport(FVector2D(ScreenX*.5f,60),false);NoticeWidget->SetDesiredSizeInViewport(FVector2D(620,160));NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
@@ -113,7 +192,7 @@ void UForestHarvestMagic::ToggleInventory()
 {
  auto* PC=Player.Get();if(!PC)return;if(Inventory && Inventory->IsInViewport()){Inventory->RemoveFromParent();PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bOldCursor;return;}
  if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));Manager && (Manager->IsDialogueOpen() || Manager->IsFinderMenuOpen()))return;
- if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);Inventory->SetDesiredSizeInViewport(FVector2D(720,560));Inventory->SetPositionInViewport(FVector2D(60,60));Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
+ if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);int32 ScreenX=1920,ScreenY=1080;PC->GetViewportSize(ScreenX,ScreenY);Inventory->SetDesiredSizeInViewport(FVector2D(ScreenX,ScreenY));Inventory->SetPositionInViewport(FVector2D::ZeroVector,false);Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
 }
 FString UForestHarvestMagic::Prompt(const FForestMagicItem& I)
 {
@@ -148,7 +227,7 @@ void UForestHarvestMagic::HandleResponse(UForestHarvestRequest* Request,bool Suc
 }
 void UForestHarvestMagic::ShowResult(const FForestMagicItem& I)
 {
- if(!Notice)return;Notice->SetText(FText::FromString(FString::Printf(TEXT("蘑菇散作星尘，魔法书将其中的%s凝成了一件小物。\n获得：%s · %s%d\n%s\n已收入背包 · 按 B 查看"),*ElementText(I.Element),*I.Name,*ElementText(I.Element),I.PipValue,*I.Description)));NoticeUntil=GetWorld()->GetTimeSeconds()+8;NoticeWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+ if(!Notice.IsValid())return;Notice->SetText(FText::FromString(FString::Printf(TEXT("蘑菇散作星尘，魔法书将其中的%s凝成了一件小物。\n获得：%s · %s%d\n%s\n已收入背包 · 按 B 查看"),*ElementText(I.Element),*I.Name,*ElementText(I.Element),I.PipValue,*I.Description)));NoticeUntil=GetWorld()->GetTimeSeconds()+8;NoticeWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 void UForestHarvestMagic::BeginVisual(const FString& Source,EAlchemyElement Element)
 {
@@ -169,9 +248,10 @@ void UForestHarvestMagic::UpdateVisuals(float DT)
 void UForestHarvestMagic::Tick(float DT)
 {
  if(!GetWorld() || !GetWorld()->IsGameWorld())return;if(!bReady){Setup();return;}UpdateVisuals(DT);if(NoticeWidget && GetWorld()->GetTimeSeconds()>NoticeUntil)NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);if(!BagOwner.IsValid())return;
+ FieldUITime+=DT;if(FieldUITime>=.25f){FieldUITime=0;RefreshFieldUI();}
  PollTime+=DT;if(PollTime<.05f)return;PollTime=0;
  JustHarvested.Reset();for(auto& Pair:MushroomVisibility)if(auto* Mesh=Pair.Key.Get()){const bool Hidden=Mesh->GetOwner()->IsHidden();if(Hidden && !Pair.Value && Mesh->GetStaticMesh())JustHarvested.Add(HarvestMagic::BaseMushroom(Mesh->GetStaticMesh()->GetName()),Mesh);Pair.Value=Hidden;}
  const auto Bag=ReadBag();for(const auto& Pair:Bag){if(!Pair.Key.StartsWith(TEXT("SM_Env_Mushroom")))continue;const int Delta=Pair.Value-Previous.FindRef(Pair.Key);if(Delta>0)Harvest(Pair.Key,Delta);}Previous=ReadBag();
 }
 TStatId UForestHarvestMagic::GetStatId() const{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestHarvestMagic,STATGROUP_Tickables);}
-void UForestHarvestMagic::Deinitialize(){for(auto& R:Requests)if(R)R->Owner.Reset();Requests.Reset();for(auto& V:Visuals)if(V.Actor.IsValid())V.Actor->Destroy();Visuals.Reset();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);if(Inventory)Inventory->RemoveFromParent();if(NoticeWidget)NoticeWidget->RemoveFromParent();Super::Deinitialize();}
+void UForestHarvestMagic::Deinitialize(){for(auto& R:Requests)if(R)R->Owner.Reset();Requests.Reset();for(auto& V:Visuals)if(V.Actor.IsValid())V.Actor->Destroy();Visuals.Reset();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);if(Inventory)Inventory->RemoveFromParent();if(NoticeWidget)NoticeWidget->RemoveFromParent();if(FieldHUD)FieldHUD->RemoveFromParent();Super::Deinitialize();}

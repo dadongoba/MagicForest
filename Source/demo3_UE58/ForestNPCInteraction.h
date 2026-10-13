@@ -2,11 +2,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
-#include "Types/SlateEnums.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Widgets/Input/SComboBox.h"
 #include "ForestTravelNarrativeSubsystem.h"
 #include "ForestNPCInteraction.generated.h"
-class UComboBoxString;class UTextBlock;class UEditableTextBox;class UButton;class UScrollBox;class UVerticalBox;
+class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SVerticalBox;
 class AAIController;class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
 UCLASS()
 class DEMO3_UE58_API UForestNPCInteractionWidget : public UUserWidget
@@ -25,19 +25,20 @@ protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
  virtual FReply NativeOnPreviewKeyDown(const FGeometry& Geometry,const FKeyEvent& Event) override;
 private:
- UPROPERTY(Transient) TObjectPtr<UTextBlock> Title;
- UPROPERTY(Transient) TObjectPtr<UTextBlock> Message;
- UPROPERTY(Transient) TObjectPtr<UTextBlock> Prompt;
- UPROPERTY(Transient) TObjectPtr<UEditableTextBox> Input;
- UPROPERTY(Transient) TObjectPtr<UButton> Send;
- UPROPERTY(Transient) TObjectPtr<UButton> Close;
- UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroll;
- UPROPERTY(Transient) TObjectPtr<UVerticalBox> Conversation;
- UPROPERTY(Transient) TObjectPtr<UVerticalBox> FinderSelection;
- UPROPERTY(Transient) TObjectPtr<UVerticalBox> FinderConfirmation;
- UPROPERTY(Transient) TObjectPtr<UTextBlock> FinderFee;
- UPROPERTY(Transient) TObjectPtr<UButton> FinderConfirm;
- UPROPERTY(Transient) TObjectPtr<UComboBoxString> FinderItems;
+ TSharedPtr<SWidget> Root;
+ TSharedPtr<STextBlock> Title;
+ TSharedPtr<STextBlock> Message;
+ TSharedPtr<STextBlock> Prompt;
+ TSharedPtr<SEditableTextBox> Input;
+ TSharedPtr<SButton> Send;
+ TSharedPtr<SScrollBox> Scroll;
+ TSharedPtr<SVerticalBox> Conversation;
+ TSharedPtr<SVerticalBox> FinderSelection;
+ TSharedPtr<SVerticalBox> FinderConfirmation;
+ TSharedPtr<STextBlock> FinderFee;
+ TSharedPtr<SButton> FinderConfirm;
+ TSharedPtr<SComboBox<TSharedPtr<FString>>> FinderItems;
+ TArray<TSharedPtr<FString>> FinderOptions;
  bool bFinderVisible=false;
  UFUNCTION() void SendClicked();
  UFUNCTION() void CloseClicked();
@@ -45,9 +46,7 @@ private:
  UFUNCTION() void FindBlacksmithClicked();
  UFUNCTION() void FindMessengerClicked();
  UFUNCTION() void FinderConfirmClicked();
- UFUNCTION() void FeeItemChanged(FString Item,ESelectInfo::Type SelectionType);
  UFUNCTION() void FinderCancelClicked();
- UFUNCTION() void TextCommitted(const FText& Text,ETextCommit::Type Method);
 };
 UCLASS(Blueprintable)
 class DEMO3_UE58_API AForestNPCInteraction : public AActor
@@ -96,6 +95,7 @@ private:
  void UpdateFirstDayTutorial();
  void ToggleNpcFinder();
  void UpdateNpcFinder();
+ void UpdateNpcFinderFacing(float DeltaTime);
  void CloseNpcFinderMenu();
  void StopNpcFinder(const FString& Notice,bool bRefundFee);
  ACharacter* FindCharacterByPersona(FName Persona) const;

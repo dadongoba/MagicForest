@@ -1,0 +1,380 @@
+{
+	"comment": "ForestUI.uss - demo3_UE58 UI 重设计样式表 v1.0 (2026-10-14)",
+	"comment2": "设计主题: 森林手札 · 炼金工坊 (Forest Ledger & Alchemist Atelier)",
+	"comment3": "覆盖对象: UForestMagicInventoryWidget / UForestHarvestNoticeWidget / UForestNPCInteractionWidget / WBP_MushroomHUD / WBP_CauldronPanel",
+	"comment4": "注: USS 为纯 JSON, 本文件中的 comment 键仅为阅读便利, 实际加载时可删除",
+
+	"colors": {
+		"Forest.Ink.Base":       { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Ink.Sunken":     { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Moss.Header":    { "SpecifiedColor": { "R": 0.047, "G": 0.092, "B": 0.062, "A": 0.98 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Moss.Raised":    { "SpecifiedColor": { "R": 0.036, "G": 0.058, "B": 0.044, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Moss.Line":      { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Gold.Base":      { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Gold.Bright":    { "SpecifiedColor": { "R": 0.930, "G": 0.780, "B": 0.450, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Gold.Dim":       { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Gold.Pressed":   { "SpecifiedColor": { "R": 0.640, "G": 0.500, "B": 0.230, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Parchment":      { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Parchment.Dim":  { "SpecifiedColor": { "R": 0.760, "G": 0.710, "B": 0.580, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Sage.Muted":     { "SpecifiedColor": { "R": 0.550, "G": 0.645, "B": 0.520, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Element.Fire":   { "SpecifiedColor": { "R": 0.850, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Element.Wind":   { "SpecifiedColor": { "R": 0.420, "G": 0.770, "B": 0.540, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+		"Forest.Element.Water":  { "SpecifiedColor": { "R": 0.310, "G": 0.610, "B": 0.850, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+	},
+
+	"images": {
+		"Forest.Brush.White": {
+			"ImageType": "SlateBrush",
+			"DrawAs": "RoundedBox",
+			"ImageSize": { "X": 8, "Y": 8 },
+			"TintColor": { "SpecifiedColor": { "R": 1.0, "G": 1.0, "B": 1.0, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 0.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 0.0, "Top": 0.0, "Right": 0.0, "Bottom": 0.0 }
+			}
+		}
+	},
+
+	"classes": {
+		"Forest.Panel.Frame.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.930, "G": 0.780, "B": 0.450, "A": 0.35 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 1.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 12.0, "Top": 12.0, "Right": 12.0, "Bottom": 12.0 }
+			}
+		},
+		"Forest.Panel.Body.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 0.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 10.0, "Top": 10.0, "Right": 10.0, "Bottom": 10.0 }
+			}
+		},
+		"Forest.Panel.Header.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.047, "G": 0.092, "B": 0.062, "A": 0.98 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 0.0,
+				"RoundingType": "PerCorner",
+				"CornerRadius": { "Left": 10.0, "Top": 10.0, "Right": 10.0, "Bottom": 0.0 }
+			}
+		},
+		"Forest.Panel.Sunken.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 1.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+			}
+		},
+		"Forest.Panel.Raised.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.036, "G": 0.058, "B": 0.044, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 0.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+			}
+		},
+
+		"Forest.Card.Normal.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 1.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+			}
+		},
+		"Forest.Card.Hovered.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.036, "G": 0.058, "B": 0.044, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 1.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+			}
+		},
+		"Forest.Card.Selected.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 0.045, "G": 0.070, "B": 0.048, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 2.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+			}
+		},
+
+		"Forest.Accent.Bar.BorderStyle": {
+			"BackgroundColor": { "SpecifiedColor": { "R": 1.0, "G": 1.0, "B": 1.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+			"OutlineSettings": {
+				"Color": { "SpecifiedColor": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.0 }, "ColorUseRule": "UseColor_Specified" },
+				"Width": 0.0,
+				"RoundingType": "Uniform",
+				"CornerRadius": { "Left": 2.0, "Top": 2.0, "Right": 2.0, "Bottom": 2.0 }
+			}
+		},
+
+		"Forest.Button.Primary.ButtonStyle": {
+			"Normal": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.930, "G": 0.780, "B": 0.450, "A": 0.40 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Hovered": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.930, "G": 0.780, "B": 0.450, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 1.0, "G": 0.88, "B": 0.60, "A": 0.65 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Pressed": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.640, "G": 0.500, "B": 0.230, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Disabled": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.110, "G": 0.130, "B": 0.115, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.180, "G": 0.210, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"NormalPadding": { "Left": 0.0, "Top": 0.0, "Right": 0.0, "Bottom": 0.0 },
+			"ContentPadding": { "Left": 14.0, "Top": 8.0, "Right": 14.0, "Bottom": 8.0 },
+			"TextColorNormal":   { "SpecifiedColor": { "R": 0.055, "G": 0.045, "B": 0.020, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorHovered":  { "SpecifiedColor": { "R": 0.040, "G": 0.032, "B": 0.014, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorPressed":  { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorDisabled": { "SpecifiedColor": { "R": 0.400, "G": 0.400, "B": 0.370, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+
+		"Forest.Button.Secondary.ButtonStyle": {
+			"Normal": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.075, "G": 0.105, "B": 0.082, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Hovered": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.105, "G": 0.140, "B": 0.108, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Pressed": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.048, "G": 0.070, "B": 0.055, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Disabled": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.060, "G": 0.075, "B": 0.062, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.130, "B": 0.115, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"NormalPadding": { "Left": 0.0, "Top": 0.0, "Right": 0.0, "Bottom": 0.0 },
+			"ContentPadding": { "Left": 14.0, "Top": 8.0, "Right": 14.0, "Bottom": 8.0 },
+			"TextColorNormal":   { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorHovered":  { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorPressed":  { "SpecifiedColor": { "R": 0.760, "G": 0.710, "B": 0.580, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorDisabled": { "SpecifiedColor": { "R": 0.400, "G": 0.400, "B": 0.370, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+
+		"Forest.Button.Ghost.ButtonStyle": {
+			"Normal": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.60 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Hovered": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.036, "G": 0.058, "B": 0.044, "A": 0.85 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Pressed": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.90 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"Disabled": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.40 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.130, "B": 0.115, "A": 0.60 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 4.0, "Top": 4.0, "Right": 4.0, "Bottom": 4.0 }
+				}
+			},
+			"NormalPadding": { "Left": 0.0, "Top": 0.0, "Right": 0.0, "Bottom": 0.0 },
+			"ContentPadding": { "Left": 12.0, "Top": 7.0, "Right": 12.0, "Bottom": 7.0 },
+			"TextColorNormal":   { "SpecifiedColor": { "R": 0.550, "G": 0.645, "B": 0.520, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorHovered":  { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorPressed":  { "SpecifiedColor": { "R": 0.550, "G": 0.645, "B": 0.520, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"TextColorDisabled": { "SpecifiedColor": { "R": 0.300, "G": 0.320, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+
+		"Forest.Text.Display.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSerif", "Size": 32 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"ShadowOffset": { "X": 0.0, "Y": 1.5 },
+			"ShadowColorAndOpacity": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.55 }
+		},
+		"Forest.Text.Title.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSerif", "Size": 24 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"ShadowOffset": { "X": 0.0, "Y": 1.0 },
+			"ShadowColorAndOpacity": { "R": 0.0, "G": 0.0, "B": 0.0, "A": 0.45 }
+		},
+		"Forest.Text.Body.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSans", "Size": 14 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+		"Forest.Text.BodyDim.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSans", "Size": 14 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.760, "G": 0.710, "B": 0.580, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+		"Forest.Text.Caption.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSans", "Size": 10 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.550, "G": 0.645, "B": 0.520, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+		"Forest.Text.Gold.TextBlockStyle": {
+			"Font": { "Type": "FontValue", "Family": "/Game/UI/Fonts/ForestSans", "Size": 10 },
+			"ColorAndOpacity": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" }
+		},
+
+		"Forest.Input.Box.EditableTextBoxStyle": {
+			"BackgroundImageNormal": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.165, "B": 0.125, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+				}
+			},
+			"BackgroundImageHovered": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.400, "G": 0.330, "B": 0.180, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+				}
+			},
+			"BackgroundImageFocused": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.016, "G": 0.028, "B": 0.024, "A": 0.97 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.780, "G": 0.620, "B": 0.290, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+				}
+			},
+			"BackgroundImageReadOnly": {
+				"ImageType": "SlateBrush",
+				"DrawAs": "RoundedBox",
+				"ImageSize": { "X": 0, "Y": 0 },
+				"TintColor": { "SpecifiedColor": { "R": 0.010, "G": 0.019, "B": 0.016, "A": 0.60 }, "ColorUseRule": "UseColor_Specified" },
+				"OutlineSettings": {
+					"Color": { "SpecifiedColor": { "R": 0.110, "G": 0.130, "B": 0.115, "A": 0.60 }, "ColorUseRule": "UseColor_Specified" },
+					"Width": 1.0,
+					"RoundingType": "Uniform",
+					"CornerRadius": { "Left": 6.0, "Top": 6.0, "Right": 6.0, "Bottom": 6.0 }
+				}
+			},
+			"ForegroundColor":        { "SpecifiedColor": { "R": 0.955, "G": 0.915, "B": 0.800, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"ReadOnlyForegroundColor": { "SpecifiedColor": { "R": 0.550, "G": 0.645, "B": 0.520, "A": 1.0 }, "ColorUseRule": "UseColor_Specified" },
+			"HScrollBarPadding": { "Left": 2.0, "Top": 2.0, "Right": 2.0, "Bottom": 2.0 },
+			"VScrollBarPadding": { "Left": 2.0, "Top": 2.0, "Right": 2.0, "Bottom": 2.0 }
+		}
+	}
+}

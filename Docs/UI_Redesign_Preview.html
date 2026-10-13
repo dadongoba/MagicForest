@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>demo3_UE58 · UI 重设计小样 · ForestUI.uss v1.0</title>
+<style>
+	/* ============================================================
+	   ForestUI.uss v1.0 视觉小样 —— 与 Content/UI/ForestUI.uss 同一套调色板
+	   主题: 森林手札 · 炼金工坊
+	   ============================================================ */
+	:root {
+		--ink-base: #040907F8;      /* Forest.Ink.Base      0.016,0.028,0.024 */
+		--ink-sunken: #020504F8;    /* Forest.Ink.Sunken    0.010,0.019,0.016 */
+		--moss-header: #0C170Ffa;   /* Forest.Moss.Header   0.047,0.092,0.062 */
+		--moss-raised: #090F0B;     /* Forest.Moss.Raised   0.036,0.058,0.044 */
+		--moss-line: #1C2A20;       /* Forest.Moss.Line     0.110,0.165,0.125 */
+		--gold-base: #C79E4A;       /* Forest.Gold.Base     0.780,0.620,0.290 */
+		--gold-bright: #EDC773;     /* Forest.Gold.Bright   0.930,0.780,0.450 */
+		--gold-dim: #66542E;        /* Forest.Gold.Dim      0.400,0.330,0.180 */
+		--gold-pressed: #A37F3B;    /* Forest.Gold.Pressed  0.640,0.500,0.230 */
+		--parchment: #F4EACC;       /* Forest.Parchment     0.955,0.915,0.800 */
+		--parchment-dim: #C2B594;   /* Forest.Parchment.Dim 0.760,0.710,0.580 */
+		--sage-muted: #8CA485;      /* Forest.Sage.Muted    0.550,0.645,0.520 */
+		--fire: #D9542E;            /* Forest.Element.Fire  0.850,0.330,0.180 */
+		--wind: #6BC48A;            /* Forest.Element.Wind  0.420,0.770,0.540 */
+		--water: #4F9BD9;           /* Forest.Element.Water 0.310,0.610,0.850 */
+		--ink-btn-text: #0E0B05;    /* 主按钮文字（金底墨字） */
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background:
+			radial-gradient(1200px 500px at 50% -100px, #0B1A12 0%, transparent 60%),
+			linear-gradient(180deg, #060B08 0%, #030604 100%);
+		color: var(--parchment);
+		font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+		padding: 40px 24px 80px;
+		display: flex; flex-direction: column; align-items: center; gap: 48px;
+	}
+	.serif { font-family: Georgia, "Songti SC", "SimSun", serif; }
+	h1.page { font-size: 26px; letter-spacing: 2px; color: var(--parchment); text-align: center; }
+	p.page-sub { color: var(--sage-muted); font-size: 13px; text-align: center; margin-top: 8px; letter-spacing: 1px; }
+	.section-label {
+		align-self: center; color: var(--gold-base); font-size: 11px; letter-spacing: 4px;
+		border: 1px solid var(--gold-dim); border-radius: 3px; padding: 5px 14px;
+	}
+
+	/* ---------- 通用面板骨架（对应 Forest.Panel.*） ---------- */
+	.panel {
+		background: var(--ink-base);
+		border: 1px solid var(--gold-base);
+		border-radius: 12px;
+		box-shadow: 0 0 0 1px rgba(237,199,115,.12), 0 24px 60px rgba(0,0,0,.65);
+		overflow: hidden;
+	}
+	.panel-header {
+		background: var(--moss-header);
+		border-bottom: 1px solid var(--moss-line);
+		padding: 14px 22px;
+		display: flex; align-items: center; gap: 12px;
+	}
+	.glyph { color: var(--gold-base); font-size: 22px; line-height: 1; }
+	.kicker { color: var(--sage-muted); font-size: 9px; letter-spacing: 3px; font-weight: 600; }
+	.panel-title { color: var(--parchment); font-size: 22px; font-weight: 700; margin-top: 2px; }
+	.header-hint { margin-left: auto; color: var(--sage-muted); font-size: 10px; letter-spacing: 1px; font-weight: 600; }
+
+	/* ---------- ① 采集者背包 (940×560) ---------- */
+	.satchel { width: 940px; max-width: 96vw; }
+	.satchel-body { display: grid; grid-template-columns: 43% 57%; gap: 18px; padding: 18px 22px 22px; }
+	.list-col { background: var(--ink-sunken); border: 1px solid var(--moss-line); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+	.item-row {
+		display: flex; align-items: center; gap: 12px;
+		background: var(--ink-sunken); border: 1px solid var(--moss-line); border-radius: 6px;
+		padding: 11px 13px; cursor: pointer; transition: all .15s ease;
+	}
+	.item-row:hover { background: var(--moss-raised); border-color: var(--gold-dim); }
+	.item-row.selected { background: #0B120C; border: 2px solid var(--gold-base); padding: 10px 12px; }
+	.accent-bar { width: 4px; align-self: stretch; border-radius: 2px; }
+	.accent-fire { background: var(--fire); }
+	.accent-wind { background: var(--wind); }
+	.accent-water { background: var(--water); }
+	.item-name { font-size: 14px; font-weight: 700; color: var(--parchment); }
+	.item-sub { font-size: 10px; color: var(--sage-muted); margin-top: 3px; letter-spacing: .5px; }
+	.item-pip { margin-left: auto; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 3px; }
+	.pip-fire  { color: var(--fire);  border: 1px solid var(--fire);  background: rgba(217,84,46,.10); }
+	.pip-wind  { color: var(--wind);  border: 1px solid var(--wind);  background: rgba(107,196,138,.10); }
+	.pip-water { color: var(--water); border: 1px solid var(--water); background: rgba(79,155,217,.10); }
+	.detail-col { background: var(--moss-raised); border-radius: 6px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+	.detail-kicker { color: var(--gold-base); font-size: 10px; font-weight: 700; letter-spacing: 3px; }
+	.detail-name { font-size: 26px; font-weight: 700; color: var(--parchment); }
+	.detail-tagline { display: flex; gap: 8px; align-items: center; }
+	.tag { font-size: 10px; padding: 3px 10px; border-radius: 3px; letter-spacing: 1px; font-weight: 600; }
+	.tag-water { color: var(--water); border: 1px solid var(--water); }
+	.detail-desc { color: var(--parchment-dim); font-size: 13px; line-height: 1.8; }
+	.detail-meta { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--moss-line); display: flex; gap: 26px; }
+	.meta-k { color: var(--sage-muted); font-size: 9px; letter-spacing: 2px; }
+	.meta-v { color: var(--parchment); font-size: 14px; font-weight: 700; margin-top: 4px; }
+
+	/* ---------- ② NPC 手札（底部交互面板，760 宽） ---------- */
+	.ledger { width: 760px; max-width: 96vw; }
+	.ledger-body { padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 12px; }
+	.chat { background: var(--ink-sunken); border: 1px solid var(--moss-line); border-radius: 6px; height: 150px; padding: 14px 16px; overflow: hidden; position: relative; }
+	.chat-line { font-size: 13px; line-height: 1.9; color: var(--parchment); }
+	.chat-line .who { color: var(--gold-bright); font-weight: 700; }
+	.chat-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: linear-gradient(transparent, var(--ink-sunken)); }
+	.chat-input { display: flex; gap: 10px; }
+	.chat-input .box {
+		flex: 1; background: var(--ink-sunken); border: 1px solid var(--moss-line); border-radius: 6px;
+		padding: 10px 14px; color: var(--parchment-dim); font-size: 13px;
+	}
+	.chat-input .box.focus { border-color: var(--gold-base); color: var(--parchment); caret-color: var(--gold-bright); }
+	.btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+		font-size: 12px; font-weight: 700; border-radius: 4px; cursor: pointer;
+		padding: 9px 16px; transition: all .15s ease; letter-spacing: 1px;
+	}
+	.btn .kbd { opacity: .6; font-size: 10px; font-weight: 600; }
+	.btn-primary { background: var(--gold-base); color: var(--ink-btn-text); border: 1px solid rgba(237,199,115,.4); }
+	.btn-primary:hover { background: var(--gold-bright); border-color: rgba(255,224,153,.65); }
+	.btn-primary:active { background: var(--gold-pressed); color: var(--parchment); }
+	.btn-secondary { background: #131A15; color: var(--parchment); border: 1px solid var(--moss-line); }
+	.btn-secondary:hover { background: #1B241C; border-color: var(--gold-dim); }
+	.btn-ghost { background: rgba(4,9,7,.6); color: var(--sage-muted); border: 1px solid var(--gold-dim); }
+	.btn-ghost:hover { color: var(--gold-base); border-color: var(--gold-base); }
+	.btn-row { display: flex; gap: 10px; }
+	.btn-row .btn { flex: 1; }
+	.npc-cards { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+	.npc-card {
+		display: flex; align-items: stretch; gap: 12px;
+		background: var(--ink-sunken); border: 1px solid var(--moss-line); border-radius: 6px;
+		padding: 10px 13px; cursor: pointer; transition: all .15s ease;
+	}
+	.npc-card:hover { background: var(--moss-raised); border-color: var(--gold-dim); }
+	.npc-role { font-size: 9px; letter-spacing: 2px; color: var(--sage-muted); font-weight: 600; }
+	.npc-name { font-size: 16px; font-weight: 700; color: var(--parchment); margin-top: 2px; }
+	.npc-detail { font-size: 11px; color: var(--sage-muted); margin-top: 2px; }
+	.npc-pick { margin-left: auto; align-self: center; font-size: 12px; font-weight: 700; }
+
+	/* ---------- ③ 魔法书通知（顶部 Toast，620 宽） ---------- */
+	.notice { width: 620px; max-width: 96vw; display: flex; gap: 14px; padding: 14px 18px; align-items: flex-start; }
+	.notice .star { color: var(--gold-base); font-size: 22px; line-height: 1.1; }
+	.notice .kicker { display: block; }
+	.notice .msg { color: var(--parchment); font-size: 13px; line-height: 1.75; margin-top: 5px; }
+	.notice .msg .hl { color: var(--water); font-weight: 700; }
+
+	/* ---------- ④ 调色板对照 ---------- */
+	.palette { width: 940px; max-width: 96vw; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+	.swatch { border: 1px solid var(--moss-line); border-radius: 6px; overflow: hidden; background: var(--ink-base); }
+	.swatch .chip { height: 46px; }
+	.swatch .info { padding: 8px 10px; }
+	.swatch .nm { font-size: 10px; letter-spacing: 1px; color: var(--parchment); font-weight: 700; }
+	.swatch .hex { font-size: 9px; color: var(--sage-muted); margin-top: 3px; font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<div>
+	<h1 class="page serif">ForestUI · 森林手札 × 炼金工坊</h1>
+	<p class="page-sub">demo3_UE58 UI 重设计小样 v1.0 · 与 <b>Content/UI/ForestUI.uss</b> 同源配色 · 覆盖背包 / NPC 手札 / 魔法书通知</p>
+</div>
+
+<div class="section-label">① 采集者背包 · THE FORAGER'S SATCHEL（对应 UForestMagicInventoryWidget，B 键开关）</div>
+<div class="panel satchel">
+	<div class="panel-header">
+		<span class="glyph serif">◇</span>
+		<div>
+			<div class="kicker">THE FORAGER'S SATCHEL</div>
+			<div class="panel-title serif">采集者背包</div>
+		</div>
+		<span class="header-hint">B / ESC 关闭</span>
+	</div>
+	<div class="satchel-body">
+		<div class="list-col">
+			<div class="item-row selected">
+				<div class="accent-bar accent-water"></div>
+				<div><div class="item-name">星光凝露</div><div class="item-sub">源蘑菇 · 月息绒盖 · 水</div></div>
+				<span class="item-pip pip-water">水 3</span>
+			</div>
+			<div class="item-row">
+				<div class="accent-bar accent-fire"></div>
+				<div><div class="item-name">焰语结晶</div><div class="item-sub">源蘑菇 · 炭火鳞伞 · 火</div></div>
+				<span class="item-pip pip-fire">火 2</span>
+			</div>
+			<div class="item-row">
+				<div class="accent-bar accent-wind"></div>
+				<div><div class="item-name">风行信笺</div><div class="item-sub">源蘑菇 · 白足绒柄 · 风</div></div>
+				<span class="item-pip pip-wind">风 1</span>
+			</div>
+			<div class="item-row">
+				<div class="accent-bar accent-water"></div>
+				<div><div class="item-name">雾川瓶盖</div><div class="item-sub">源蘑菇 · 溪影圆顶 · 水</div></div>
+				<span class="item-pip pip-water">水 1</span>
+			</div>
+		</div>
+		<div class="detail-col">
+			<div class="detail-kicker">物品记录 · ITEM RECORD</div>
+			<div class="detail-name serif">星光凝露</div>
+			<div class="detail-tagline"><span class="tag tag-water">水 · WATER</span><span class="tag tag-water">AI 凝成物</span></div>
+			<div class="detail-desc">蘑菇散作星尘时，魔法书将其中的水元素凝成了这枚小小的露瓶。摇一摇，能听见溪水流动的回声——据说在坩埚前倒入，可获得3点水元素。</div>
+			<div class="detail-meta">
+				<div><div class="meta-k">元素 · ELEMENT</div><div class="meta-v" style="color: var(--water)">水</div></div>
+				<div><div class="meta-k">元素值 · PIP</div><div class="meta-v">+3</div></div>
+				<div><div class="meta-k">采集日 · DAY</div><div class="meta-v">Day 4</div></div>
+				<div><div class="meta-k">来源 · SOURCE</div><div class="meta-v">月息绒盖</div></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="section-label">② 森林手札 · FOREST LEDGER（对应 UForestNPCInteractionWidget，底部交互面板）</div>
+<div class="panel ledger">
+	<div class="panel-header">
+		<span class="glyph serif">✦</span>
+		<div>
+			<div class="kicker">FOREST LEDGER · 森林手札</div>
+			<div class="panel-title serif">与 善良女巫 交谈</div>
+		</div>
+	</div>
+	<div class="ledger-body">
+		<div class="chat">
+			<div class="chat-line"><span class="who">善良女巫：</span>锅里的颜色不太对……如果你在林子里见到会发光的蘑菇，替我采几朵回来，我可以帮你把星尘熬成有用的东西。</div>
+			<div class="chat-line"><span class="who">你：</span>月息绒盖可以吗？昨天在溪边见过一片。</div>
+			<div class="chat-line"><span class="who">善良女巫：</span>正合适。小心那些会模仿书本声音的小东西。</div>
+			<div class="chat-fade"></div>
+		</div>
+		<div class="chat-input">
+			<div class="box">写下想说的话……</div>
+			<div class="btn btn-primary">发送 <span class="kbd">ENTER</span></div>
+		</div>
+		<div class="btn-row">
+			<div class="btn btn-secondary">继续话题</div>
+			<div class="btn btn-ghost">结束交谈 <span class="kbd">ESC</span></div>
+		</div>
+		<div class="npc-cards">
+			<div class="npc-card">
+				<div class="accent-bar" style="background: var(--wind)"></div>
+				<div><div class="npc-role">NPC · FAWNIA</div><div class="npc-name serif">法芙妮雅 · 树精</div><div class="npc-detail">沉睡的树精，需要一件来自旧路的礼物</div></div>
+				<span class="npc-pick" style="color: var(--wind)">选择 ›</span>
+			</div>
+			<div class="npc-card">
+				<div class="accent-bar" style="background: var(--fire)"></div>
+				<div><div class="npc-role">NPC · KIND WITCH</div><div class="npc-name serif">善良女巫</div><div class="npc-detail">坩埚的主人，愿意用魔法交换蘑菇</div></div>
+				<span class="npc-pick" style="color: var(--fire)">选择 ›</span>
+			</div>
+			<div class="npc-card">
+				<div class="accent-bar" style="background: var(--water)"></div>
+				<div><div class="npc-role">NPC · NATTA</div><div class="npc-name serif">娜塔</div><div class="npc-detail">巡路的旅人，知道每一条小径的故事</div></div>
+				<span class="npc-pick" style="color: var(--water)">选择 ›</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="section-label">③ 魔法书回响 · MIMIC BOOK NOTICE（对应 UForestHarvestNoticeWidget，顶部 8 秒 Toast）</div>
+<div class="panel notice">
+	<span class="star serif">✦</span>
+	<div>
+		<span class="kicker">MIMIC BOOK · 魔法书回响</span>
+		<div class="msg">蘑菇散作星尘，魔法书将其中的<span class="hl">水</span>凝成了一件小物。<br>获得：<b>星光凝露</b> · 水 3 · 已收入背包 · 按 <b>B</b> 查看</div>
+	</div>
+</div>
+
+<div class="section-label">④ 调色板 · 与 ForestUI.uss colors 一一对应</div>
+<div class="palette" id="palette"></div>
+
+<script>
+	const colors = [
+		["Forest.Ink.Base", "#040907", "面板底色"],
+		["Forest.Ink.Sunken", "#020504", "列表 / 输入框底"],
+		["Forest.Moss.Header", "#0C170F", "标题栏底色"],
+		["Forest.Moss.Raised", "#090F0B", "详情区底色"],
+		["Forest.Moss.Line", "#1C2A20", "分隔线 / 描边"],
+		["Forest.Gold.Base", "#C79E4A", "主强调 / 外框"],
+		["Forest.Gold.Bright", "#EDC773", "Hover 高亮"],
+		["Forest.Gold.Dim", "#66542E", "幽灵按钮描边"],
+		["Forest.Parchment", "#F4EACC", "正文文字"],
+		["Forest.Parchment.Dim", "#C2B594", "次级文字"],
+		["Forest.Sage.Muted", "#8CA485", "标签 / 提示"],
+		["Forest.Element.Fire", "#D9542E", "元素 · 火"],
+		["Forest.Element.Wind", "#6BC48A", "元素 · 风"],
+		["Forest.Element.Water", "#4F9BD9", "元素 · 水"]
+	];
+	document.getElementById("palette").innerHTML = colors.map(([nm, hex, zh]) =>
+		`<div class="swatch"><div class="chip" style="background:${hex}"></div><div class="info"><div class="nm">${nm.replace("Forest.", "")}</div><div class="hex">${hex.toUpperCase()} · ${zh}</div></div></div>`
+	).join("");
+</script>
+</body>
+</html>
