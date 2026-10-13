@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
 #include "Types/SlateEnums.h"
+#include "ForestTravelNarrativeSubsystem.h"
 #include "ForestNPCInteraction.generated.h"
 class UTextBlock;class UEditableTextBox;class UButton;class UScrollBox;class UVerticalBox;
 class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
@@ -76,9 +77,11 @@ private:
  EFinderStage FinderStage=EFinderStage::Closed;
  FName PendingFinderPersona;
  FString PendingFeeItem,SpentFeeItem,FinderNotice;
+ FString EmergentTravelItemName,TravelNarrativeText;
  TWeakObjectPtr<ACharacter> FinderTarget;
  bool bFinderPreviousMouse=false;
  double FinderNextMove=0,FinderNoticeUntil=0;
+ int64 NextTravelNarrativeRequestId=1,ActiveTravelNarrativeRequestId=0;
  double TutorialSearchAfter=0;
  bool CanReach(ACharacter* Character) const;
  FString CharacterName(const ACharacter* Character) const;
@@ -95,6 +98,8 @@ private:
  void RefundFeeItem(const FString& Item);
  void RebuildBackpackList() const;
  bool HasCompletePathTo(ACharacter* Character) const;
+ void RequestTravelNarrative(const FString& ConsumedItem,ACharacter* Target);
+ UFUNCTION() void HandleTravelNarrative(const FForestTravelNarrativeResult& Result);
  UFUNCTION() void RefreshConversation();
  UFUNCTION() void InteractNearby();
 };

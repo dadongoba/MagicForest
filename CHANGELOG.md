@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-10-13-01：寻找 NPC 的 AI 涌现路引叙事框架
+
+- **目的 / 基线**：在玩家交付一个背包物品并自动寻找 NPC 时，按被消耗物品的元素和数值生成“临时路引名称 + 短叙事”；基于 main `bd567a4` 与批次 2026-10-12-03。
+- **新增**：`Source/demo3_UE58/ForestTravelNarrativeSubsystem.h`、`Source/demo3_UE58/ForestTravelNarrativeSubsystem.cpp`、`Docs/NPC_Finder_Emergent_Narrative_2026-10-13.md`。
+- **修改**：`Source/demo3_UE58/ForestNPCInteraction.h`、`Source/demo3_UE58/ForestNPCInteraction.cpp`、`Docs/NPC_Finder_2026-10-12.md`。
+- **共享接口**：新子系统只负责输入快照、提示词、结构化 JSON 解析与本地兜底；网络调用复用 `UDialogueAIServiceSubsystem::RequestChatCompletion`，沿用 NPC 对话和世界后果功能的地址、模型与 Key，不复制 HTTP 实现。
+- **输入 / 输出**：输入包含实际消耗物品、火/风/水元素、1–9 点数、三轴数值、目标 NPC、数值来源和占位标记；AI 严格输出 `item_name` 与 `narrative`。结果只是寻路期间的叙事，不新增背包物品或场景 Actor。
+- **当前占位接线**：现有背包没有保存采摘时的元素快照。每日蘑菇暂按当前日表读取元素、点数和三轴值，并标为 `current_day_mushroom_table_placeholder`；无法解析的物品使用“未定形路引”，不猜测元素。后续只需向同一输入结构传真实快照。
+- **运行规则**：扣费成功后立即显示确定性本地叙事并异步请求 AI；成功且 JSON 合格时替换显示。无 Key、网络失败、无效 JSON 时保留本地兜底。请求用递增 ID 隔离，取消或结束后迟到回复不会污染下一次寻找；叙事生成不阻塞移动、退款或到达后的对话。
+- **验证 / 未验证**：UE 5.8 `demo3_UE58Editor Mac Development` 构建成功，`ForestTravelNarrativeSubsystem.cpp`、`ForestNPCInteraction.cpp` 与生成代码编译并链接通过。按约定未启动 UE 编辑器，未做 PIE UI、真实 DeepSeek、迟到响应和元素快照回归。
+- **上传状态**：待上传。
+
 ## 2026-10-12-03：一键寻找 NPC（交付物品代价）
 
 - **目的 / 基线**：让玩家在正式游戏中用背包里的一件物品作为代价，指定一位森林 NPC 并让玩家角色自动寻路过去；基于 main `986dc9c` 与批次 2026-10-12-02。

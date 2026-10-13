@@ -1,6 +1,7 @@
 #include "ForestNPCInteraction.h"
 #include "ForestNPCDialogueSubsystem.h"
 #include "ForestRoadAIController.h"
+#include "DailyMushroomSubsystem.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
@@ -163,6 +164,21 @@ bool AForestNPCInteraction::HasCompletePathTo(ACharacter* Character) const
  const auto* PC=Player.Get();APawn* Pawn=nullptr;if(PC)Pawn=PC->GetPawn();if(!Pawn || !Character)return false;
  const auto* Path=UNavigationSystemV1::FindPathToActorSynchronously(GetWorld(),Pawn->GetActorLocation(),Character,InteractionRange*0.7f,Pawn);return Path && Path->IsValid() && !Path->IsPartial() && Path->PathPoints.Num()>1;
 }
+void AForestNPCInteraction::RequestTravelNarrative(const FString& ConsumedItem,ACharacter* Target)
+{
+ auto* Narrative=GetGameInstance()?GetGameInstance()->GetSubsystem<UForestTravelNarrativeSubsystem>():nullptr;if(!Narrative || !Target)return;
+ FForestTravelNarrativeInput Input;Input.RequestId=NextTravelNarrativeRequestId++;Input.ConsumedItemId=ConsumedItem;Input.ConsumedItemName=ConsumedItem;Input.TargetNpcId=PersonaId(Target);Input.TargetNpcName=CharacterName(Target);
+ if(auto* Daily=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>())
+ {
+  FDailyMushroomCardRow Row;if(Daily->GetDailyMushroom(FName(*ConsumedItem),Row)){Input.bHasElementValue=true;Input.Element=Row.Element;Input.PipValue=Row.PipValue;Input.Value=Row.Value;Input.ValueSource=TEXT("current_day_mushroom_table_placeholder");}
+ }
+ ActiveTravelNarrativeRequestId=Input.RequestId;const auto Fallback=Narrative->BuildFallback(Input);EmergentTravelItemName=Fallback.EmergentItemName;TravelNarrativeText=Fallback.ShortNarrative;
+ FForestTravelNarrativeCompletion Completion;Completion.BindDynamic(this,&AForestNPCInteraction::HandleTravelNarrative);Narrative->GenerateTravelNarrative(Input,Completion);
+}
+void AForestNPCInteraction::HandleTravelNarrative(const FForestTravelNarrativeResult& Result)
+{
+ if(Result.RequestId!=ActiveTravelNarrativeRequestId)return;EmergentTravelItemName=Result.EmergentItemName;TravelNarrativeText=Result.ShortNarrative;
+}
 void AForestNPCInteraction::SelectNpcForFinding(const FName Persona)
 {
  if(FinderStage!=EFinderStage::Selecting && FinderStage!=EFinderStage::Confirming)return;PendingFinderPersona=Persona;FindFeeItem(PendingFeeItem);FinderStage=EFinderStage::Confirming;
@@ -174,11 +190,11 @@ void AForestNPCInteraction::ConfirmNpcFinding()
  if(!Target){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();FinderNotice=TEXT("这位 NPC 当前不在场景中，没有扣除物品。");FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;if(Widget)Widget->ShowMessage(TEXT("无法寻找"),TEXT(""),FinderNotice);return;}
  if(!CanReach(Target) && !HasCompletePathTo(Target)){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();FinderNotice=TEXT("目前没有可到达这位 NPC 的完整路线，没有扣除物品。");FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;if(Widget)Widget->ShowMessage(TEXT("无法寻找"),TEXT(""),FinderNotice);return;}
  FString Fee;if(!FindFeeItem(Fee) || !ConsumeFeeItem(Fee)){PendingFeeItem.Reset();if(Widget)Widget->ShowFinderConfirmation(CharacterName(Target),PendingFeeItem);return;}
- SpentFeeItem=Fee;FinderTarget=Target;FinderStage=EFinderStage::Travelling;FinderNextMove=0;CloseNpcFinderMenu();if(auto* AI=Cast<AForestRoadAIController>(Target->GetController()))AI->CancelPlayerApproach();UpdateNpcFinder();
+ SpentFeeItem=Fee;FinderTarget=Target;FinderStage=EFinderStage::Travelling;FinderNextMove=0;CloseNpcFinderMenu();if(auto* AI=Cast<AForestRoadAIController>(Target->GetController()))AI->CancelPlayerApproach();RequestTravelNarrative(Fee,Target);UpdateNpcFinder();
 }
 void AForestNPCInteraction::StopNpcFinder(const FString& Notice,const bool bRefundFee)
 {
- if(auto* PC=Player.Get())PC->StopMovement();if(bRefundFee && !SpentFeeItem.IsEmpty())RefundFeeItem(SpentFeeItem);SpentFeeItem.Reset();FinderTarget.Reset();FinderStage=EFinderStage::Closed;FinderNotice=Notice;FinderNoticeUntil=GetWorld()?GetWorld()->GetTimeSeconds()+4:0;
+ if(auto* PC=Player.Get())PC->StopMovement();if(bRefundFee && !SpentFeeItem.IsEmpty())RefundFeeItem(SpentFeeItem);SpentFeeItem.Reset();FinderTarget.Reset();FinderStage=EFinderStage::Closed;ActiveTravelNarrativeRequestId=0;EmergentTravelItemName.Reset();TravelNarrativeText.Reset();FinderNotice=Notice;FinderNoticeUntil=GetWorld()?GetWorld()->GetTimeSeconds()+4:0;
 }
 void AForestNPCInteraction::UpdateNpcFinder()
 {
@@ -186,14 +202,15 @@ void AForestNPCInteraction::UpdateNpcFinder()
  if(PC->WasInputKeyJustPressed(EKeys::W) || PC->WasInputKeyJustPressed(EKeys::A) || PC->WasInputKeyJustPressed(EKeys::S) || PC->WasInputKeyJustPressed(EKeys::D) || PC->WasInputKeyJustPressed(EKeys::Escape)){StopNpcFinder(TEXT("已取消寻找；交付的物品不会退回。"),false);return;}
  if(CanReach(Target))
  {
-  PC->StopMovement();FinderStage=EFinderStage::Closed;FinderTarget.Reset();SpentFeeItem.Reset();if(TryInteractWith(Target))return;FinderNotice=FString::Printf(TEXT("已经找到 %s。"),*CharacterName(Target));FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;return;
+  PC->StopMovement();FinderStage=EFinderStage::Closed;FinderTarget.Reset();SpentFeeItem.Reset();ActiveTravelNarrativeRequestId=0;if(TryInteractWith(Target))return;FinderNotice=FString::Printf(TEXT("已经找到 %s。"),*CharacterName(Target));FinderNoticeUntil=GetWorld()->GetTimeSeconds()+4;return;
  }
  const double Now=GetWorld()->GetTimeSeconds();if(Now>=FinderNextMove)
  {
   if(!HasCompletePathTo(Target)){StopNpcFinder(TEXT("路线中断，交付的物品已退回。"),true);return;}
   UAIBlueprintHelperLibrary::SimpleMoveToActor(PC,Target);FinderNextMove=Now+1;
  }
- if(Widget)Widget->ShowMessage(FString::Printf(TEXT("正在寻找 %s"),*CharacterName(Target)),TEXT(""),FString::Printf(TEXT("已交付：%s　WASD 或 Esc 取消"),*SpentFeeItem));
+ const FString Emergence=EmergentTravelItemName.IsEmpty()?TEXT("路引正在形成……"):FString::Printf(TEXT("%s：%s"),*EmergentTravelItemName,*TravelNarrativeText);
+ if(Widget)Widget->ShowMessage(FString::Printf(TEXT("正在寻找 %s"),*CharacterName(Target)),TEXT(""),FString::Printf(TEXT("已交付：%s\n%s\nWASD 或 Esc 取消"),*SpentFeeItem,*Emergence));
 }
 bool AForestNPCInteraction::OpenInteraction(ACharacter* C,const bool bFirstDayTutorial)
 {
