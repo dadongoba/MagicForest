@@ -13,6 +13,7 @@ class UStaticMeshComponent;
 class UNiagaraComponent;
 class STextBlock;
 class SVerticalBox;
+class SWrapBox;
 
 USTRUCT(BlueprintType)
 struct DEMO3_UE58_API FForestMagicItem
@@ -76,7 +77,7 @@ public:
  void Select(const FString& Key);
  UFUNCTION() void Close();
 private:
- TSharedPtr<SVerticalBox> List;
+ TSharedPtr<SWrapBox> List;
  TSharedPtr<STextBlock> Detail;
  FString Selected;
 };

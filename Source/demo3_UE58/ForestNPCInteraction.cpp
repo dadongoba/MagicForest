@@ -1,4 +1,5 @@
 #include "ForestNPCInteraction.h"
+#include "ForestUITheme.h"
 #include "ForestNPCDialogueSubsystem.h"
 #include "ForestRoadAIController.h"
 #include "DailyMushroomSubsystem.h"
@@ -27,16 +28,11 @@
 
 namespace ForestUI
 {
- const FLinearColor Ink(0.012f,0.022f,0.018f,0.97f);
- const FLinearColor Moss(0.055f,0.11f,0.075f,0.98f);
- const FLinearColor Gold(0.72f,0.56f,0.25f,1.f);
- const FLinearColor Parchment(0.93f,0.87f,0.68f,1.f);
- const FLinearColor Muted(0.62f,0.70f,0.58f,1.f);
- const FLinearColor Fire(0.78f,0.28f,0.12f,1.f);
- const FLinearColor Wind(0.28f,0.68f,0.48f,1.f);
- const FLinearColor Water(0.20f,0.48f,0.70f,1.f);
- FSlateFontInfo Font(const int32 Size,const bool bBold=false){return FCoreStyle::GetDefaultFontStyle(bBold?TEXT("Bold"):TEXT("Regular"),Size);}
- const FSlateBrush* Fill(){return FCoreStyle::Get().GetBrush(TEXT("WhiteBrush"));}
+ using ForestTheme::Paper;using ForestTheme::HeaderPaper;using ForestTheme::InsetPaper;
+ using ForestTheme::Edge;using ForestTheme::Ink;using ForestTheme::Muted;using ForestTheme::Moss;
+ using ForestTheme::Fire;using ForestTheme::Wind;using ForestTheme::Water;
+ using ForestTheme::Font;using ForestTheme::Fill;
+
 }
 
 TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
@@ -44,13 +40,13 @@ TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
  SetIsFocusable(true);
  const auto NpcCard=[this](const TCHAR* Role,const TCHAR* Name,const TCHAR* Detail,const FName Persona,const FLinearColor Accent)
  {
-  return SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.055f,0.09f,0.065f,1.f)).ContentPadding(FMargin(12,9))
+  return SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,9))
    .OnClicked_Lambda([this,Persona](){if(Manager.IsValid())Manager->SelectNpcForFinding(Persona);return FReply::Handled();})
    [SNew(SHorizontalBox)
     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(0,0,12,0)[SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(Accent).Padding(FMargin(3))]
     +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
      +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Role)).Font(ForestUI::Font(10,true)).ColorAndOpacity(ForestUI::Muted)]
-     +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(Name)).Font(ForestUI::Font(18,true)).ColorAndOpacity(ForestUI::Parchment)]
+     +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(Name)).Font(ForestUI::Font(18,true)).ColorAndOpacity(ForestUI::Ink)]
      +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(Detail)).Font(ForestUI::Font(11)).ColorAndOpacity(ForestUI::Muted)]]
     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("选择  ›"))).Font(ForestUI::Font(12,true)).ColorAndOpacity(Accent)]];
  };
@@ -58,43 +54,43 @@ TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
  TSharedRef<SOverlay> Built=SNew(SOverlay)
  +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(FMargin(0,0,0,32))
  [SNew(SBox).WidthOverride(760.f)
-  [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(ForestUI::Gold).Padding(1.f)
-   [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(ForestUI::Ink).Padding(0.f)
+  [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(0.f)
+   [SNew(SForestPaperBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(ForestUI::Paper).Padding(0.f)
     [SNew(SVerticalBox)
      +SVerticalBox::Slot().AutoHeight()
-     [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(ForestUI::Moss).Padding(FMargin(20,14))
+     [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(36,28,36,8))
       [SNew(SHorizontalBox)
-       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT("✦"))).Font(ForestUI::Font(20,true)).ColorAndOpacity(ForestUI::Gold)]
+       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT(""))).Font(ForestUI::Font(20,true)).ColorAndOpacity(ForestUI::Moss)]
        +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
-        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("FOREST LEDGER · 森林手札"))).Font(ForestUI::Font(9,true)).ColorAndOpacity(ForestUI::Muted)]
-        +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SAssignNew(Title,STextBlock).Font(ForestUI::Font(23,true)).ColorAndOpacity(ForestUI::Parchment)]]]]
-     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(20,16,20,10))
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("林间手札"))).Font(ForestUI::Font(9,true)).ColorAndOpacity(ForestUI::Muted)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SAssignNew(Title,STextBlock).Font(ForestUI::Font(23,true)).ColorAndOpacity(ForestUI::Ink)]]]]
+     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(36,12,36,14))
      [SAssignNew(Conversation,SVerticalBox).Visibility(EVisibility::Collapsed)
-      +SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(230.f)[SAssignNew(Scroll,SScrollBox)+SScrollBox::Slot()[SAssignNew(Message,STextBlock).Font(ForestUI::Font(15)).ColorAndOpacity(ForestUI::Parchment).AutoWrapText(true)]]]
-      +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,8)[SAssignNew(Input,SEditableTextBox).HintText(FText::FromString(TEXT("写下想说的话……"))).Font(ForestUI::Font(14)).ForegroundColor(ForestUI::Parchment).BackgroundColor(FLinearColor(0.03f,0.05f,0.04f,1.f)).OnTextCommitted_Lambda([this](const FText&,ETextCommit::Type Method){if(Method==ETextCommit::OnEnter)SendClicked();})]
+      +SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(230.f)[SAssignNew(Scroll,SScrollBox)+SScrollBox::Slot()[SAssignNew(Message,STextBlock).Font(ForestUI::Font(15)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true)]]]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,8)[SAssignNew(Input,SEditableTextBox).Style(&ForestTheme::InputStyle()).HintText(FText::FromString(TEXT("写下想说的话……"))).Font(ForestUI::Font(14)).ForegroundColor(ForestUI::Ink).BackgroundColor(FLinearColor::White).OnTextCommitted_Lambda([this](const FText&,ETextCommit::Type Method){if(Method==ETextCommit::OnEnter)SendClicked();})]
       +SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-       +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)[SAssignNew(Send,SButton).ButtonColorAndOpacity(ForestUI::Wind).ContentPadding(FMargin(12,7)).OnClicked_Lambda([this](){SendClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("发送  ENTER"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestUI::Parchment)]]
-       +SHorizontalBox::Slot().FillWidth(1.f).Padding(6,0,0,0)[SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.18f,0.20f,0.16f,1.f)).ContentPadding(FMargin(12,7)).OnClicked_Lambda([this](){CloseClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("结束交谈  ESC"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestUI::Parchment)]]]
+       +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)[SAssignNew(Send,SButton).ButtonStyle(&ForestTheme::PrimaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,7)).OnClicked_Lambda([this](){SendClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("发送  ENTER"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestTheme::OnMoss)]]
+       +SHorizontalBox::Slot().FillWidth(1.f).Padding(6,0,0,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,7)).OnClicked_Lambda([this](){CloseClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("结束交谈  ESC"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestUI::Ink)]]]
      ]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(20,14,20,8))
      [SAssignNew(FinderSelection,SVerticalBox).Visibility(EVisibility::Collapsed)
-      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("NOVELIST"),TEXT("森林女巫"),TEXT("在故事与魔法之间等候"),TEXT("forest_witch"),ForestUI::Wind)]
-      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("BLACKSMITH"),TEXT("Natta"),TEXT("炉火旁的铁匠"),TEXT("natta"),ForestUI::Fire)]
-      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("MESSENGER"),TEXT("Fawnia"),TEXT("穿行森林的传信人"),TEXT("fawnia"),ForestUI::Water)]
-      +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.14f,0.15f,0.13f,1.f)).OnClicked_Lambda([this](){FinderCancelClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("收起手札  ESC"))).Justification(ETextJustify::Center).Font(ForestUI::Font(11,true)).ColorAndOpacity(ForestUI::Muted)]]]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("小说家"),TEXT("森林女巫"),TEXT("在故事与魔法之间等候"),TEXT("forest_witch"),ForestUI::Wind)]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("铁匠"),TEXT("Natta"),TEXT("有话直说，也愿意帮你想办法"),TEXT("natta"),ForestUI::Fire)]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,7)[NpcCard(TEXT("传信人"),TEXT("Fawnia"),TEXT("穿行森林的传信人"),TEXT("fawnia"),ForestUI::Water)]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).OnClicked_Lambda([this](){FinderCancelClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("收起手札  ESC"))).Justification(ETextJustify::Center).Font(ForestUI::Font(11,true)).ColorAndOpacity(ForestUI::Muted)]]]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(20,14,20,8))
      [SAssignNew(FinderConfirmation,SVerticalBox).Visibility(EVisibility::Collapsed)
-      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SAssignNew(FinderFee,STextBlock).Font(ForestUI::Font(15,true)).ColorAndOpacity(ForestUI::Parchment).AutoWrapText(true)]
-      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[SAssignNew(FinderItems,SComboBox<TSharedPtr<FString>>).OptionsSource(&FinderOptions)
-       .OnGenerateWidget_Lambda([](TSharedPtr<FString> Item){return SNew(STextBlock).Text(FText::FromString(Item.IsValid()?*Item:TEXT(""))).Font(ForestUI::Font(13)).ColorAndOpacity(ForestUI::Parchment);})
+      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SAssignNew(FinderFee,STextBlock).Font(ForestUI::Font(15,true)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true)]
+      +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[SAssignNew(FinderItems,SComboBox<TSharedPtr<FString>>).ComboBoxStyle(&ForestTheme::ComboStyle()).ItemStyle(&ForestTheme::ComboRowStyle()).OptionsSource(&FinderOptions)
+       .OnGenerateWidget_Lambda([](TSharedPtr<FString> Item){return SNew(STextBlock).Text(FText::FromString(Item.IsValid()?*Item:TEXT(""))).Font(ForestUI::Font(13)).ColorAndOpacity(ForestUI::Ink);})
        .OnSelectionChanged_Lambda([this](TSharedPtr<FString> Item,ESelectInfo::Type){if(Manager.IsValid())Manager->SelectFeeItem(Item.IsValid()?*Item:FString());})
-       [SNew(STextBlock).Text_Lambda([this](){const auto Item=FinderItems.IsValid()?FinderItems->GetSelectedItem():nullptr;return FText::FromString(Item.IsValid()?*Item:TEXT("选择一件交付物品"));}).Font(ForestUI::Font(13,true)).ColorAndOpacity(ForestUI::Parchment)]]
+       [SNew(STextBlock).Text_Lambda([this](){const auto Item=FinderItems.IsValid()?FinderItems->GetSelectedItem():nullptr;return FText::FromString(Item.IsValid()?*Item:TEXT("选择一件交付物品"));}).Font(ForestUI::Font(13,true)).ColorAndOpacity(ForestUI::Ink)]]
       +SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-       +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)[SAssignNew(FinderConfirm,SButton).ButtonColorAndOpacity(ForestUI::Gold).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){FinderConfirmClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("交付并启程"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(FLinearColor(0.04f,0.04f,0.025f,1.f))]]
-       +SHorizontalBox::Slot().FillWidth(1.f).Padding(6,0,0,0)[SNew(SButton).ButtonColorAndOpacity(FLinearColor(0.16f,0.18f,0.15f,1.f)).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){FinderCancelClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("返回"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestUI::Parchment)]]]
+       +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)[SAssignNew(FinderConfirm,SButton).ButtonStyle(&ForestTheme::PrimaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){FinderConfirmClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("交付并启程"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestTheme::OnMoss)]]
+       +SHorizontalBox::Slot().FillWidth(1.f).Padding(6,0,0,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){FinderCancelClicked();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("返回"))).Font(ForestUI::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(ForestUI::Ink)]]]
      ]
      +SVerticalBox::Slot().AutoHeight()
-     [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(FLinearColor(0.035f,0.06f,0.045f,1.f)).Padding(FMargin(20,9))
+     [SNew(SBorder).BorderImage(ForestUI::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(36,8,36,28))
       [SAssignNew(Prompt,STextBlock).Font(ForestUI::Font(11)).ColorAndOpacity(ForestUI::Muted).AutoWrapText(true).Justification(ETextJustify::Center)]]
     ]]]];
  Root=Built;

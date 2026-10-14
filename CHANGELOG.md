@@ -2,6 +2,17 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-10-14-06：纸页主题、紧凑背包与手绘元素标记
+
+- **目的 / 基线 / 前置**：按用户参考图修订原深色 Slate UI，并纠正被否定的未发布平面卡片方案。基于 main `9980c58`，前置 2026-10-14-04/05。
+- **新增**：Source/demo3_UE58/ForestUITheme.h/.cpp；Content/UI/Textures/WoodlandPaper.png、ElementEmblems.png（运行素材）；Docs/UI_Reference_Warm.png（仅原图参考）、UI_Warm_Preview.jpg（HTML截图）、Warm_UI_2026-10-14.md（依赖、限制、生成提示词）。
+- **修改**：Source/demo3_UE58/ForestNPCInteraction.cpp、ForestHarvestMagic.cpp/.h、demo3_UE58.Build.cs；Content/UI/ForestUI.uss；Docs/UI_Redesign_Preview.html、Slate_UI_2026-10-14.md；本记录。
+- **行为**：统一暖棕文字/纸底/橄榄绿操作，实际Slate容器接纸页贴图；背包改为四列紧凑格子、右侧说明，三种元素用水彩通用图标。手动选择、描述、支付与原有玩法保留；炼药仍保留原蓝图布局。
+- **依赖 / 应用**：按相对路径合并六份源码及两张PNG，重新编译；Build.cs将PNG作为NonUFS松散文件分发。USS仅设计清单。无地图、存档、缓存或编译产物，未覆盖本地地图。详见 [修订说明](Docs/Warm_UI_2026-10-14.md)。
+- **验证**：本次 Mac UE 5.8 Development Editor 编译与链接成功；HTML离线视觉预览并保存截图；差异检查、JSON解析、源码同步校验通过。
+- **未验证 / 完成度**：未启动UE/游戏，未做PIE、低分辨率、PNG运行加载与打包验收；截图不是Slate实机截图。暂无专属道具插画/头像/皮革分类页签，未达到参考图完整美术完成度。
+- **上传状态**：待上传，成功后另批补记。
+
 ## 2026-10-14-05：补记界面更新与新设计上传结果
 
 - **目的 / 基线 / 前置**：补记批次 2026-10-14-04 的上传结果，基于功能提交 `b2d3b8b`。
