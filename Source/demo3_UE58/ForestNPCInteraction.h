@@ -3,10 +3,9 @@
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "Widgets/Input/SComboBox.h"
 #include "ForestTravelNarrativeSubsystem.h"
 #include "ForestNPCInteraction.generated.h"
-class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SVerticalBox;
+class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SWidgetSwitcher;class SScaleBox;class SWrapBox;
 class AAIController;class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
 UCLASS()
 class DEMO3_UE58_API UForestNPCInteractionWidget : public UUserWidget
@@ -19,6 +18,7 @@ public:
  void ShowFinderSelection();
  void ShowFinderConfirmation(const FString& CharacterName,const TArray<FString>& Items);
  void ShowSelectedFee(const FString& FeeItem);
+ void ShowTravel(const FString& CharacterName,const FString& FeeItem,const FString& Story);
  bool IsFinderVisible() const{return bFinderVisible;}
  void FocusInput();
 protected:
@@ -32,13 +32,19 @@ private:
  TSharedPtr<SEditableTextBox> Input;
  TSharedPtr<SButton> Send;
  TSharedPtr<SScrollBox> Scroll;
- TSharedPtr<SVerticalBox> Conversation;
- TSharedPtr<SVerticalBox> FinderSelection;
- TSharedPtr<SVerticalBox> FinderConfirmation;
- TSharedPtr<STextBlock> FinderFee;
+ enum class EPanel:uint8 {Notice,Conversation,Selecting,Confirming,Travelling};
+ EPanel Panel=EPanel::Notice;
+ void SetPanel(EPanel Mode);
+ TSharedPtr<SScaleBox> AdaptivePanel;
+ TSharedPtr<SWidgetSwitcher> Switcher;
+ TSharedPtr<STextBlock> Subtitle;
+ TSharedPtr<SWrapBox> FinderGrid;
+ TSharedPtr<STextBlock> FinderTargetName,FinderItemName,FinderItemAttribute,FinderItemDescription,FinderFee;
+ TSharedPtr<STextBlock> TravelTarget,TravelStory,TravelFee;
  TSharedPtr<SButton> FinderConfirm;
- TSharedPtr<SComboBox<TSharedPtr<FString>>> FinderItems;
- TArray<TSharedPtr<FString>> FinderOptions;
+ FName SelectedFinderPersona;
+ FString SelectedFee;
+ FString LastTravelTarget,LastTravelFee,LastTravelStory;
  bool bFinderVisible=false;
  UFUNCTION() void SendClicked();
  UFUNCTION() void CloseClicked();

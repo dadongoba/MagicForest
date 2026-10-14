@@ -162,6 +162,29 @@
     "Font": {
       "runtime": "FCoreStyle Regular / Bold，保留引擎 CJK fallback",
       "size": "原字号 +2；不依赖用户机器上的系统字体"
+    },
+    "NPC.Finder": {
+      "selection": "三个人物框、手动选择后进入物品步骤；不默认选NPC或物品",
+      "portrait": "Slate空框，后续替换为游戏截图",
+      "payment": "145x124物品格、实际名称/属性/数量、右侧描述、交付1个确认",
+      "travel": "独立目标/故事/已交付物品/取消提示区域",
+      "panelDesignSizes": {
+        "select": [
+          960,
+          500
+        ],
+        "payment": [
+          960,
+          540
+        ],
+        "travel": [
+          860,
+          310
+        ]
+      },
+      "adaptation": "全视口分配，24 Slate单位边距，SScaleBox ScaleToFit / DownOnly，遵循引擎DPI缩放",
+      "overflow": "物品格与详情滚动；按钮在滚动区域外",
+      "scope": "找人三阶段及共用对话容器；不代表全游戏UI自适应"
     }
   },
   "assets": {
