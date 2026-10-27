@@ -5,7 +5,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "ForestTravelNarrativeSubsystem.h"
 #include "ForestNPCInteraction.generated.h"
-class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SWidgetSwitcher;class SScaleBox;class SWrapBox;
+class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SWidgetSwitcher;class SBox;class SWrapBox;
 class AAIController;class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
 UCLASS()
 class DEMO3_UE58_API UForestNPCInteractionWidget : public UUserWidget
@@ -23,6 +23,7 @@ public:
  void FocusInput();
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
+ virtual void NativeTick(const FGeometry&,float) override;
  virtual FReply NativeOnPreviewKeyDown(const FGeometry& Geometry,const FKeyEvent& Event) override;
 private:
  TSharedPtr<SWidget> Root;
@@ -35,7 +36,8 @@ private:
  enum class EPanel:uint8 {Notice,Conversation,Selecting,Confirming,Travelling};
  EPanel Panel=EPanel::Notice;
  void SetPanel(EPanel Mode);
- TSharedPtr<SScaleBox> AdaptivePanel;
+ TSharedPtr<SBox> AdaptivePanel,PanelFrame;
+ float LayoutWidth=1100.f;
  TSharedPtr<SWidgetSwitcher> Switcher;
  TSharedPtr<STextBlock> Subtitle;
  TSharedPtr<SWrapBox> FinderGrid;
