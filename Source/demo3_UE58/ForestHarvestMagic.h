@@ -14,6 +14,7 @@ class UNiagaraComponent;
 class STextBlock;
 class SVerticalBox;
 class SWrapBox;
+class SBox;
 
 USTRUCT(BlueprintType)
 struct DEMO3_UE58_API FForestMagicItem
@@ -54,6 +55,9 @@ public:
  TSharedPtr<STextBlock> Text;
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
+ virtual void NativeTick(const FGeometry&,float) override;
+private:
+ TSharedPtr<SBox> Frame;
 };
 UCLASS()
 class DEMO3_UE58_API UForestFieldHUDWidget : public UUserWidget

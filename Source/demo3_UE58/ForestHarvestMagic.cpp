@@ -108,13 +108,20 @@ void UForestHarvestMagic::RefreshFieldUI()
 }
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
 {
- return SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(0.f)
- [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(16,12))
-  [SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT(""))).Font(HarvestMagic::Font(22,true)).ColorAndOpacity(HarvestMagic::Moss)]
-   +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
-    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("魔法书捎来一件小物"))).Font(HarvestMagic::Font(9,true)).ColorAndOpacity(HarvestMagic::Muted)]
-    +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(13)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
+ // Full-viewport anchor; only the paper has a preferred width. Height follows the text.
+ return SNew(SOverlay)
+ +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(FMargin(24,48,24,24))
+ [SAssignNew(Frame,SBox).WidthOverride(960)
+  [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
+   [SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("魔法书捎来一件小物"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss).AutoWrapText(true)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(20)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
+}
+void UForestHarvestNoticeWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
+{
+ Super::NativeTick(Geometry,DeltaTime);
+ const float Width=static_cast<float>(Geometry.GetLocalSize().X);
+ if(Frame.IsValid() && Width>0)Frame->SetWidthOverride(FMath::Max(1.f,FMath::Min(960.f,Width-48.f)));
 }
 TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
 {
@@ -233,7 +240,7 @@ void UForestHarvestMagic::Setup()
  FieldHUD=CreateWidget<UForestFieldHUDWidget>(PC);if(FieldHUD){FieldHUD->AddToViewport(10);FieldHUD->SetVisibility(ESlateVisibility::HitTestInvisible);}
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))MushroomVisibility.Add(M,It->IsHidden());
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
- if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetAlignmentInViewport(FVector2D(.5,0));int32 ScreenX,ScreenY;PC->GetViewportSize(ScreenX,ScreenY);NoticeWidget->SetPositionInViewport(FVector2D(ScreenX*.5f,60),false);NoticeWidget->SetDesiredSizeInViewport(FVector2D(620,160));NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
+ if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
 }
 void UForestHarvestMagic::ToggleInventory()
 {
