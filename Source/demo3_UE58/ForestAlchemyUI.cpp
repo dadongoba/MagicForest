@@ -11,8 +11,8 @@
 #include "InputCoreTypes.h"
 namespace BrewUI
 {
- TSharedRef<STextBlock> Text(const FString& Value,int32 Size=12){return SNew(STextBlock).Text(FText::FromString(Value)).Font(ForestTheme::Font(Size)).ColorAndOpacity(ForestTheme::Ink).AutoWrapText(true);}
- TSharedRef<SWidget> Button(const FString& Label,FOnClicked Click,bool Primary=false){return SNew(SButton).ButtonStyle(Primary?&ForestTheme::PrimaryButton():&ForestTheme::SecondaryButton()).ContentPadding(FMargin(12,7)).OnClicked(Click)[SNew(STextBlock).Text(FText::FromString(Label)).Font(ForestTheme::Font(11)).ColorAndOpacity(Primary?ForestTheme::OnMoss:ForestTheme::Ink).AutoWrapText(true)];}
+ TSharedRef<STextBlock> Text(const FString& Value,int32 Size=12){return SNew(STextBlock).Text(FText::FromString(Value)).Font(ForestTheme::Font(FMath::Max(16,Size+4))).ColorAndOpacity(ForestTheme::Ink).AutoWrapText(true);}
+ TSharedRef<SWidget> Button(const FString& Label,FOnClicked Click,bool Primary=false){return SNew(SButton).ButtonStyle(Primary?&ForestTheme::PrimaryButton():&ForestTheme::SecondaryButton()).ContentPadding(FMargin(12,10)).OnClicked(Click)[SNew(STextBlock).Text(FText::FromString(Label)).Font(ForestTheme::Font(16)).ColorAndOpacity(Primary?ForestTheme::OnMoss:ForestTheme::Ink).AutoWrapText(true)];}
 }
 TSharedRef<SWidget> UForestArcanaNotice::RebuildWidget()
 {
