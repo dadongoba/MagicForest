@@ -1,6 +1,8 @@
 #include "ForestHarvestMagic.h"
 #include "ForestNPCInteraction.h"
 #include "ForestUITheme.h"
+#include "ForestAlchemy.h"
+#include "Widgets/Layout/SScaleBox.h"
 #include "DailyMushroomSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
 #include "Components/InputComponent.h"
@@ -118,8 +120,9 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
 {
  SetIsFocusable(true);
  return SNew(SOverlay)
- +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
- [SNew(SBox).WidthOverride(940.f).HeightOverride(560.f)
+ +SOverlay::Slot().Padding(FMargin(24))
+ [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
+ [SNew(SBox).WidthOverride(940.f).HeightOverride(600.f)
   [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(0.f)
    [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(0.f)
     [SNew(SVerticalBox)
@@ -131,6 +134,10 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
         +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("随身物品"))).Font(HarvestMagic::Font(9,true)).ColorAndOpacity(HarvestMagic::Muted)]
         +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("背包"))).Font(HarvestMagic::Font(19)).ColorAndOpacity(HarvestMagic::Ink)]]
        +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("B / ESC 关闭"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Muted)]]]
+     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,4,42,0))
+      [SNew(SHorizontalBox)
+       +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
+       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日大牌 · 第%d天（%d）"),A?A->GetDay():1,A?A->GetTodayMajors().Num():0));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
      +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(42,12,42,4))
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(.59f).Padding(0,0,12,0)
@@ -144,11 +151,28 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,0,42,35))
      [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
       [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(HarvestMagic::Ink)]]
-    ]]]];
+    ]]]]];
 }
 void UForestMagicInventoryWidget::Refresh()
 {
- if(!List.IsValid() || !Owner.IsValid())return;List->ClearChildren();auto Bag=Owner->ReadBag();TArray<FString> AllKeys;Bag.GetKeys(AllKeys);AllKeys.Sort();TArray<FString> Keys;
+ if(!List.IsValid() || !Owner.IsValid())return;List->ClearChildren();
+ if(bMajorsTab)
+ {
+  auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();const auto Cards=A?A->GetTodayMajors():TArray<FForestDailyMajor>();
+  for(const auto& C:Cards){FAlchemyCardDefinition D;if(!A->GetMajorDefinition(C.CardId,D))continue;
+   List->AddSlot()[SNew(SBox).WidthOverride(110).HeightOverride(156)
+    [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity_Lambda([this,C](){return SelectedMajor==C.InstanceId?ForestTheme::SelectedPaper:FLinearColor::White;})
+     .OnClicked_Lambda([this,C](){SelectMajor(C.InstanceId);return FReply::Handled();})
+     [SNew(SVerticalBox)
+      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromName(D.Id)).Font(HarvestMagic::Font(24)).ColorAndOpacity(HarvestMagic::Moss)]
+      +SVerticalBox::Slot().FillHeight(1).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(D.Name+TEXT("\n")+D.ShortExpression)).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true).Justification(ETextJustify::Center)]
+      +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("额度 %d"),D.Cost))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted)]]]];
+  }
+  if(Cards.IsEmpty())Detail->SetText(FText::FromString(TEXT("今日大牌\n\n拿起小屋里的药瓶，每瓶每天可抽取一张大牌。\n大牌只在当天可用，夜间放入合成台改变元素药性。")));
+  else if(!Cards.ContainsByPredicate([this](const auto& C){return C.InstanceId==SelectedMajor;}))SelectMajor(Cards[0].InstanceId);else SelectMajor(SelectedMajor);
+  return;
+ }
+ auto Bag=Owner->ReadBag();TArray<FString> AllKeys;Bag.GetKeys(AllKeys);AllKeys.Sort();TArray<FString> Keys;
  for(const auto& Key:AllKeys)if(Bag[Key]>0)
  {
   Keys.Add(Key);FForestMagicItem Item;const bool Known=Owner->FindItem(Key,Item);
@@ -174,6 +198,11 @@ void UForestMagicInventoryWidget::Refresh()
  for(int32 I=Keys.Num();I<12;++I)List->AddSlot()[SNew(SBox).WidthOverride(110.f).HeightOverride(120.f)[SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Edge.CopyWithNewOpacity(.10f))]];
  if(Keys.IsEmpty()){Detail->SetText(FText::FromString(TEXT("背包里还没有物品。\n\n采摘蘑菇后，魔法书会把其中的火、风或水凝成一件可以交付、查看和记住的小物。")));Selected.Reset();}
  else if(Selected.IsEmpty() || !Bag.Contains(Selected))Select(Keys[0]);else Select(Selected);
+}
+void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
+{
+ SelectedMajor=Id;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
+ for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D))Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n今日大牌 · 第%d天\n额度开销：%d\n\n%s\n\n只在今日可用；放入夜间合成台后按顺序生效。"),*D.Id.ToString(),*D.Name,C.Day,D.Cost,*D.Description)));return;}
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
 {
@@ -208,9 +237,9 @@ void UForestHarvestMagic::Setup()
 }
 void UForestHarvestMagic::ToggleInventory()
 {
- auto* PC=Player.Get();if(!PC)return;if(Inventory && Inventory->IsInViewport()){Inventory->RemoveFromParent();PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bOldCursor;return;}
+ auto* PC=Player.Get();if(!PC)return;if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();A && A->IsWorkbenchOpen())return;if(Inventory && Inventory->IsInViewport()){Inventory->RemoveFromParent();PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bOldCursor;return;}
  if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));Manager && (Manager->IsDialogueOpen() || Manager->IsFinderMenuOpen()))return;
- if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);int32 ScreenX=1920,ScreenY=1080;PC->GetViewportSize(ScreenX,ScreenY);Inventory->SetDesiredSizeInViewport(FVector2D(ScreenX,ScreenY));Inventory->SetPositionInViewport(FVector2D::ZeroVector,false);Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
+ if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
 }
 FString UForestHarvestMagic::Prompt(const FForestMagicItem& I)
 {

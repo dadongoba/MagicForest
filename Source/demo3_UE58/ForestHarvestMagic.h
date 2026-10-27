@@ -74,12 +74,15 @@ public:
  virtual TSharedRef<SWidget> RebuildWidget() override;
  virtual FReply NativeOnPreviewKeyDown(const FGeometry&,const FKeyEvent&) override;
  void Refresh();
+ void SelectMajor(const FString& InstanceId);
  void Select(const FString& Key);
  UFUNCTION() void Close();
 private:
  TSharedPtr<SWrapBox> List;
  TSharedPtr<STextBlock> Detail;
  FString Selected;
+ FString SelectedMajor;
+ bool bMajorsTab=false;
 };
 
 /** Bridges confirmed legacy Blueprint harvests to named, immutable magic items. */
@@ -95,6 +98,7 @@ public:
  UFUNCTION(BlueprintCallable) void ToggleInventory();
  UFUNCTION(BlueprintPure) bool FindItem(const FString& Key,FForestMagicItem& Item) const;
  TMap<FString,int32> ReadBag() const;
+ bool IsInventoryOpen() const{return Inventory && Inventory->IsInViewport();}
  void HandleResponse(UForestHarvestRequest*,bool,const FString&);
  static FString ElementText(EAlchemyElement Element);
 private:

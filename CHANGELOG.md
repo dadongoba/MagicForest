@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-10-27-01：今日大牌背包、药瓶抽牌与夜间合成台
+
+- **基线 / 前置**：main `9b90c83`，前置纸页主题、采摘小物、委托与世界日；完整demo3_UE58 1.5。
+- **新增**：Source/demo3_UE58/ForestAlchemy.h、ForestAlchemy.cpp、ForestAlchemyUI.cpp；Config/DefaultForestAlchemy.ini；Docs/Daily_Arcana_Brewing_2026-10-27.md、Daily_Arcana_Brewing_Preview.html、Daily_Arcana_Brewing_Preview.jpg。
+- **修改**：Source/demo3_UE58/ForestHarvestMagic.h/.cpp、PotionMimicWorldSubsystem.h/.cpp；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DailyMushroomSubsystem.cpp；本记录。
+- **行为**：背包新增今日大牌页；拿起现有药瓶本地随机抽22张大牌，每瓶每天一次、允许重复牌型，持久化逐瓶领取记录。开始游戏/换天查找室内出生点。E开夜间合成台，按原型栏目放入大小牌、调序、移除、额度/槽位/库存限制和本地试算，不显示3D轴。
+- **封瓶**：二次确认后扣槽内材料/大牌、保存成品数值并换天；新日恢复药瓶、清空旧牌、回小屋。增加换天保存失败的回滚。成品为数值记录，未新增实体药剂、玛瑙奖励或NPC交付记忆。
+- **依赖 / 应用**：合并9份源码/配置并编译，保留既有关卡、PlayerStart、小屋药瓶模型与共享主题PNG。无地图/蓝图/缓存覆盖。详见[接入说明](Docs/Daily_Arcana_Brewing_2026-10-27.md)。
+- **验证**：本次UE 5.8 Mac Development Editor的UHT、编译、链接成功；源码同步、差异及凭据扫描；离线栏目预览截图。
+- **未验证 / 边界**：未开UE/PIE，出生/拿瓶/读档/扣料/换天仍需运行验收。夜间为面板阶段，不改天空；沿用既有评分未重新平衡，旧元素背包未增加完整数量存档。截图非引擎实机。
+- **上传状态**：待上传，成功后补记。
+
 ## 2026-10-14-09：补记NPC寻找自适应界面上传结果
 
 - **目的 / 基线 / 前置**：补记批次 2026-10-14-08，基于功能提交 `6a110a6`。

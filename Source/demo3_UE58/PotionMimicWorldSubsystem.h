@@ -71,6 +71,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Witch House|Potion Mimic|Inactive")
 	int32 GetInactiveWorkbenchPotionCount() const;
 
+ bool GetWorkbenchPotionHomeTransform(const AActor* Actor,FTransform& Out) const;
+
 private:
 	struct FBoundPotion
 	{

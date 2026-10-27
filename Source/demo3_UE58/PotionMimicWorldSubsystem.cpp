@@ -358,6 +358,7 @@ void UPotionMimicWorldSubsystem::UpdatePotionTransforms(float DeltaTime)
 			continue;
 		}
 
+		if (Actor->ActorHasTag(TEXT("Forest.ArcanaCollected")))continue;
 		UStaticMeshComponent* MeshComponent = Actor->GetStaticMeshComponent();
 		const float TargetBlend = bFlightRequested && !Potion.bInactive ? 1.0f : 0.0f;
 		Potion.LocalFlightBlend = FMath::FInterpConstantTo(Potion.LocalFlightBlend, TargetBlend, DeltaTime, 0.55f);
@@ -521,4 +522,9 @@ FVector UPotionMimicWorldSubsystem::GetFlightCentre() const
 		++ValidCount;
 	}
 	return ValidCount > 0 ? Average / ValidCount : FVector::ZeroVector;
+}
+
+bool UPotionMimicWorldSubsystem::GetWorkbenchPotionHomeTransform(const AActor* Actor,FTransform& Out) const
+{
+ for(const auto& P:BoundPotions)if(P.Actor.Get()==Actor){Out=P.HomeTransform;return true;}return false;
 }

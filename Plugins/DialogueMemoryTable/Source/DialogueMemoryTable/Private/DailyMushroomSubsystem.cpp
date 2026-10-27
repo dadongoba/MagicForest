@@ -62,9 +62,15 @@ bool UDailyMushroomSubsystem::ConfirmDryPotSynthesis()
         return false;
     }
 
+    const int32 PreviousDay = CurrentDay;
+    const int32 PreviousConfirmed = Save->LastConfirmedSynthesisDay;
     Save->LastConfirmedSynthesisDay = CurrentDay;
     CurrentDay = FMath::Max(1, CurrentDay + 1);
-    return Persist();
+    if (Persist()) return true;
+    CurrentDay = PreviousDay;
+    Save->CurrentDay = PreviousDay;
+    Save->LastConfirmedSynthesisDay = PreviousConfirmed;
+    return false;
 }
 
 bool UDailyMushroomSubsystem::SetCurrentDay(const int32 NewDay)
