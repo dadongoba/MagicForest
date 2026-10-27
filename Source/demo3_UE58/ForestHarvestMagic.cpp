@@ -110,7 +110,7 @@ TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
 {
  // Full-viewport anchor; only the paper has a preferred width. Height follows the text.
  return SNew(SOverlay)
- +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(FMargin(24,48,24,24))
+ +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(FMargin(24))
  [SAssignNew(Frame,SBox).WidthOverride(960)
   [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
    [SNew(SVerticalBox)

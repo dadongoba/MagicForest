@@ -56,3 +56,9 @@ UE 5.8 demo3_UE58Editor Mac Development 源码编译、生成代码与链接通�
 应用：合并Source/demo3_UE58/ForestHarvestMagic.h/.cpp并编译，依赖前批ForestUITheme和纸页PNG。无地图、蓝图、配置或存档改动。完整工程修改前已在Saved/CodexBackups/emergence-notice-20261027备份。
 
 验证：UE5.8 Mac Development Editor UHT、源码与链接成功；两份源码同步/差异检查。离线示例1280×720框960×235、800×600框752×268、360×640框312×400，正文22px，样本文字完整位于视口内，无横向越界。Docs/Item_Emergence_Preview.html/.jpg为独立提示框离线预览；背景仅示意色，不是游戏截图。未打开UE/PIE，原生尺寸、DPI、连续AI回复和长文案极端窗口仍待运行验收。
+
+### 2026-10-27 居中位置修订（批次12）
+
+用户明确字条应出现在中间。本次将物品涌现Slate Overlay槽位从顶部改为水平/垂直居中，四边对称24逻辑单位。保留框宽上限960、高随文本展开、正文22及显示时长。Item_Emergence_Preview.html/.jpg同步居中。先前批次09关于顶部48的说明为历史行为，以本节为准。
+
+本次Mac UE5.8源码编译与链接成功；离线1280×720、800×600、360×640测得纸页中心与视口中心差值均为0，样本文字完整位于视口内。源码同步及差异检查通过。未开UE/PIE，原生DPI和实际场景遮挡仍待验收。

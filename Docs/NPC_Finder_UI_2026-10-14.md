@@ -50,3 +50,11 @@ FinderFont最小实际Slate Size18，物品描述/行进正文Size22，目标/�
 本次UE5.8 Mac Development Editor UHT、源码与链接成功，源码同步及差异检查通过。HTML预览移除整页缩放、保留原交互演示。在1280×720、800×600、360×640、1280×360下，交付确认按钮位于面板内、无页面横向越界、故事22px；演示更换NPC后清空选物并禁用启程，手动选铜铃后启用，启程后显示对应Fawnia故事。更新NPC_Finder_Preview.html/.jpg、NPC_Finder_Preview_800.jpg，新增Payment/Travel单独截图（文件名NPC_Finder_Payment_Preview.jpg、NPC_Finder_Travel_Preview.jpg）。
 
 未打开UE/PIE；原生DPI、多屏、长库存/名称、滚动与焦点、运行中切换阶段、扣料/行走/退款仍待实机验收。HTML交互不读取或扣除实际背包，不能视为游戏玩法测试。极矮/极窄窗口可能需要滚动；行进保持鼠标穿透，极端长故事在最小窗口可见范围仍有限。
+
+### 2026-10-27 交付后的引路故事框（批次12）
+
+用户补充所指为选完/交出物品后、描述该物品如何引领玩家找到NPC的那段文本，即Travelling页的TravelStory。本批将该页容器从靠下改为居中；选人/交付页继续居中，普通交谈和附近提示仍靠下。保留前批故事字号22、尺寸限制、目标/已交付物品、鼠标穿透及取消按键，AI与移动流程未改。
+
+新增Docs/NPC_Travel_Centered_Preview.html/.jpg，单独展示“交出铜铃→铜铃引领→找到Fawnia”的行进故事，不混入选物品页。背景为示意色，头像与故事为示例，非游戏截图。旧多阶段NPC_Finder_Preview和NPC_Finder_Travel_Preview截图属于历史展示，行进定位以本节和独立预览为准。
+
+本次Mac UE5.8编译/链接成功；离线三尺寸1280×720、800×600、360×640中心差值均为0，面板均在视口内；两份源码与完整工程同步。未开UE/PIE，原生DPI、运行时切换与场景遮挡仍待验收。

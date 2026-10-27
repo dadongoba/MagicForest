@@ -72,7 +72,7 @@ void UForestNPCInteractionWidget::SetPanel(EPanel Mode)
  Panel=Mode;bFinderVisible=Mode==EPanel::Selecting || Mode==EPanel::Confirming;
  Switcher->SetActiveWidgetIndex(static_cast<int32>(Mode));
  Root->SetVisibility(bFinderVisible || Mode==EPanel::Conversation?EVisibility::Visible:EVisibility::HitTestInvisible);
- AdaptivePanel->SetVAlign(bFinderVisible?VAlign_Center:VAlign_Bottom);
+ AdaptivePanel->SetVAlign(bFinderVisible || Mode==EPanel::Travelling?VAlign_Center:VAlign_Bottom);
  Title->SetVisibility(Mode==EPanel::Travelling?EVisibility::Collapsed:EVisibility::HitTestInvisible);
  Subtitle->SetVisibility(bFinderVisible?EVisibility::HitTestInvisible:EVisibility::Collapsed);
  Prompt->SetVisibility(Mode==EPanel::Travelling?EVisibility::Collapsed:EVisibility::HitTestInvisible);
