@@ -142,7 +142,7 @@ TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
      +SVerticalBox::Slot().AutoHeight()[Text(TEXT("小物正在为你带路"),10)]
      +SVerticalBox::Slot().AutoHeight().Padding(0,5)[SAssignNew(TravelTarget,STextBlock).Font(ForestUI::FinderFont(19)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true)]]]
   +SVerticalBox::Slot().FillHeight(1).Padding(0,14)
-   [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(TravelStory,STextBlock).Font(ForestUI::FinderFont(16)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true)]]
+   [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(TravelStory,STextBlock).Font(ForestUI::FinderFont(22)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true)]]
   +SVerticalBox::Slot().AutoHeight()[SAssignNew(TravelFee,STextBlock).Font(ForestUI::FinderFont(10)).ColorAndOpacity(ForestUI::Muted).AutoWrapText(true)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[Text(TEXT("WASD / Esc　停止跟随"),10)];
  TSharedRef<SWidget> DialoguePanel=SNew(SVerticalBox)
@@ -180,7 +180,7 @@ void UForestNPCInteractionWidget::NativeTick(const FGeometry& Geometry,float Del
  const FVector2D Size=Geometry.GetLocalSize();if(Size.X<=0 || Size.Y<=0)return;
  const float Limit=bFinderVisible?1100.f:Panel==EPanel::Travelling?1000.f:760.f;
  LayoutWidth=FMath::Max(1.f,FMath::Min(Limit,static_cast<float>(Size.X)-48.f));PanelFrame->SetWidthOverride(LayoutWidth);
- const float Height=Panel==EPanel::Travelling?(LayoutWidth<700.f?600.f:400.f):bFinderVisible?640.f:540.f;
+ const float Height=Panel==EPanel::Travelling?(LayoutWidth<700.f?600.f:480.f):bFinderVisible?640.f:540.f;
  PanelFrame->SetHeightOverride(Panel==EPanel::Notice?FOptionalSize():FOptionalSize(FMath::Max(1.f,FMath::Min(Height,static_cast<float>(Size.Y)-48.f))));
 }
 void UForestNPCInteractionWidget::ShowMessage(const FString& Name,const FString&,const FString& Hint)

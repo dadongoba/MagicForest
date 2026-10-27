@@ -115,7 +115,7 @@ TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
   [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
    [SNew(SVerticalBox)
     +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("魔法书捎来一件小物"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss).AutoWrapText(true)]
-    +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(20)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
+    +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(26)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
 }
 void UForestHarvestNoticeWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
 {
