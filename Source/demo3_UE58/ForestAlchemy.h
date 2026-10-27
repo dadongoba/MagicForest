@@ -6,7 +6,7 @@
 #include "AlchemyGameplayTypes.h"
 #include "ForestAlchemy.generated.h"
 class UInputComponent;class APlayerController;class UStaticMeshComponent;class UForestAlchemy;
-class STextBlock;class SVerticalBox;
+class STextBlock;class SVerticalBox;class SBox;class SBorder;
 
 /** Future restrictions are data, not an LLM decision. Empty allowlists mean unrestricted. */
 UCLASS(Config=ForestAlchemy,DefaultConfig)
@@ -69,9 +69,13 @@ public:
  void Refresh();
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
+ virtual void NativeTick(const FGeometry&,float) override;
  virtual FReply NativeOnPreviewKeyDown(const FGeometry&,const FKeyEvent&) override;
 private:
  TSharedPtr<SVerticalBox> Body;
+ TSharedPtr<SBox> Frame;
+ TSharedPtr<SBorder> Paper;
+ bool bCompact=false;
 };
 UCLASS()
 class DEMO3_UE58_API UForestArcanaNotice : public UUserWidget

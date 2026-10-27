@@ -5,7 +5,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SScrollBox.h"
-#include "Widgets/Layout/SScaleBox.h"
+#include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "InputCoreTypes.h"
@@ -21,11 +21,24 @@ TSharedRef<SWidget> UForestArcanaNotice::RebuildWidget()
 }
 TSharedRef<SWidget> UForestBrewWidget::RebuildWidget()
 {
- SetIsFocusable(true);return SNew(SOverlay)+SOverlay::Slot().Padding(FMargin(24))
-  [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
-   [SNew(SBox).WidthOverride(1180).HeightOverride(740)
-    [SNew(SForestPaperBorder).Padding(FMargin(42,32,42,52))[SAssignNew(Body,SVerticalBox)]]]];
+ SetIsFocusable(true);return SNew(SOverlay)+SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+  [SAssignNew(Frame,SBox).WidthOverride(1180).HeightOverride(740)
+   [SAssignNew(Paper,SForestPaperBorder).Padding(FMargin(32,40,32,44))[SAssignNew(Body,SVerticalBox)]]];
 }
+void UForestBrewWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
+{
+ Super::NativeTick(Geometry,DeltaTime);
+ if(!Frame.IsValid())return;
+ // Geometry is already in Slate units after DPI: never mix it with physical display pixels.
+ const FVector2D Available=Geometry.GetLocalSize();if(Available.X<=0 || Available.Y<=0)return;
+ const float Width=FMath::Max(1.f,FMath::Min(1180.f,static_cast<float>(Available.X)-32.f));
+ const float Height=FMath::Max(1.f,FMath::Min(740.f,static_cast<float>(Available.Y)-32.f));
+ Frame->SetWidthOverride(Width);Frame->SetHeightOverride(Height);
+ const bool Compact=Width<900.f;
+ Paper->SetPadding(Compact?FMargin(18,32,18,36):FMargin(32,40,32,44));
+ if(bCompact!=Compact){bCompact=Compact;Refresh();}
+}
+
 void UForestBrewWidget::Refresh()
 {
  if(!Body.IsValid() || !Owner.IsValid())return;Body->ClearChildren();auto* A=Owner.Get();int32 Cost=0;for(const auto& C:A->Sequence)Cost+=C.Card.Cost;
@@ -41,7 +54,9 @@ void UForestBrewWidget::Refresh()
   Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 使用现场与森林余波"),18)];
   Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(A->bNarrativePending?TEXT("正在依据本次成品推演……"):R->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
   Story->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(A->bNarrativePending?TEXT("瓶口的封蜡渐渐冷却。林间尚未传回消息。愿望能否实现，取决于这一锅里真正留下的药性。"):R->Narrative,16)];
-  Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
+  if(bCompact)Body->AddSlot().FillHeight(1)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)
+   +SScrollBox::Slot()[Scores]+SScrollBox::Slot().Padding(0,22,0,0)[Story]];
+  else Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
    +SHorizontalBox::Slot().FillWidth(.34f).Padding(0,0,32,0)[SNew(SScrollBox)+SScrollBox::Slot()[Scores]]
    +SHorizontalBox::Slot().FillWidth(.66f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
   Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
@@ -49,16 +64,17 @@ void UForestBrewWidget::Refresh()
    [BrewUI::Button(TEXT("承接新局 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
   return;
  }
+ auto Draft=SNew(SVerticalBox);
  FAlchemyCommissionDefinition Comm;const bool HasCommission=A->CurrentCommission(Comm);
- Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("夜间合成台 · 第 %d 天                 今晚额度 %d / 5"),A->GetDay(),5-Cost),21)];
- Body->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(TEXT("元素小物相加 · 大牌按顺序变换药性 · 副锅独立调配 · 点击槽位可移除或调整顺序"),10)];
- auto Customers=SNew(SHorizontalBox);
+ Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("夜间合成台 · 第 %d 天                 今晚额度 %d / 5"),A->GetDay(),5-Cost),bCompact?16:21)];
+ Draft->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(TEXT("元素小物相加 · 大牌按顺序变换药性 · 副锅独立调配 · 点击槽位可移除或调整顺序"),10)];
+ auto Customers=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,6));
  for(const auto& C:A->Commissions())
  {
   const FString Name=C.CharacterId==TEXT("blacksmith")?TEXT("Natta · 铁匠"):C.CharacterId==TEXT("operator")?TEXT("Fawnia · 传信人"):TEXT("森林女巫 · 小说家");
-  Customers->AddSlot().AutoWidth().Padding(0,0,10,0)[BrewUI::Button(Name,FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->ChooseCommission(C.OrderIndex);return FReply::Handled();}),HasCommission && C.OrderIndex==Comm.OrderIndex)];
+  Customers->AddSlot()[BrewUI::Button(Name,FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->ChooseCommission(C.OrderIndex);return FReply::Handled();}),HasCommission && C.OrderIndex==Comm.OrderIndex)];
  }
- Body->AddSlot().AutoHeight().Padding(0,5)[Customers];
+ Draft->AddSlot().AutoHeight().Padding(0,5)[Customers];
  auto Slots=SNew(SHorizontalBox);
  for(int32 I=0;I<(HasCommission?Comm.SlotCount:3);++I)
  {
@@ -68,12 +84,12 @@ void UForestBrewWidget::Refresh()
     .OnClicked_Lambda([this,I](){if(Owner.IsValid()){Owner->SelectedSlot=I;Owner->RefreshUI();}return FReply::Handled();})
     [SNew(SScrollBox)+SScrollBox::Slot()[BrewUI::Text(Label,10)]]]];
  }
- Body->AddSlot().AutoHeight().Padding(0,8)[SNew(SBox).HeightOverride(150)[SNew(SScrollBox).Orientation(Orient_Horizontal)+SScrollBox::Slot()[Slots]]];
- auto Tools=SNew(SHorizontalBox);
- Tools->AddSlot().AutoWidth().Padding(0,0,6,0)[BrewUI::Button(TEXT("← 前移"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->MoveSlot(-1);return FReply::Handled();}))];
- Tools->AddSlot().AutoWidth().Padding(0,0,6,0)[BrewUI::Button(TEXT("后移 →"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->MoveSlot(1);return FReply::Handled();}))];
- Tools->AddSlot().AutoWidth().Padding(0,0,6,0)[BrewUI::Button(TEXT("移除所选"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->RemoveSlot();return FReply::Handled();}))];
- Tools->AddSlot().AutoWidth()[BrewUI::Button(TEXT("清空"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ClearSequence();return FReply::Handled();}))];Body->AddSlot().AutoHeight()[Tools];
+ Draft->AddSlot().AutoHeight().Padding(0,8)[SNew(SBox).HeightOverride(150)[SNew(SScrollBox).Orientation(Orient_Horizontal)+SScrollBox::Slot()[Slots]]];
+ auto Tools=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(6,6));
+ Tools->AddSlot()[BrewUI::Button(TEXT("← 前移"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->MoveSlot(-1);return FReply::Handled();}))];
+ Tools->AddSlot()[BrewUI::Button(TEXT("后移 →"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->MoveSlot(1);return FReply::Handled();}))];
+ Tools->AddSlot()[BrewUI::Button(TEXT("移除所选"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->RemoveSlot();return FReply::Handled();}))];
+ Tools->AddSlot()[BrewUI::Button(TEXT("清空"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ClearSequence();return FReply::Handled();}))];Draft->AddSlot().AutoHeight()[Tools];
  auto Materials=SNew(SVerticalBox);auto Majors=SNew(SVerticalBox);auto Result=SNew(SVerticalBox);
  Materials->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("元素小物 · 来自背包"),16)];
  Majors->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("今日大牌 · 来自药瓶"),16)];
@@ -91,15 +107,26 @@ void UForestBrewWidget::Refresh()
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];
  if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+TEXT("\n\n")+Comm.ElementRequest+FString::Printf(TEXT("\n槽位 %d · %s"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
  else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("请先选择今晚的委托对象。"))];
- Body->AddSlot().FillHeight(1).Padding(0,14)
-  [SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().FillWidth(.32f).Padding(0,0,16,0)[SNew(SScrollBox)+SScrollBox::Slot()[Materials]]
-   +SHorizontalBox::Slot().FillWidth(.35f).Padding(0,0,16,0)[SNew(SScrollBox)+SScrollBox::Slot()[Majors]]
-   +SHorizontalBox::Slot().FillWidth(.33f)[SNew(SScrollBox)+SScrollBox::Slot()[Result]]];
+ if(bCompact)
+ {
+  Draft->AddSlot().AutoHeight().Padding(0,14)[Result];
+  Draft->AddSlot().AutoHeight().Padding(0,8)[Materials];
+  Draft->AddSlot().AutoHeight().Padding(0,14)[Majors];
+  Body->AddSlot().FillHeight(1).Padding(0,8)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)+SScrollBox::Slot()[Draft]];
+ }
+ else
+ {
+  // The whole draft scrolls when the viewport is short; the action footer stays outside.
+  Draft->AddSlot().AutoHeight().Padding(0,14)[SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(.32f).Padding(0,0,16,0)[Materials]
+   +SHorizontalBox::Slot().FillWidth(.35f).Padding(0,0,16,0)[Majors]
+   +SHorizontalBox::Slot().FillWidth(.33f)[Result]];
+  Body->AddSlot().FillHeight(1).Padding(0,8)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)+SScrollBox::Slot()[Draft]];
+ }
  Body->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(A->Status,10)];
  Body->AddSlot().AutoHeight()
-  [SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[BrewUI::Button(TEXT("收起 · Esc"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->CloseWorkbench();return FReply::Handled();}))]
-   +SHorizontalBox::Slot().AutoWidth()[BrewUI::Button(A->bConfirming?TEXT("确认封瓶"):TEXT("封瓶交付"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ConfirmBrew();return FReply::Handled();}),true)]];
+  [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,6))
+   +SWrapBox::Slot()[BrewUI::Button(TEXT("收起 · Esc"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->CloseWorkbench();return FReply::Handled();}))]
+   +SWrapBox::Slot()[BrewUI::Button(A->bConfirming?TEXT("确认封瓶"):TEXT("封瓶交付"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ConfirmBrew();return FReply::Handled();}),true)]];
 }
 FReply UForestBrewWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape){if(Owner.IsValid() && !Owner->PendingResult())Owner->CloseWorkbench();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
