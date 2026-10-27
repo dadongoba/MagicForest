@@ -29,6 +29,26 @@ TSharedRef<SWidget> UForestBrewWidget::RebuildWidget()
 void UForestBrewWidget::Refresh()
 {
  if(!Body.IsValid() || !Owner.IsValid())return;Body->ClearChildren();auto* A=Owner.Get();int32 Cost=0;for(const auto& C:A->Sequence)Cost+=C.Card.Cost;
+ if(const auto* R=A->PendingResult())
+ {
+  const auto& E=R->Result;
+  Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("次日破晓 · 第 %d 天的合成结果"),R->Day),23)];
+  Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(R->Customer+TEXT(" · 结局与世界余波"),13)];
+  auto Scores=SNew(SVerticalBox);
+  Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("偏离与药性"),18)];
+  Scores->AddSlot().AutoHeight().Padding(0,16)[BrewUI::Text(FString::Printf(TEXT("目标　火 %d　风 %d　水 %d\n成品　火 %d　风 %d　水 %d\n\n总剂量　%.0f / 24\n灵验　%.2f\n偏离　%.2f\n方向吻合　%.1f%%\n剂量比　%.0f%%\n\n%s\n\n%s"),E.Target.Fire,E.Target.Wind,E.Target.Water,E.Actual.Fire,E.Actual.Wind,E.Actual.Water,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.Cosine*100,E.DoseRatio*100,*E.Verdict,*E.Reason),13)];
+  auto Story=SNew(SVerticalBox);
+  Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 使用现场与森林余波"),18)];
+  Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(A->bNarrativePending?TEXT("正在依据本次成品推演……"):R->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
+  Story->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(A->bNarrativePending?TEXT("瓶口的封蜡渐渐冷却。林间尚未传回消息。愿望能否实现，取决于这一锅里真正留下的药性。"):R->Narrative,16)];
+  Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(.34f).Padding(0,0,32,0)[SNew(SScrollBox)+SScrollBox::Slot()[Scores]]
+   +SHorizontalBox::Slot().FillWidth(.66f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
+  Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
+  Body->AddSlot().AutoHeight()[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
+   [BrewUI::Button(TEXT("承接新局 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+  return;
+ }
  FAlchemyCommissionDefinition Comm;const bool HasCommission=A->CurrentCommission(Comm);
  Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("夜间合成台 · 第 %d 天                 今晚额度 %d / 5"),A->GetDay(),5-Cost),21)];
  Body->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(TEXT("元素小物相加 · 大牌按顺序变换药性 · 副锅独立调配 · 点击槽位可移除或调整顺序"),10)];
@@ -68,11 +88,9 @@ void UForestBrewWidget::Refresh()
  if(!HasMajors)Majors->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今日还没有大牌。白天拿起小屋药瓶即可抽取。"))];
  Majors->AddSlot().AutoHeight().Padding(0,14,0,8)[BrewUI::Text(TEXT("通用修饰"),14)];
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
- Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("委托与试算"),16)];
+ Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];
  if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+TEXT("\n\n")+Comm.ElementRequest+FString::Printf(TEXT("\n槽位 %d · %s"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
  else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("请先选择今晚的委托对象。"))];
- FAlchemyEvaluationResult E;if(A->Evaluate(E))Result->AddSlot().AutoHeight().Padding(0,10)
-  [BrewUI::Text(FString::Printf(TEXT("当前药性\n火 %d　风 %d　水 %d\n\n总剂量 %.0f / 24\n灵验 %.2f　偏离 %.2f\n剂量比 %.0f%%\n\n%s\n%s"),E.Actual.Fire,E.Actual.Wind,E.Actual.Water,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.DoseRatio*100,*E.Verdict,*E.Reason),12)];
  Body->AddSlot().FillHeight(1).Padding(0,14)
   [SNew(SHorizontalBox)
    +SHorizontalBox::Slot().FillWidth(.32f).Padding(0,0,16,0)[SNew(SScrollBox)+SScrollBox::Slot()[Materials]]
@@ -82,6 +100,6 @@ void UForestBrewWidget::Refresh()
  Body->AddSlot().AutoHeight()
   [SNew(SHorizontalBox)
    +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[BrewUI::Button(TEXT("收起 · Esc"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->CloseWorkbench();return FReply::Handled();}))]
-   +SHorizontalBox::Slot().AutoWidth()[BrewUI::Button(A->bConfirming?TEXT("确认封瓶并换天"):TEXT("封瓶交付"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ConfirmBrew();return FReply::Handled();}),true)]];
+   +SHorizontalBox::Slot().AutoWidth()[BrewUI::Button(A->bConfirming?TEXT("确认封瓶"):TEXT("封瓶交付"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ConfirmBrew();return FReply::Handled();}),true)]];
 }
-FReply UForestBrewWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape){if(Owner.IsValid())Owner->CloseWorkbench();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
+FReply UForestBrewWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape){if(Owner.IsValid() && !Owner->PendingResult())Owner->CloseWorkbench();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}

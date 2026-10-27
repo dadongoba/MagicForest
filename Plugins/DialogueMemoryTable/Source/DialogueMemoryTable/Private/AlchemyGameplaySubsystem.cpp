@@ -990,14 +990,6 @@ bool UAlchemyGameplaySubsystem::EvaluateAlchemySequence(
 
     const int32 RequiredPips = Commission.MustCards.Num();
     OutResult.bMustUseAllSatisfied = !Commission.bMustUseAll || UsedPipIds.Num() >= RequiredPips;
-    if (Commission.bMustUseAll && !OutResult.bMustUseAllSatisfied)
-    {
-        OutResult.VerdictCode = TEXT("contract_breach");
-        OutResult.Verdict = TEXT("违约 · 指定用料没下锅");
-        OutResult.Reward = 0;
-        OutResult.Reason = TEXT("客人指定的必用素材没有全部真正生效。");
-        return true;
-    }
 
     const float TargetFire = static_cast<float>(Commission.Target.Fire);
     const float TargetWind = static_cast<float>(Commission.Target.Wind);
@@ -1019,6 +1011,15 @@ bool UAlchemyGameplaySubsystem::EvaluateAlchemySequence(
     OutResult.Cosine = Cosine;
     OutResult.DoseRatio = DoseRatio;
     OutResult.SumAbsolute = SumAbs;
+    if (Commission.bMustUseAll && !OutResult.bMustUseAllSatisfied)
+    {
+        OutResult.VerdictCode = TEXT("contract_breach");
+        OutResult.Verdict = TEXT("违约 · 指定用料没下锅");
+        OutResult.Reward = 0;
+        OutResult.Reason = TEXT("客人指定的必用素材没有全部真正生效。");
+        return true;
+    }
+
     OutResult.Reward = 2;
     OutResult.VerdictCode = TEXT("deliverable");
     OutResult.Verdict = TEXT("可交付");

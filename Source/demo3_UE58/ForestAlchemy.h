@@ -32,6 +32,11 @@ USTRUCT(BlueprintType)
 struct FForestBrewRecord
 {
  GENERATED_BODY()
+ UPROPERTY(BlueprintReadOnly) FString ReceiptId;
+ UPROPERTY(BlueprintReadOnly) FString Customer;
+ UPROPERTY(BlueprintReadOnly) FString Narrative;
+ UPROPERTY(BlueprintReadOnly) bool bNarrativeFallback=false;
+ UPROPERTY() FString ConsequencePrompt;
  UPROPERTY(BlueprintReadOnly) int32 Day=1;
  UPROPERTY(BlueprintReadOnly) int32 CommissionId=0;
  UPROPERTY(BlueprintReadOnly) FAlchemyEvaluationResult Result;
@@ -48,6 +53,7 @@ public:
  UPROPERTY() TArray<FForestDailyMajor> Majors;
  UPROPERTY() TArray<FForestBrewRecord> Brews;
  UPROPERTY() int32 PendingAdvanceFromDay=0;
+ UPROPERTY() FString PendingResultId;
 };
 struct FForestBrewChoice
 {
@@ -76,6 +82,16 @@ public:
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
 };
+/** One asynchronous request; receipt identity rejects late responses after timeout/travel. */
+UCLASS()
+class DEMO3_UE58_API UForestConsequenceRequest : public UObject
+{
+ GENERATED_BODY()
+public:
+ TWeakObjectPtr<UForestAlchemy> Owner;
+ FString ReceiptId;
+ UFUNCTION() void Completed(bool bSuccess,const FString& Text);
+};
 /** Daily card inventory, bottle interaction, indoor day start and the evening workbench. */
 UCLASS()
 class DEMO3_UE58_API UForestAlchemy : public UTickableWorldSubsystem
@@ -102,12 +118,17 @@ public:
  void RemoveSlot();void MoveSlot(int32 Direction);void ClearSequence();
  bool Evaluate(FAlchemyEvaluationResult& Out) const;
  void ConfirmBrew();
+ const FForestBrewRecord* PendingResult() const;
+ void FinishResult();
+ void HandleConsequence(UForestConsequenceRequest* Context,bool bSuccess,const FString& Text);
+ bool bNarrativePending=false;
  void RefreshUI();
  TArray<FForestBrewChoice> Sequence;
  int32 SelectedSlot=INDEX_NONE;
  FString Status;
  bool bConfirming=false;
 private:
+ UPROPERTY() TObjectPtr<UForestConsequenceRequest> ConsequenceRequest;
  UPROPERTY() TObjectPtr<UForestAlchemySave> Save;
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  UPROPERTY() TObjectPtr<UForestBrewWidget> Workbench;
@@ -121,6 +142,8 @@ private:
  int32 CommissionId=0;
  float ScanTime=1,SpawnTime=0,ToastUntil=0;
  FString Toast;
+ float ConsequenceStarted=0;
+ void GenerateConsequence();
  void Setup();bool Persist();bool SyncDay();void Discover();void StartInCabin();void Interact();
  bool OtherMenuOpen() const;
  AActor* FindFocus() const;
