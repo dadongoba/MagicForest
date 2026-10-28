@@ -16,6 +16,9 @@ class UAnimSequence;
 class UBoxComponent;
 class APhysicsVolume;
 class UMaterialParameterCollection;
+class UInputAction;
+class UInputMappingContext;
+struct FInputActionValue;
 
 UENUM(BlueprintType)
 enum class EForestViewMode : uint8
@@ -51,6 +54,11 @@ public:
 private:
  UPROPERTY() TObjectPtr<USpringArmComponent> Boom;
  UPROPERTY() TObjectPtr<UCameraComponent> Camera;
+ UPROPERTY() TObjectPtr<UCameraComponent> FirstPersonCamera;
+ UPROPERTY() TObjectPtr<UInputMappingContext> TemplateMappingContext;
+ UPROPERTY() TObjectPtr<UInputAction> TemplateMoveAction;
+ UPROPERTY() TObjectPtr<UInputAction> TemplateLookAction;
+ UPROPERTY() TObjectPtr<UInputAction> TemplateJumpAction;
  UPROPERTY() TObjectPtr<UInputComponent> Controls;
  UPROPERTY() TObjectPtr<UForestMinimapWidget> Minimap;
  UPROPERTY() TObjectPtr<UMaterialParameterCollection> CameraOcclusionParameters;
@@ -76,7 +84,7 @@ private:
  float ObservationYaw=0,ObservationPitch=0;
  float CameraIdleSeconds=0;
  double LastUserInteractionTime=0;
- float LookYaw=0,LookPitch=-15.f;
+ bool bAddedTemplateContext=false;
  bool bPawnInputWasEnabled=false;
  bool bMapWasOpen=false;
  bool bSkipLookDelta=true;
@@ -89,6 +97,12 @@ private:
  void InteractNearby();
  void ToggleMap();
  void ApplyGameplayInputMode();
+ void ApplyTemplateView();
+ bool CanUseTemplateInput() const;
+ void TemplateMove(const FInputActionValue& Value);
+ void TemplateLook(const FInputActionValue& Value);
+ void TemplateJumpStart();
+ void TemplateJumpEnd();
  void UpdateViewAndMovement(float DeltaTime,bool bBlocked);
  bool MenuOpen() const;
  void UpdateOcclusion();

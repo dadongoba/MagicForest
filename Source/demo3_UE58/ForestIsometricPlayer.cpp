@@ -33,6 +33,12 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Engine/GameViewportClient.h"
 #include "UnrealClient.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputAction.h"
+#include "InputActionValue.h"
+#include "InputMappingContext.h"
+#include "Engine/LocalPlayer.h"
 #include "UObject/UnrealType.h"
 #include "NavigationSystem.h"
 
@@ -82,14 +88,12 @@ void UForestIsometricPlayer::BeginPlay()
  bPawnInputWasEnabled=C->InputEnabled();C->DisableInput(PC);
  AddTickPrerequisiteActor(PC);
  C->GetCharacterMovement()->AddTickPrerequisiteComponent(this);
- LookYaw=CameraYaw;
  if(FSlateApplication::IsInitialized())LastUserInteractionTime=FSlateApplication::Get().GetLastUserInteractionTime();
  // This component owns facing; controller and template rotation must not fight it.
  C->bUseControllerRotationYaw=false;C->bUseControllerRotationPitch=false;C->bUseControllerRotationRoll=false;
  C->GetCharacterMovement()->bOrientRotationToMovement=false;
  C->GetCharacterMovement()->RotationRate=FRotator(0,640,0);
  C->GetCharacterMovement()->MaxWalkSpeed=450;
- PC->SetIgnoreLookInput(true);
  PC->SetControlRotation(FRotator(0,CameraYaw,0));
  auto* Body=C->GetMesh();
  Body->SetSkeletalMeshAsset(LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/ChengYi/Mesh/SK_CHENGYI_01.SK_CHENGYI_01")));
@@ -104,7 +108,8 @@ void UForestIsometricPlayer::BeginPlay()
  TArray<USkeletalMeshComponent*> Meshes;C->GetComponents(Meshes);
  for(auto* M:Meshes)if(M!=Body)M->SetVisibility(false,true);
  TArray<UCameraComponent*> OldCameras;C->GetComponents(OldCameras);
- for(auto* Old:OldCameras)Old->Deactivate();
+ for(auto* Old:OldCameras){if(Old->GetFName()==TEXT("FirstPersonCamera"))FirstPersonCamera=Old;Old->Deactivate();}
+ if(FirstPersonCamera)FirstPersonCamera->bUsePawnControlRotation=true;
  Boom=NewObject<USpringArmComponent>(C,TEXT("ForestIsometricBoom"));
  C->AddInstanceComponent(Boom);Boom->SetupAttachment(C->GetRootComponent());
  Boom->SetUsingAbsoluteRotation(true);Boom->SetWorldRotation(FRotator(CameraPitch,CameraYaw,0));
@@ -120,7 +125,23 @@ void UForestIsometricPlayer::BeginPlay()
  FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);PC->SetInputMode(Mode);
  // Alchemy (200) handles focused bottles/cauldrons first. This replaces the
  // inherited first-person harvest key. The NPC manager owns C; V cycles views.
- Controls=NewObject<UInputComponent>(C,TEXT("ForestIsometricInput"));Controls->RegisterComponent();Controls->Priority=150;
+ auto* TemplateInput=NewObject<UEnhancedInputComponent>(C,TEXT("ForestIsometricInput"));
+ Controls=TemplateInput;Controls->RegisterComponent();Controls->Priority=150;
+ TemplateMappingContext=LoadObject<UInputMappingContext>(nullptr,TEXT("/Game/Witch_House/Demo/FirstPerson/Input/IMC_Default.IMC_Default"));
+ TemplateMoveAction=LoadObject<UInputAction>(nullptr,TEXT("/Game/Witch_House/Demo/FirstPerson/Input/Actions/IA_Move.IA_Move"));
+ TemplateLookAction=LoadObject<UInputAction>(nullptr,TEXT("/Game/Witch_House/Demo/FirstPerson/Input/Actions/IA_Look.IA_Look"));
+ TemplateJumpAction=LoadObject<UInputAction>(nullptr,TEXT("/Game/Witch_House/Demo/FirstPerson/Input/Actions/IA_Jump.IA_Jump"));
+ if(TemplateMoveAction)TemplateInput->BindAction(TemplateMoveAction,ETriggerEvent::Triggered,this,&UForestIsometricPlayer::TemplateMove);
+ if(TemplateLookAction)TemplateInput->BindAction(TemplateLookAction,ETriggerEvent::Triggered,this,&UForestIsometricPlayer::TemplateLook);
+ if(TemplateJumpAction)
+ {
+  TemplateInput->BindAction(TemplateJumpAction,ETriggerEvent::Started,this,&UForestIsometricPlayer::TemplateJumpStart);
+  TemplateInput->BindAction(TemplateJumpAction,ETriggerEvent::Completed,this,&UForestIsometricPlayer::TemplateJumpEnd);
+  TemplateInput->BindAction(TemplateJumpAction,ETriggerEvent::Canceled,this,&UForestIsometricPlayer::TemplateJumpEnd);
+ }
+ if(auto* Local=PC->GetLocalPlayer())if(auto* Input=Local->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();Input && TemplateMappingContext && !Input->HasMappingContext(TemplateMappingContext))
+ {Input->AddMappingContext(TemplateMappingContext,0);bAddedTemplateContext=true;}
+ UE_LOG(LogTemp,Log,TEXT("Forest template input: move=%d look=%d jump=%d context=%d"),TemplateMoveAction!=nullptr,TemplateLookAction!=nullptr,TemplateJumpAction!=nullptr,TemplateMappingContext!=nullptr);
  Controls->BindKey(EKeys::MouseScrollUp,IE_Pressed,this,&UForestIsometricPlayer::ZoomIn);
  Controls->BindKey(EKeys::MouseScrollDown,IE_Pressed,this,&UForestIsometricPlayer::ZoomOut);
  Controls->BindKey(EKeys::E,IE_Pressed,this,&UForestIsometricPlayer::InteractNearby).bConsumeInput=true;
@@ -130,6 +151,7 @@ void UForestIsometricPlayer::BeginPlay()
  // Release is checked against Slate's physical state in Tick, so a synthetic
  // release caused by an input-mode focus change cannot interrupt a drag.
  PC->PushInputComponent(Controls);
+ ApplyTemplateView();
  Minimap=CreateWidget<UForestMinimapWidget>(PC);
  if(Minimap){Minimap->SetVisibility(ESlateVisibility::HitTestInvisible);Minimap->AddToViewport(80);Minimap->UpdateMap(0);}
  UE_LOG(LogTemp,Log,TEXT("Forest isometric ready: %s, ChengYi mesh, inherited inventory preserved"),*C->GetName());
@@ -145,13 +167,11 @@ void UForestIsometricPlayer::ZoomIn()
 {
  if(MenuOpen() || (Minimap && Minimap->bOverview))return;
  if(ViewMode==EForestViewMode::Overhead)CameraDistance=FMath::Clamp(CameraDistance-120,700.f,2200.f);
- else if(ViewMode==EForestViewMode::ThirdPerson)ThirdPersonDistance=FMath::Clamp(ThirdPersonDistance-40,200.f,700.f);
 }
 void UForestIsometricPlayer::ZoomOut()
 {
  if(MenuOpen() || (Minimap && Minimap->bOverview))return;
  if(ViewMode==EForestViewMode::Overhead)CameraDistance=FMath::Clamp(CameraDistance+120,700.f,2200.f);
- else if(ViewMode==EForestViewMode::ThirdPerson)ThirdPersonDistance=FMath::Clamp(ThirdPersonDistance+40,200.f,700.f);
 }
 void UForestIsometricPlayer::ApplyGameplayInputMode()
 {
@@ -162,16 +182,92 @@ void UForestIsometricPlayer::ApplyGameplayInputMode()
  if(FreeCursor){FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);PC->SetInputMode(Mode);}
  else {FInputModeGameOnly Mode;Mode.SetConsumeCaptureMouseDown(false);PC->SetInputMode(Mode);}
 }
+void UForestIsometricPlayer::ApplyTemplateView()
+{
+ auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !Boom || !Camera)return;
+ const bool Overhead=ViewMode==EForestViewMode::Overhead;
+ const bool First=ViewMode==EForestViewMode::FirstPerson;
+ const bool Third=ViewMode==EForestViewMode::ThirdPerson;
+ auto* Move=C->GetCharacterMovement();
+ // Epic TP_FirstPerson / TP_ThirdPerson: native FaceRotation in first person,
+ // CharacterMovement::PhysicsRotation toward acceleration in third person.
+ C->bUseControllerRotationYaw=First;
+ C->bUseControllerRotationPitch=false;C->bUseControllerRotationRoll=false;
+ Move->bOrientRotationToMovement=Third;Move->bUseControllerDesiredRotation=false;
+ const auto* Defaults=C->GetClass()->GetDefaultObject<ACharacter>()->GetCharacterMovement();
+ Move->MaxWalkSpeed=Overhead?450.f:Third?500.f:Defaults->MaxWalkSpeed;
+ Move->JumpZVelocity=Third?500.f:Defaults->JumpZVelocity;
+ Move->AirControl=Third?.35f:First?.5f:Defaults->AirControl;
+ Move->MinAnalogWalkSpeed=Third?20.f:Defaults->MinAnalogWalkSpeed;
+ Move->BrakingDecelerationWalking=Third?2000.f:Defaults->BrakingDecelerationWalking;
+ Move->BrakingDecelerationFalling=Overhead?Defaults->BrakingDecelerationFalling:1500.f;
+ Move->RotationRate=Third?FRotator(0,500,0):Defaults->RotationRate;
+ C->GetMesh()->SetRelativeRotation(FRotator(0,-90,0));
+ C->GetMesh()->SetOwnerNoSee(First);
+ if(First && !FirstPersonCamera)
+ {
+  FirstPersonCamera=NewObject<UCameraComponent>(C,TEXT("NativeFirstPersonCamera"));C->AddInstanceComponent(FirstPersonCamera);
+  FirstPersonCamera->SetupAttachment(C->GetRootComponent());
+  FirstPersonCamera->SetRelativeLocation(FVector(0,0,C->BaseEyeHeight));FirstPersonCamera->RegisterComponent();
+ }
+ if(FirstPersonCamera){FirstPersonCamera->bUsePawnControlRotation=true;FirstPersonCamera->SetActive(First);}
+ Camera->SetActive(!First);
+ // Standard TP_ThirdPerson centered follow camera and controller-driven boom.
+ Boom->SetUsingAbsoluteRotation(Overhead);Boom->bUsePawnControlRotation=Third;
+ Boom->TargetOffset=Overhead?FVector(0,0,70):FVector::ZeroVector;
+ Boom->SocketOffset=FVector::ZeroVector;
+ Boom->bDoCollisionTest=Third;Boom->ProbeSize=12.f;
+ Boom->TargetArmLength=Overhead?CameraDistance:Third?ThirdPersonDistance:0.f;
+ if(Overhead)Boom->SetWorldRotation(FRotator(CameraPitch+ObservationPitch,CameraYaw+ObservationYaw,0));
+ else Boom->SetRelativeRotation(FRotator::ZeroRotator);
+ Camera->bUsePawnControlRotation=false;Camera->SetFieldOfView(Overhead?45.f:90.f);
+}
+bool UForestIsometricPlayer::CanUseTemplateInput() const
+{
+ const auto* Viewport=GetWorld()->GetGameViewport();
+ return ViewMode!=EForestViewMode::Overhead && !MenuOpen() && !(Minimap && Minimap->bOverview)
+  && Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
+}
+void UForestIsometricPlayer::TemplateMove(const FInputActionValue& Value)
+{
+ auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !CanUseTemplateInput())return;
+ const FVector2D MovementVector=Value.Get<FVector2D>();
+ if(ViewMode==EForestViewMode::FirstPerson)
+ {
+  // TP_FirstPersonCharacter::DoMove.
+  C->AddMovementInput(C->GetActorRightVector(),MovementVector.X);
+  C->AddMovementInput(C->GetActorForwardVector(),MovementVector.Y);
+ }
+ else
+ {
+  // TP_ThirdPersonCharacter::DoMove.
+  const FRotator Rotation=PC->GetControlRotation();
+  const FRotator YawRotation(0,Rotation.Yaw,0);
+  const FVector ForwardDirection=FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+  const FVector RightDirection=FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+  C->AddMovementInput(ForwardDirection,MovementVector.Y);
+  C->AddMovementInput(RightDirection,MovementVector.X);
+ }
+}
+void UForestIsometricPlayer::TemplateLook(const FInputActionValue& Value)
+{
+ auto* C=Character.Get();if(!C || !CanUseTemplateInput())return;
+ const FVector2D LookAxisVector=Value.Get<FVector2D>();
+ // Both Epic templates use the controller's normal input/update pipeline.
+ C->AddControllerYawInput(LookAxisVector.X);
+ C->AddControllerPitchInput(LookAxisVector.Y);
+}
+void UForestIsometricPlayer::TemplateJumpStart(){if(auto* C=Character.Get();C && CanUseTemplateInput())C->Jump();}
+void UForestIsometricPlayer::TemplateJumpEnd(){if(auto* C=Character.Get())C->StopJumping();}
 void UForestIsometricPlayer::CycleViewMode()
 {
  if(MenuOpen() || (Minimap && Minimap->bOverview))return;
  if(bObserving)StopObserving();
- if(ViewMode==EForestViewMode::Overhead){LookYaw=FMath::UnwindDegrees(CameraYaw+ObservationYaw);ViewMode=EForestViewMode::FirstPerson;}
+ if(ViewMode==EForestViewMode::Overhead){if(auto* PC=Player.Get())PC->SetControlRotation(FRotator(0,CameraYaw+ObservationYaw,0));ViewMode=EForestViewMode::FirstPerson;}
  else if(ViewMode==EForestViewMode::FirstPerson)ViewMode=EForestViewMode::ThirdPerson;
  else ViewMode=EForestViewMode::Overhead;
  CameraIdleSeconds=0;
- // Do not interpolate from a distant overhead position through walls or the body.
- Boom->TargetArmLength=ViewMode==EForestViewMode::Overhead?CameraDistance:ViewMode==EForestViewMode::ThirdPerson?ThirdPersonDistance:0.f;
+ ApplyTemplateView();
  ApplyGameplayInputMode();
  UE_LOG(LogTemp,Log,TEXT("Forest view mode: %d (0 overhead, 1 first person, 2 third person)"),static_cast<int32>(ViewMode));
 }
@@ -269,7 +365,7 @@ void UForestIsometricPlayer::UpdateViewAndMovement(float DT,bool Blocked)
  const bool Focused=Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
  Blocked|=!Focused;
  const bool Overhead=ViewMode==EForestViewMode::Overhead;
- const bool FirstPerson=ViewMode==EForestViewMode::FirstPerson;
+ if(!Overhead)return;
  float X=0,Y=0;PC->GetInputMouseDelta(X,Y);
  if(bSkipLookDelta){X=0;Y=0;bSkipLookDelta=false;}
  bool HasActivity=bObserving || Blocked || X!=0 || Y!=0;
@@ -294,28 +390,11 @@ void UForestIsometricPlayer::UpdateViewAndMovement(float DT,bool Blocked)
   ObservationYaw=FMath::FInterpTo(ObservationYaw,0.f,DT,9.f);
   ObservationPitch=FMath::FInterpTo(ObservationPitch,0.f,DT,9.f);
  }
- if(!Overhead && !Blocked)
- {
-  LookYaw=FMath::UnwindDegrees(LookYaw+X*ObservationSensitivity+PC->GetInputAnalogKeyState(EKeys::Gamepad_RightX)*120.f*DT);
-  LookPitch=FMath::Clamp(LookPitch+Y*ObservationSensitivity+PC->GetInputAnalogKeyState(EKeys::Gamepad_RightY)*90.f*DT,-80.f,80.f);
- }
- const float Yaw=Overhead?CameraYaw+ObservationYaw:LookYaw;
- Boom->TargetOffset=FVector(0,0,FirstPerson?C->BaseEyeHeight:Overhead?70.f:60.f);
- Boom->SocketOffset=ViewMode==EForestViewMode::ThirdPerson?FVector(0,45,0):FVector::ZeroVector;
- Boom->bDoCollisionTest=ViewMode==EForestViewMode::ThirdPerson;
- Boom->ProbeSize=15.f;
- const float Distance=Overhead?CameraDistance:FirstPerson?0.f:ThirdPersonDistance;
- Boom->TargetArmLength=FMath::FInterpTo(Boom->TargetArmLength,Distance,DT,8);
- Boom->SetWorldRotation(FRotator(Overhead?CameraPitch+ObservationPitch:LookPitch,Yaw,0));
- Camera->SetFieldOfView(Overhead?45.f:FirstPerson?85.f:75.f);
- C->GetMesh()->SetOwnerNoSee(FirstPerson);
- // The movement basis uses camera yaw only: looking up never tilts walking.
+ const float Yaw=CameraYaw+ObservationYaw;
+ Boom->TargetArmLength=FMath::FInterpTo(Boom->TargetArmLength,CameraDistance,DT,8);
+ Boom->SetWorldRotation(FRotator(CameraPitch+ObservationPitch,Yaw,0));
  PC->SetControlRotation(FRotator(0,Yaw,0));
- if(!Overhead)
- {
-  C->SetActorRotation(FRotator(0,Yaw,0));C->GetMesh()->SetRelativeRotation(FRotator(0,-90,0));
- }
- else if(C->GetVelocity().SizeSquared2D()>9)
+ if(C->GetVelocity().SizeSquared2D()>9)
  {
   const FRotator Facing(0,C->GetVelocity().Rotation().Yaw-90,0);
   C->GetMesh()->SetWorldRotation(FMath::RInterpTo(C->GetMesh()->GetComponentRotation(),Facing,DT,12));
@@ -384,7 +463,8 @@ void UForestIsometricPlayer::EndPlay(const EEndPlayReason::Type Reason)
  if(CameraOcclusionParameters)UKismetMaterialLibrary::SetScalarParameterValue(this,CameraOcclusionParameters,TEXT("ForestCameraFadeEnabled"),0.f);
  if(SwimmingVolume)SwimmingVolume->Destroy();
  for(auto& W:Occluded)if(auto* M=W.Get())M->SetVisibility(true,false);
- if(auto* PC=Player.Get()){if(Controls)PC->PopInputComponent(Controls);PC->SetIgnoreLookInput(false);PC->bShowMouseCursor=true;}bObserving=false;
+ if(auto* PC=Player.Get()){if(Controls)PC->PopInputComponent(Controls);PC->bShowMouseCursor=true;}bObserving=false;
+ if(bAddedTemplateContext)if(auto* PC=Player.Get())if(auto* Local=PC->GetLocalPlayer())if(auto* Input=Local->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())Input->RemoveMappingContext(TemplateMappingContext);
  if(auto* C=Character.Get()){C->GetMesh()->SetOwnerNoSee(false);if(bPawnInputWasEnabled)C->EnableInput(Player.Get());}
  Super::EndPlay(Reason);
  if(Minimap){Minimap->RemoveFromParent();Minimap=nullptr;}
