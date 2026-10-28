@@ -18,11 +18,12 @@ namespace ForestTheme
  const FTableRowStyle& ComboRowStyle();
 }
 
-/** Textured paper container; the same asset is used in the offline preview. */
+/** Paper drawn in the panel's own Slate geometry, with a protected text gutter. */
 class SForestPaperBorder : public SBorder
 {
 public:
  using FArguments=SBorder::FArguments;
- void Construct(const FArguments& Args){SBorder::Construct(Args);SetBorderImage(ForestTheme::PaperSheet());SetBorderBackgroundColor(FLinearColor::White);}
+ void Construct(const FArguments& Args);
+ void SetPadding(TAttribute<FMargin> InPadding);
  virtual int32 OnPaint(const FPaintArgs&,const FGeometry&,const FSlateRect&,FSlateWindowElementList&,int32,const FWidgetStyle&,bool) const override;
 };
