@@ -52,6 +52,7 @@ class DEMO3_UE58_API UForestHarvestNoticeWidget : public UUserWidget
 {
  GENERATED_BODY()
 public:
+ TWeakObjectPtr<UForestHarvestMagic> Owner;
  TSharedPtr<STextBlock> Text;
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
@@ -107,6 +108,8 @@ public:
  static void ConfigureMushroomCollision(UStaticMeshComponent* Mesh);
  TMap<FString,int32> ReadBag() const;
  bool IsInventoryOpen() const{return Inventory && Inventory->IsInViewport();}
+ bool IsNoticeVisible() const { return NoticeWidget && NoticeWidget->GetVisibility()!=ESlateVisibility::Collapsed; }
+ void DismissNotice();
  void HandleResponse(UForestHarvestRequest*,bool,const FString&);
  static FString ElementText(EAlchemyElement Element);
 private:

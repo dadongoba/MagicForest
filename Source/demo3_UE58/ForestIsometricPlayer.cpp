@@ -66,6 +66,7 @@ UForestIsometricPlayer::UForestIsometricPlayer()
 {
  PrimaryComponentTick.bCanEverTick=true;
  PrimaryComponentTick.TickGroup=TG_PrePhysics;
+ InitializeActions();
 }
 bool UForestIsometricPlayer::RebuildNavigation(UObject* Context)
 {
@@ -148,6 +149,7 @@ void UForestIsometricPlayer::BeginPlay()
  Controls->BindKey(EKeys::E,IE_Pressed,this,&UForestIsometricPlayer::InteractNearby).bConsumeInput=true;
  Controls->BindKey(EKeys::M,IE_Pressed,this,&UForestIsometricPlayer::ToggleMap).bConsumeInput=true;
  Controls->BindKey(EKeys::V,IE_Pressed,this,&UForestIsometricPlayer::CycleViewMode).bConsumeInput=true;
+ Controls->BindKey(EKeys::F,IE_Pressed,this,&UForestIsometricPlayer::ToggleClimbing).bConsumeInput=true;
  Controls->BindKey(EKeys::RightMouseButton,IE_Pressed,this,&UForestIsometricPlayer::StartObserving).bConsumeInput=true;
  // Release is checked against Slate's physical state in Tick, so a synthetic
  // release caused by an input-mode focus change cannot interrupt a drag.
@@ -178,7 +180,7 @@ void UForestIsometricPlayer::ApplyGameplayInputMode()
 {
  auto* PC=Player.Get();if(!PC || MenuOpen())return;
  bSkipLookDelta=true;
- const bool FreeCursor=(Minimap && Minimap->bOverview) || (ViewMode==EForestViewMode::Overhead && !bObserving);
+ const bool FreeCursor=bAltNoticeCursor || (Minimap && Minimap->bOverview) || (ViewMode==EForestViewMode::Overhead && !bObserving);
  PC->bShowMouseCursor=FreeCursor;
  if(FreeCursor){FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);PC->SetInputMode(Mode);}
  else {FInputModeGameOnly Mode;Mode.SetConsumeCaptureMouseDown(false);PC->SetInputMode(Mode);}
@@ -227,11 +229,11 @@ bool UForestIsometricPlayer::CanUseTemplateInput() const
 {
  const auto* Viewport=GetWorld()->GetGameViewport();
  return ViewMode!=EForestViewMode::Overhead && !MenuOpen() && !(Minimap && Minimap->bOverview)
-  && Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
+  && !bAltNoticeCursor && Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
 }
 void UForestIsometricPlayer::TemplateMove(const FInputActionValue& Value)
 {
- auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !CanUseTemplateInput())return;
+ auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !CanUseTemplateInput() || ActionBusy())return;
  const FVector2D MovementVector=Value.Get<FVector2D>();
  if(ViewMode==EForestViewMode::FirstPerson)
  {
@@ -258,10 +260,11 @@ void UForestIsometricPlayer::TemplateLook(const FInputActionValue& Value)
  C->AddControllerYawInput(LookAxisVector.X);
  C->AddControllerPitchInput(LookAxisVector.Y);
 }
-void UForestIsometricPlayer::TemplateJumpStart(){if(auto* C=Character.Get();C && CanUseTemplateInput())C->Jump();}
+void UForestIsometricPlayer::TemplateJumpStart(){if(bClimbing){StopClimbing();return;}if(auto* C=Character.Get();C && CanUseTemplateInput() && !bGathering)C->Jump();}
 void UForestIsometricPlayer::TemplateJumpEnd(){if(auto* C=Character.Get())C->StopJumping();}
 void UForestIsometricPlayer::CycleViewMode()
 {
+ if(ActionBusy())return;
  if(MenuOpen() || (Minimap && Minimap->bOverview))return;
  if(bObserving)StopObserving();
  if(ViewMode==EForestViewMode::Overhead){if(auto* PC=Player.Get())PC->SetControlRotation(FRotator(0,CameraYaw+ObservationYaw,0));ViewMode=EForestViewMode::FirstPerson;}
@@ -301,7 +304,7 @@ void UForestIsometricPlayer::StopObserving()
 }
 void UForestIsometricPlayer::InteractNearby()
 {
- auto* C=Character.Get();if(!C || MenuOpen())return;
+ auto* C=Character.Get();if(!C || MenuOpen() || ActionBusy())return;
  auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));
  if(Manager)
  {
@@ -319,6 +322,10 @@ void UForestIsometricPlayer::TickComponent(float DT,ELevelTick Type,FActorCompon
  if(Minimap)Minimap->UpdateMap(DT);
  auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !Boom)return;
  const bool Open=MenuOpen();
+ const auto* HarvestUI=GetWorld()->GetSubsystem<UForestHarvestMagic>();
+ const bool AltHeld=FSlateApplication::IsInitialized()?FSlateApplication::Get().GetModifierKeys().IsAltDown():(PC->IsInputKeyDown(EKeys::LeftAlt) || PC->IsInputKeyDown(EKeys::RightAlt));
+ const bool AltCursor=HarvestUI && HarvestUI->IsNoticeVisible() && AltHeld;
+ if(AltCursor!=bAltNoticeCursor){bAltNoticeCursor=AltCursor;ApplyGameplayInputMode();}
  // Slate tracks the physical button across viewport capture/focus changes.
  // PlayerInput may flush its key state when the input mode changes mid-press.
  const bool RightHeld=FSlateApplication::IsInitialized()
@@ -326,6 +333,9 @@ void UForestIsometricPlayer::TickComponent(float DT,ELevelTick Type,FActorCompon
   : PC->IsInputKeyDown(EKeys::RightMouseButton);
  if(bObserving && (Open || (Minimap && Minimap->bOverview) || !RightHeld))StopObserving();
  UpdateSwimming(DT);
+ const auto* Viewport=GetWorld()->GetGameViewport();
+ const bool Focused=Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
+ UpdateActions(DT,Open || (Minimap && Minimap->bOverview) || !Focused);
  UpdateViewAndMovement(DT,Open || (Minimap && Minimap->bOverview));
  if(CameraOcclusionParameters)
  {
@@ -395,12 +405,12 @@ void UForestIsometricPlayer::UpdateViewAndMovement(float DT,bool Blocked)
  Boom->TargetArmLength=FMath::FInterpTo(Boom->TargetArmLength,CameraDistance,DT,8);
  Boom->SetWorldRotation(FRotator(CameraPitch+ObservationPitch,Yaw,0));
  PC->SetControlRotation(FRotator(0,Yaw,0));
- if(C->GetVelocity().SizeSquared2D()>9)
+ if(!ActionBusy() && C->GetVelocity().SizeSquared2D()>9)
  {
   const FRotator Facing(0,C->GetVelocity().Rotation().Yaw-90,0);
   C->GetMesh()->SetWorldRotation(FMath::RInterpTo(C->GetMesh()->GetComponentRotation(),Facing,DT,12));
  }
- if(!Blocked && !PC->IsMoveInputIgnored())
+ if(!Blocked && !PC->IsMoveInputIgnored() && !ActionBusy())
  {
   const float Forward=(PC->IsInputKeyDown(EKeys::W)?1.f:0.f)-(PC->IsInputKeyDown(EKeys::S)?1.f:0.f)+PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftY);
   const float Right=(PC->IsInputKeyDown(EKeys::D)?1.f:0.f)-(PC->IsInputKeyDown(EKeys::A)?1.f:0.f)+PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftX);
@@ -436,6 +446,7 @@ void UForestIsometricPlayer::UpdateOcclusion()
 }
 void UForestIsometricPlayer::HarvestNearby()
 {
+ if(ActionBusy())return;
  auto* C=Character.Get();if(!C || MenuOpen())return;
  if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
  {Regions->TryHarvest(C,bSwimming);return;}
@@ -463,6 +474,8 @@ void UForestIsometricPlayer::HarvestNearby()
 }
 void UForestIsometricPlayer::EndPlay(const EEndPlayReason::Type Reason)
 {
+ if(bGathering)FinishGather(false);
+ if(bClimbing)StopClimbing();
  if(CameraOcclusionParameters)UKismetMaterialLibrary::SetScalarParameterValue(this,CameraOcclusionParameters,TEXT("ForestCameraFadeEnabled"),0.f);
  if(SwimmingVolume)SwimmingVolume->Destroy();
  for(auto& W:Occluded)if(auto* M=W.Get())M->SetVisibility(true,false);
@@ -551,6 +564,7 @@ void UForestIsometricPlayer::LeaveWater(const FHitResult* Shore)
 
 void UForestIsometricPlayer::UpdateSwimming(float DT)
 {
+ if(bClimbing)return;
  auto* C=Character.Get();if(!C || !SwimmingAnimation || !SwimmingBounds)return;
  auto* Move=C->GetCharacterMovement();const FVector P=C->GetActorLocation();
  FCollisionQueryParams WaterQuery(SCENE_QUERY_STAT(ForestSwimmingSurface),true,C);
@@ -594,5 +608,5 @@ void UForestIsometricPlayer::UpdateSwimming(float DT)
  FVector SurfacePosition=C->GetActorLocation();
  SurfacePosition.Z=FMath::FInterpTo(SurfacePosition.Z,SurfaceZ-15.f,DT,10.f);
  C->SetActorLocation(SurfacePosition,true);
- if(auto* Anim=C->GetMesh()->GetSingleNodeInstance())Anim->SetPlayRate(FMath::Lerp(.65f,1.f,FMath::Clamp(C->GetVelocity().Size2D()/SwimSpeed,0.f,1.f)));
+ if(!bGathering)if(auto* Anim=C->GetMesh()->GetSingleNodeInstance())Anim->SetPlayRate(FMath::Lerp(.65f,1.f,FMath::Clamp(C->GetVelocity().Size2D()/SwimSpeed,0.f,1.f)));
 }

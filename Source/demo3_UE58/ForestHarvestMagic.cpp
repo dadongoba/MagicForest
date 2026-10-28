@@ -109,10 +109,12 @@ void UForestHarvestMagic::RefreshFieldUI()
  }
  if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
  {
-  Action=TEXT("WASD 移动 · E 交互/采集 · B 背包 · C 找人 · V 视角 · M 地图");
+  Action=TEXT("WASD 移动 · E 交互/采集 · F 攀爬/松手 · B 背包 · C 找人 · V 视角 · M 地图");
   if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
   {
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
+   if(View->bClimbing){FieldHUD->Action->SetText(FText::FromString(TEXT("攀爬中 · W 上爬 / S 下爬 / A D 横移 · F 松手 · 到达边缘自动登顶")));return;}
+   if(View->bGathering){FieldHUD->Action->SetText(FText::FromString(TEXT("正在采集…")));return;}
    Action=Regions->GetHarvestHint(Cast<ACharacter>(Pawn),View && View->bSwimming)+TEXT("\n")+Action;
   }
  }
@@ -126,7 +128,13 @@ TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
  [SAssignNew(Frame,SBox).WidthOverride(960)
   [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
    [SNew(SVerticalBox)
-    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("魔法书捎来一件小物"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss).AutoWrapText(true)]
+    +SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("采集收获"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss)]
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).IsFocusable(false).ContentPadding(FMargin(14,6))
+      .ToolTipText(FText::FromString(TEXT("关闭提示（第一、第三人称按住 Alt 显示鼠标）")))
+      .OnClicked_Lambda([this](){if(Owner.IsValid())Owner->DismissNotice();return FReply::Handled();})
+      [SNew(STextBlock).Text(FText::FromString(TEXT("X"))).Font(HarvestMagic::Font(18,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,6)[SNew(STextBlock).Text(FText::FromString(TEXT("点击 X 关闭 · 按住 Alt 显示鼠标"))).Font(HarvestMagic::Font(11)).ColorAndOpacity(HarvestMagic::Muted)]
     +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(26)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
 }
 void UForestHarvestNoticeWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
@@ -265,7 +273,7 @@ bool UForestHarvestMagic::GrantRegionalMaterial(EAlchemyElement Element,int32 Pi
  if(Notice.IsValid())
  {
   Notice->SetText(FText::FromString(FString::Printf(TEXT("采集获得：%s\n%s\n已收入背包 · 按 B 查看"),*Item.InventoryKey,*Item.Description)));
-  NoticeUntil=GetWorld()->GetTimeSeconds()+6;NoticeWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+  NoticeUntil=GetWorld()->GetTimeSeconds()+6;NoticeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
  }
  JustHarvested.Add(Item.SourceMushroom,SourceMesh);BeginVisual(Item.SourceMushroom,Element);
  UE_LOG(LogTemp,Log,TEXT("Regional harvest: %s, fixed element %s"),*Item.InventoryKey,*ElementText(Element));
@@ -290,7 +298,11 @@ void UForestHarvestMagic::Setup()
  FieldHUD=CreateWidget<UForestFieldHUDWidget>(PC);if(FieldHUD){FieldHUD->AddToViewport(10);FieldHUD->SetVisibility(ESlateVisibility::HitTestInvisible);}
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom"))){ConfigureMushroomCollision(M);MushroomVisibility.Add(M,It->IsHidden());}
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
- if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
+ if(NewNotice){NewNotice->Owner=this;NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
+}
+void UForestHarvestMagic::DismissNotice()
+{
+ NoticeUntil=0;if(NoticeWidget)NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 void UForestHarvestMagic::ToggleInventory()
 {
@@ -331,7 +343,7 @@ void UForestHarvestMagic::HandleResponse(UForestHarvestRequest* Request,bool Suc
 }
 void UForestHarvestMagic::ShowResult(const FForestMagicItem& I)
 {
- if(!Notice.IsValid())return;Notice->SetText(FText::FromString(FString::Printf(TEXT("蘑菇散作星尘，魔法书将其中的%s凝成了一件小物。\n获得：%s · %s%d\n%s\n已收入背包 · 按 B 查看"),*ElementText(I.Element),*I.Name,*ElementText(I.Element),I.PipValue,*I.Description)));NoticeUntil=GetWorld()->GetTimeSeconds()+8;NoticeWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+ if(!Notice.IsValid())return;Notice->SetText(FText::FromString(FString::Printf(TEXT("蘑菇散作星尘，魔法书将其中的%s凝成了一件小物。\n获得：%s · %s%d\n%s\n已收入背包 · 按 B 查看"),*ElementText(I.Element),*I.Name,*ElementText(I.Element),I.PipValue,*I.Description)));NoticeUntil=GetWorld()->GetTimeSeconds()+8;NoticeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 void UForestHarvestMagic::BeginVisual(const FString& Source,EAlchemyElement Element)
 {

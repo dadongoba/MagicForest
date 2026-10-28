@@ -50,8 +50,34 @@ public:
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Swimming") bool bSwimming=false;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Swimming") float SwimSpeed=230.f;
  UFUNCTION(BlueprintCallable) void HarvestNearby();
+ bool BeginGather(class AForestElementResource* Resource);
+ bool ActionBusy() const { return bGathering || bClimbing; }
+ void RefreshGameplayInput() { ApplyGameplayInputMode(); }
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Actions") bool bGathering=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Actions") bool bClimbing=false;
+ UPROPERTY(EditAnywhere,Category="Climbing") float ClimbSpeed=110.f;
  UFUNCTION(BlueprintCallable,Category="Forest|Migration") static bool RebuildNavigation(UObject* WorldContextObject);
 private:
+ UPROPERTY() TArray<TObjectPtr<UAnimSequence>> GatherAnimations;
+ UPROPERTY() TArray<TObjectPtr<UAnimSequence>> ClimbAnimations;
+ UPROPERTY() TObjectPtr<UAnimSequence> ActiveActionAnimation;
+ TWeakObjectPtr<class AForestElementResource> GatheringResource;
+ FVector ClimbNormal=FVector::ForwardVector;
+ FVector MantleStart=FVector::ZeroVector,MantleLift=FVector::ZeroVector,MantleEnd=FVector::ZeroVector;
+ float ActionAge=0,StageAge=0,MantleAge=0;
+ int32 GatherStage=0;
+ bool bGatherInWater=false,bMantling=false;
+ bool bAltNoticeCursor=false;
+ bool bSavedControllerYaw=false,bSavedOrientToMovement=false;
+ void InitializeActions();
+ void UpdateActions(float DeltaTime,bool bBlocked);
+ void ToggleClimbing();
+ void StopClimbing();
+ bool FindClimbSurface(const FVector& Position,const FVector& Direction,struct FHitResult& Hit) const;
+ bool TryMantle();
+ void PlayAction(UAnimSequence* Animation,bool bLoop);
+ void RestoreLocomotion();
+ void FinishGather(bool bCommit);
  UPROPERTY() TObjectPtr<USpringArmComponent> Boom;
  UPROPERTY() TObjectPtr<UCameraComponent> Camera;
  UPROPERTY() TObjectPtr<UCameraComponent> FirstPersonCamera;

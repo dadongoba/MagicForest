@@ -66,6 +66,7 @@ public:
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Regions") TArray<FForestElementRegion> Regions;
  bool IsRegionalWorld() const;
  bool TryHarvest(ACharacter* Character,bool bSwimming);
+ bool CollectResource(ACharacter* Character,bool bSwimming,AForestElementResource* Resource);
  FString GetHarvestHint(const ACharacter* Character,bool bSwimming) const;
 private:
  // Hard asset references on the CDO also make these assets visible to the cooker.

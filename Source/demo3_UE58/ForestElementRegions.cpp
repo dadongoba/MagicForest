@@ -226,6 +226,14 @@ bool UForestElementRegions::TryHarvest(ACharacter* Character,bool Swimming)
 {
  auto* Resource=Nearest(Character,230.f);
  if(!bInitialized || !HarvestSave || !Resource || (Resource->bWaterShell && !Swimming))return false;
+ auto* Actions=Character?Character->FindComponentByClass<UForestIsometricPlayer>():nullptr;
+ return Actions && Actions->BeginGather(Resource);
+}
+bool UForestElementRegions::CollectResource(ACharacter* Character,bool Swimming,AForestElementResource* Resource)
+{
+ // Commit the original target only, after its animation. A moved/respawned target cancels.
+ if(!IsValid(Resource) || Resource!=Nearest(Character,230.f))return false;
+ if(!bInitialized || !HarvestSave || !Resource || (Resource->bWaterShell && !Swimming))return false;
  const FString Key=CollectionKey(Resource);
  if(HarvestSave->Collected.Contains(Key))return false;
  HarvestSave->Collected.Add(Key);
