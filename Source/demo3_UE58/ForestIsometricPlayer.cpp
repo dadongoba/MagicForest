@@ -30,6 +30,7 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "InputCoreTypes.h"
+#include "Framework/Application/SlateApplication.h"
 #include "UObject/UnrealType.h"
 #include "NavigationSystem.h"
 
@@ -74,6 +75,7 @@ void UForestIsometricPlayer::BeginPlay()
  auto* PC=C?Cast<APlayerController>(C->GetController()):nullptr;
  if(!C || !PC)return;
  Character=C;Player=PC;
+ if(FSlateApplication::IsInitialized())LastUserInteractionTime=FSlateApplication::Get().GetLastUserInteractionTime();
  // The inherited template moves along ActorForward/Right, so its capsule must
  // keep a fixed camera-relative basis. Only the visible body turns with velocity.
  C->bUseControllerRotationYaw=true;C->bUseControllerRotationPitch=false;C->bUseControllerRotationRoll=false;
@@ -116,7 +118,8 @@ void UForestIsometricPlayer::BeginPlay()
  Controls->BindKey(EKeys::E,IE_Pressed,this,&UForestIsometricPlayer::InteractNearby).bConsumeInput=true;
  Controls->BindKey(EKeys::M,IE_Pressed,this,&UForestIsometricPlayer::ToggleMap).bConsumeInput=true;
  Controls->BindKey(EKeys::RightMouseButton,IE_Pressed,this,&UForestIsometricPlayer::StartObserving).bConsumeInput=true;
- Controls->BindKey(EKeys::RightMouseButton,IE_Released,this,&UForestIsometricPlayer::StopObserving).bConsumeInput=true;
+ // Release is checked against Slate's physical state in Tick, so a synthetic
+ // release caused by an input-mode focus change cannot interrupt a drag.
  PC->PushInputComponent(Controls);
  Minimap=CreateWidget<UForestMinimapWidget>(PC);
  if(Minimap){Minimap->SetVisibility(ESlateVisibility::HitTestInvisible);Minimap->AddToViewport(80);Minimap->UpdateMap(0);}
@@ -134,15 +137,17 @@ void UForestIsometricPlayer::ZoomOut(){if(!MenuOpen())CameraDistance=FMath::Clam
 void UForestIsometricPlayer::ToggleMap(){if(Minimap && !MenuOpen()){if(bObserving)StopObserving();Minimap->ToggleOverview();}}
 void UForestIsometricPlayer::StartObserving()
 {
- auto* PC=Player.Get();if(!PC || MenuOpen() || (Minimap && Minimap->bOverview))return;
+ auto* PC=Player.Get();if(!PC || bObserving || MenuOpen() || (Minimap && Minimap->bOverview))return;
  bHadMousePosition=PC->GetMousePosition(SavedMouseX,SavedMouseY);
  bObserving=true;PC->bShowMouseCursor=false;
+ CameraIdleSeconds=0;
  FInputModeGameOnly Mode;Mode.SetConsumeCaptureMouseDown(false);PC->SetInputMode(Mode);
 }
 void UForestIsometricPlayer::StopObserving()
 {
  if(!bObserving)return;
  bObserving=false;
+ CameraIdleSeconds=0;
  if(auto* PC=Player.Get())
  {
   PC->bShowMouseCursor=true;
@@ -175,8 +180,13 @@ void UForestIsometricPlayer::TickComponent(float DT,ELevelTick Type,FActorCompon
  if(Minimap)Minimap->UpdateMap(DT);
  auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !Boom)return;
  const bool Open=MenuOpen();
- if(bObserving && (Open || !PC->IsInputKeyDown(EKeys::RightMouseButton)))StopObserving();
- PC->SetControlRotation(FRotator(0,CameraYaw,0));PC->bShowMouseCursor=!bObserving;
+ // Slate tracks the physical button across viewport capture/focus changes.
+ // PlayerInput may flush its key state when the input mode changes mid-press.
+ const bool RightHeld=FSlateApplication::IsInitialized()
+  ? FSlateApplication::Get().IsActive() && FSlateApplication::Get().GetPressedMouseButtons().Contains(EKeys::RightMouseButton)
+  : PC->IsInputKeyDown(EKeys::RightMouseButton);
+ if(bObserving && (Open || (Minimap && Minimap->bOverview) || !RightHeld))StopObserving();
+ PC->SetControlRotation(FRotator(0,CameraYaw,0));
  C->SetActorRotation(FRotator(0,CameraYaw,0));
  UpdateSwimming(DT);
  if(C->GetVelocity().SizeSquared2D()>9)
@@ -185,13 +195,25 @@ void UForestIsometricPlayer::TickComponent(float DT,ELevelTick Type,FActorCompon
   C->GetMesh()->SetWorldRotation(FMath::RInterpTo(C->GetMesh()->GetComponentRotation(),Facing,DT,12));
  }
  Boom->TargetArmLength=FMath::FInterpTo(Boom->TargetArmLength,CameraDistance,DT,8);
+ float X=0,Y=0;PC->GetInputMouseDelta(X,Y);
+ bool HasActivity=bObserving || Open || (Minimap && Minimap->bOverview) || X!=0 || Y!=0;
+ if(FSlateApplication::IsInitialized())
+ {
+  const double InteractionTime=FSlateApplication::Get().GetLastUserInteractionTime();
+  HasActivity|=InteractionTime!=LastUserInteractionTime;
+  LastUserInteractionTime=InteractionTime;
+ }
+ // A held movement/button input counts as activity even without new key events.
+ static const TArray<FKey> Keys=[](){TArray<FKey> Result;EKeys::GetAllKeys(Result);return Result;}();
+ for(const FKey& Key:Keys)
+  if(PC->IsInputKeyDown(Key) || PC->WasInputKeyJustReleased(Key)){HasActivity=true;break;}
+ CameraIdleSeconds=HasActivity?0.f:FMath::Min(CameraIdleSeconds+DT,FMath::Max(0.f,CameraReturnIdleSeconds));
  if(bObserving)
  {
-  float X=0,Y=0;PC->GetInputMouseDelta(X,Y);
   ObservationYaw=FMath::UnwindDegrees(ObservationYaw+X*ObservationSensitivity);
   ObservationPitch=FMath::Clamp(ObservationPitch+Y*ObservationSensitivity,-80.f-CameraPitch,-15.f-CameraPitch);
  }
- else
+ else if(!HasActivity && CameraIdleSeconds>=FMath::Max(0.f,CameraReturnIdleSeconds))
  {
   ObservationYaw=FMath::FInterpTo(ObservationYaw,0.f,DT,9.f);
   ObservationPitch=FMath::FInterpTo(ObservationPitch,0.f,DT,9.f);

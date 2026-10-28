@@ -31,6 +31,7 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float CameraPitch=-55.f;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float CameraDistance=1350.f;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float ObservationSensitivity=.25f;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera",meta=(ClampMin="0.0",Units="s")) float CameraReturnIdleSeconds=5.f;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Camera") bool bObserving=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Swimming") bool bSwimming=false;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Swimming") float SwimSpeed=230.f;
@@ -62,6 +63,8 @@ private:
  int32 Day=0;
  bool bMenuWasOpen=false;
  float ObservationYaw=0,ObservationPitch=0;
+ float CameraIdleSeconds=0;
+ double LastUserInteractionTime=0;
  float SavedMouseX=0,SavedMouseY=0;
  bool bHadMousePosition=false;
  void StartObserving();
