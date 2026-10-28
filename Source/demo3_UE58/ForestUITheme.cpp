@@ -119,7 +119,10 @@ int32 SForestPaperBorder::OnPaint(const FPaintArgs& Args,const FGeometry& Geomet
  for(int32 I=0;I<=NY;++I)Edge.Emplace(W-Inset+.6f*FMath::Sin(I*2.3f),FMath::Lerp(Inset,H-Inset,I/float(NY)));
  for(int32 I=NX;I>=0;--I)Edge.Emplace(FMath::Lerp(Inset,W-Inset,I/float(NX)),H-Inset+.65f*FMath::Sin(I*1.9f));
  for(int32 I=NY;I>=0;--I)Edge.Emplace(Inset+.6f*FMath::Sin(I*2.4f),FMath::Lerp(Inset,H-Inset,I/float(NY)));
- Edge.Add(Edge[0]);Line(MoveTemp(Edge),ForestTheme::Edge.CopyWithNewOpacity(.7f));
+ // TArray forbids adding a reference into its own storage (CheckAddress).
+ // Copy the closing vertex before Add can reallocate or validate the array.
+ const FVector2f ClosingPoint=Edge[0];
+ Edge.Add(ClosingPoint);Line(MoveTemp(Edge),ForestTheme::Edge.CopyWithNewOpacity(.7f));
  if(W>=240 && H>=100)
  {
   // Small olive sprig entirely in the right gutter, never below story text.
