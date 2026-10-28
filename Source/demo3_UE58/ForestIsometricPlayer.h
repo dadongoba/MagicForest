@@ -17,7 +17,15 @@ class UBoxComponent;
 class APhysicsVolume;
 class UMaterialParameterCollection;
 
-/** Adds a third person presentation to the existing inventory/harvest character. */
+UENUM(BlueprintType)
+enum class EForestViewMode : uint8
+{
+ Overhead,
+ FirstPerson,
+ ThirdPerson
+};
+
+/** Owns the three camera modes and their movement on the inventory/harvest pawn. */
 UCLASS(ClassGroup=Forest, meta=(BlueprintSpawnableComponent))
 class DEMO3_UE58_API UForestIsometricPlayer : public UActorComponent
 {
@@ -32,6 +40,9 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float CameraDistance=1350.f;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float ObservationSensitivity=.25f;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera",meta=(ClampMin="0.0",Units="s")) float CameraReturnIdleSeconds=5.f;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Camera") EForestViewMode ViewMode=EForestViewMode::Overhead;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") float ThirdPersonDistance=400.f;
+ UFUNCTION(BlueprintCallable,Category="Camera") void CycleViewMode();
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Camera") bool bObserving=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Swimming") bool bSwimming=false;
  UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Swimming") float SwimSpeed=230.f;
@@ -65,6 +76,10 @@ private:
  float ObservationYaw=0,ObservationPitch=0;
  float CameraIdleSeconds=0;
  double LastUserInteractionTime=0;
+ float LookYaw=0,LookPitch=-15.f;
+ bool bPawnInputWasEnabled=false;
+ bool bMapWasOpen=false;
+ bool bSkipLookDelta=true;
  float SavedMouseX=0,SavedMouseY=0;
  bool bHadMousePosition=false;
  void StartObserving();
@@ -73,6 +88,8 @@ private:
  void ZoomOut();
  void InteractNearby();
  void ToggleMap();
+ void ApplyGameplayInputMode();
+ void UpdateViewAndMovement(float DeltaTime,bool bBlocked);
  bool MenuOpen() const;
  void UpdateOcclusion();
 };

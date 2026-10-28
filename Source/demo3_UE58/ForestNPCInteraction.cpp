@@ -1,4 +1,5 @@
 #include "ForestNPCInteraction.h"
+#include "ForestIsometricPlayer.h"
 #include "ForestUITheme.h"
 #include "ForestNPCDialogueSubsystem.h"
 #include "ForestRoadAIController.h"
@@ -284,7 +285,7 @@ void AForestNPCInteraction::CancelNpcFinder()
 {
  if(FinderStage==EFinderStage::Travelling){StopNpcFinder(TEXT("已取消寻找；交付的物品不会退回。"),false);return;}
  if(FinderStage==EFinderStage::Confirming){FinderStage=EFinderStage::Selecting;PendingFinderPersona=NAME_None;PendingFeeItem.Reset();if(Widget)Widget->ShowFinderSelection();return;}
- FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));
+ FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("C：寻找 NPC"));
 }
 ACharacter* AForestNPCInteraction::FindCharacterByPersona(const FName Persona) const
 {for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(!Persona.IsNone() && PersonaId(*It)==Persona)return *It;return nullptr;}
@@ -366,6 +367,8 @@ void AForestNPCInteraction::UpdateNpcFinderFacing(const float DeltaTime)
 {
  if(FinderStage!=EFinderStage::Travelling)return;
  auto* PC=Player.Get();APawn* Pawn=nullptr;if(PC)Pawn=PC->GetPawn();if(!PC || !Pawn)return;
+ // The three-view component owns player yaw and body facing in this map.
+ if(Pawn->FindComponentByClass<UForestIsometricPlayer>())return;
  FVector Direction=Pawn->GetVelocity();Direction.Z=0.f;if(Direction.SizeSquared2D()<FMath::Square(8.f))return;
  const float DesiredYaw=Direction.Rotation().Yaw;const float SafeDelta=FMath::Clamp(DeltaTime,0.f,0.1f);
  FRotator PawnTarget=Pawn->GetActorRotation();PawnTarget.Pitch=0.f;PawnTarget.Yaw=DesiredYaw;PawnTarget.Roll=0.f;
@@ -417,14 +420,14 @@ void AForestNPCInteraction::FinishInteraction()
 {
  if(Dialogue && Active.IsValid())Dialogue->EndConversation();if(auto* AI=Cast<AForestRoadAIController>(Active.Get()))AI->EndInteraction();Active.Reset();bSuppressInteractUntilRelease=true;
  if(bLockedMovement){if(auto* PC=Player.Get()){PC->SetIgnoreMoveInput(false);PC->SetIgnoreLookInput(false);PC->bShowMouseCursor=bPreviousMouse;PC->SetInputMode(FInputModeGameOnly());}bLockedMovement=false;}
- if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));
+ if(Widget)Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("C：寻找 NPC"));
 }
 void AForestNPCInteraction::Tick(float DT)
 {
  Super::Tick(DT);auto* PC=Player.Get();if(!PC){PC=UGameplayStatics::GetPlayerController(this,0);Player=PC;}if(!PC || !PC->GetPawn())return;
  if(!Dialogue){Dialogue=GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();if(Dialogue)Dialogue->OnConversationUpdated.AddDynamic(this,&AForestNPCInteraction::RefreshConversation);}
- if(!Widget){Widget=CreateWidget<UForestNPCInteractionWidget>(PC);if(Widget){Widget->Manager=this;Widget->AddToViewport(20);Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("V：寻找 NPC"));}}if(!Widget)return;
- EnableInput(PC);if(InputComponent && !bInputBound){auto& InteractBinding=InputComponent->BindKey(EKeys::E,IE_Pressed,this,&AForestNPCInteraction::InteractNearby);InteractBinding.bConsumeInput=false;auto& FinderBinding=InputComponent->BindKey(EKeys::V,IE_Pressed,this,&AForestNPCInteraction::ToggleNpcFinder);FinderBinding.bConsumeInput=true;bInputBound=true;}
+ if(!Widget){Widget=CreateWidget<UForestNPCInteractionWidget>(PC);if(Widget){Widget->Manager=this;Widget->AddToViewport(20);Widget->ShowMessage(TEXT(""),TEXT(""),TEXT("C：寻找 NPC"));}}if(!Widget)return;
+ EnableInput(PC);if(InputComponent && !bInputBound){auto& InteractBinding=InputComponent->BindKey(EKeys::E,IE_Pressed,this,&AForestNPCInteraction::InteractNearby);InteractBinding.bConsumeInput=false;auto& FinderBinding=InputComponent->BindKey(EKeys::C,IE_Pressed,this,&AForestNPCInteraction::ToggleNpcFinder);FinderBinding.bConsumeInput=true;bInputBound=true;}
  if(FinderStage==EFinderStage::Travelling){UpdateNpcFinder();UpdateNpcFinderFacing(DT);return;}
  if(FinderStage==EFinderStage::Selecting || FinderStage==EFinderStage::Confirming)return;
  UpdateFirstDayTutorial();
@@ -433,7 +436,7 @@ void AForestNPCInteraction::Tick(float DT)
  ACharacter* Nearest=nullptr;float Distance=InteractionRange;for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(!PersonaId(*It).IsNone() && Cast<AAIController>(It->GetController())){const float D=FVector::Dist(It->GetActorLocation(),PC->GetPawn()->GetActorLocation());if(D<Distance && CanReach(*It)){Distance=D;Nearest=*It;}}
  Nearby=Nearest;
  const double Now=GetWorld()->GetTimeSeconds();if(Now<FinderNoticeUntil){Widget->ShowMessage(TEXT("寻找 NPC"),TEXT(""),FinderNotice);return;}
- Widget->ShowMessage(TEXT(""),TEXT(""),Nearest?FString::Printf(TEXT("E：与 %s 交谈　V：寻找 NPC"),*CharacterName(Nearest)):TEXT("V：寻找 NPC"));
+ Widget->ShowMessage(TEXT(""),TEXT(""),Nearest?FString::Printf(TEXT("E：与 %s 交谈　C：寻找 NPC"),*CharacterName(Nearest)):TEXT("C：寻找 NPC"));
 }
 void AForestNPCInteraction::EndPlay(const EEndPlayReason::Type Reason)
 {if(auto* Messenger=TutorialMessenger.Get())if(auto* AI=Cast<AForestRoadAIController>(Messenger->GetController()))AI->CancelPlayerApproach();if(FinderStage==EFinderStage::Travelling)StopNpcFinder(TEXT(""),false);else if(FinderStage!=EFinderStage::Closed){FinderStage=EFinderStage::Closed;CloseNpcFinderMenu();}FinishInteraction();if(Dialogue)Dialogue->OnConversationUpdated.RemoveDynamic(this,&AForestNPCInteraction::RefreshConversation);if(Widget)Widget->RemoveFromParent();Super::EndPlay(Reason);}
