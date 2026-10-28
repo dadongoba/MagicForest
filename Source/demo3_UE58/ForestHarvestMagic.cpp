@@ -1,5 +1,6 @@
 #include "ForestHarvestMagic.h"
 #include "ForestIsometricPlayer.h"
+#include "ForestElementRegions.h"
 #include "ForestNPCInteraction.h"
 #include "ForestUITheme.h"
 #include "ForestAlchemy.h"
@@ -18,6 +19,7 @@
 #include "TimerManager.h"
 #include "Engine/GameInstance.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "UObject/UnrealType.h"
@@ -105,7 +107,15 @@ void UForestHarvestMagic::RefreshFieldUI()
    }
   });
  }
- if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())Action=TEXT("WASD 移动  ·  E 交互  ·  B 背包  ·  V 找人  ·  M 地图  ·  右键拖动观察  ·  滚轮缩放");
+ if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
+ {
+  Action=TEXT("WASD 移动 · E 交互/采集 · B 背包 · C 找人 · V 视角 · M 地图");
+  if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
+  {
+   const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
+   Action=Regions->GetHarvestHint(Cast<ACharacter>(Pawn),View && View->bSwimming)+TEXT("\n")+Action;
+  }
+ }
  FieldHUD->Action->SetText(FText::FromString(Action));
 }
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
@@ -233,10 +243,39 @@ void UForestHarvestMagic::RefreshLegacyHUD()
  auto* Pawn=BagOwner.Get();if(!Pawn)return;const auto Bag=ReadBag();TArray<FString> Keys;Bag.GetKeys(Keys);Keys.Sort();FString Text;for(const auto& K:Keys)if(Bag[K]>0)Text+=FString::Printf(TEXT("%s ×%d\n"),*K,Bag[K]);if(auto* P=FindFProperty<FStrProperty>(Pawn->GetClass(),TEXT("BackpackList")))P->SetPropertyValue_InContainer(Pawn,Text);if(auto* F=Pawn->FindFunction(TEXT("RefreshHUD")))Pawn->ProcessEvent(F,nullptr);if(Inventory && Inventory->IsInViewport())Inventory->Refresh();
 }
 bool UForestHarvestMagic::FindItem(const FString& Key,FForestMagicItem& Out) const{if(Ledger)for(const auto& Item:Ledger->Items)if(Item.InventoryKey==Key){Out=Item;return true;}return false;}
+bool UForestHarvestMagic::GrantRegionalMaterial(EAlchemyElement Element,int32 Pip,UStaticMeshComponent* SourceMesh)
+{
+ if(!bReady)Setup();if(!bReady || !Ledger || !BagOwner.IsValid() || !SourceMesh)return false;
+ FForestMagicItem Item;Item.Element=Element;Item.PipValue=FMath::Clamp(Pip,1,9);
+ auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();Item.HarvestDay=Daily?Daily->GetCurrentDay():1;
+ if(Element==EAlchemyElement::Water)
+ {Item.Name=TEXT("水灵贝壳");Item.SourceMushroom=TEXT("Region_Water_Shell");Item.Description=TEXT("只在水符文石产区的水面漂浮，需要游泳靠近采集。贝壳中的水元素稳定，不会变成其他元素。");Item.Value.Water=Item.PipValue;}
+ else if(Element==EAlchemyElement::Wind)
+ {Item.Name=TEXT("风息蘑菇");Item.SourceMushroom=TEXT("Region_Wind_Mushroom");Item.Description=TEXT("生长在风符文石周围的陆地产区，菌褶间藏着轻柔的风。采集后固定获得风元素素材。");Item.Value.Wind=Item.PipValue;}
+ else
+ {Item.Name=TEXT("火纹蘑菇");Item.SourceMushroom=TEXT("Region_Fire_Mushroom");Item.Description=TEXT("生长在火符文石周围的陆地产区，菌盖里蕴着温热的火。采集后固定获得火元素素材。");Item.Value.Fire=Item.PipValue;}
+ Item.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*Item.Name,*ElementText(Element),Item.PipValue);
+ Item.Id=Item.SourceMushroom+FString::Printf(TEXT("_%d"),Item.PipValue);
+ const bool NewEntry=!Ledger->Items.ContainsByPredicate([&](const auto& Existing){return Existing.InventoryKey==Item.InventoryKey;});
+ if(NewEntry)Ledger->Items.Add(Item);Adjust(Item.InventoryKey,1);
+ if(!UGameplayStatics::SaveGameToSlot(Ledger,HarvestMagic::Slot,0))
+ {Adjust(Item.InventoryKey,-1);if(NewEntry)Ledger->Items.Pop();return false;}
+ if(auto* Last=FindFProperty<FStrProperty>(BagOwner->GetClass(),TEXT("LastPicked")))Last->SetPropertyValue_InContainer(BagOwner.Get(),Item.InventoryKey);
+ RefreshLegacyHUD();
+ if(Notice.IsValid())
+ {
+  Notice->SetText(FText::FromString(FString::Printf(TEXT("采集获得：%s\n%s\n已收入背包 · 按 B 查看"),*Item.InventoryKey,*Item.Description)));
+  NoticeUntil=GetWorld()->GetTimeSeconds()+6;NoticeWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+ }
+ JustHarvested.Add(Item.SourceMushroom,SourceMesh);BeginVisual(Item.SourceMushroom,Element);
+ UE_LOG(LogTemp,Log,TEXT("Regional harvest: %s, fixed element %s"),*Item.InventoryKey,*ElementText(Element));
+ return true;
+}
 void UForestHarvestMagic::Persist(){if(Ledger)UGameplayStatics::SaveGameToSlot(Ledger,HarvestMagic::Slot,0);}
 void UForestHarvestMagic::ConfigureMushroomCollision(UStaticMeshComponent* Mesh)
 {
  if(!Mesh || !Mesh->GetStaticMesh() || !Mesh->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))return;
+ if(auto* Regions=Mesh->GetWorld()?Mesh->GetWorld()->GetSubsystem<UForestElementRegions>():nullptr;Regions && Regions->IsRegionalWorld() && !Mesh->GetOwner()->IsA<AForestElementResource>())return;
  if(Mesh->CanEverAffectNavigation())Mesh->SetCanEverAffectNavigation(false);
  // ForestDecoration retains Visibility queries, while ignoring Pawn, ForestNPC
  // and Camera. Actor-level hiding after harvest can still disable all queries.
@@ -297,7 +336,7 @@ void UForestHarvestMagic::ShowResult(const FForestMagicItem& I)
 void UForestHarvestMagic::BeginVisual(const FString& Source,EAlchemyElement Element)
 {
  auto* PC=Player.Get();if(!PC)return;UStaticMeshComponent* Original=JustHarvested.FindRef(HarvestMagic::BaseMushroom(Source)).Get();JustHarvested.Remove(HarvestMagic::BaseMushroom(Source));
- if(!Original)return;FActorSpawnParameters Params;Params.ObjectFlags|=RF_Transient;auto* A=GetWorld()->SpawnActor<AActor>(AActor::StaticClass(),Original->GetComponentLocation(),FRotator::ZeroRotator,Params);if(!A)return;
+ if(!Original)return;FActorSpawnParameters Params;Params.ObjectFlags|=RF_Transient;auto* A=GetWorld()->SpawnActor<AActor>(AActor::StaticClass(),Original->GetComponentLocation(),FRotator::ZeroRotator,Params);if(!A)return;A->Tags.Add(TEXT("ForestHarvestVisual"));
  auto* Mushroom=NewObject<UStaticMeshComponent>(A);A->SetRootComponent(Mushroom);Mushroom->SetStaticMesh(Original->GetStaticMesh());for(int J=0;J<Original->GetNumMaterials();++J)Mushroom->SetMaterial(J,Original->GetMaterial(J));Mushroom->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mushroom->RegisterComponent();Mushroom->SetWorldTransform(Original->GetComponentTransform());
  auto* Book=NewObject<USkeletalMeshComponent>(A);Book->SetupAttachment(Mushroom);Book->SetSkeletalMeshAsset(LoadObject<USkeletalMesh>(nullptr,HarvestMagic::BookMesh));Book->SetCollisionEnabled(ECollisionEnabled::NoCollision);Book->RegisterComponent();Book->SetWorldScale3D(FVector(.35));Book->PlayAnimation(HarvestMagic::Anim(TEXT("Mimic-book_Open_Anim")),false);FLinearColor Color=Element==EAlchemyElement::Fire?FLinearColor(3,.3,.04):Element==EAlchemyElement::Wind?FLinearColor(.3,2,1):FLinearColor(.1,.5,3);for(int J=0;J<Book->GetNumMaterials();++J)if(auto* MID=Book->CreateDynamicMaterialInstance(J)){MID->SetVectorParameterValue(TEXT("EmissionColor"),Color);MID->SetScalarParameterValue(TEXT("EmissionPower"),4);}
  FVisual V;V.Actor=A;V.Mushroom=Mushroom;V.Book=Book;V.Origin=Original->GetComponentLocation();V.Scale=Original->GetComponentScale();V.Element=Element;Visuals.Add(V);
@@ -313,6 +352,9 @@ void UForestHarvestMagic::Tick(float DT)
 {
  if(!GetWorld() || !GetWorld()->IsGameWorld())return;if(!bReady){Setup();return;}UpdateVisuals(DT);if(NoticeWidget && GetWorld()->GetTimeSeconds()>NoticeUntil)NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);if(!BagOwner.IsValid())return;
  FieldUITime+=DT;if(FieldUITime>=.25f){FieldUITime=0;RefreshFieldUI();}
+ // The regional collector grants authoritative source materials directly. Old
+ // scattered-mushroom bag deltas must not roll random daily definitions here.
+ if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())return;
  PollTime+=DT;if(PollTime<.05f)return;PollTime=0;
  JustHarvested.Reset();for(auto& Pair:MushroomVisibility)if(auto* Mesh=Pair.Key.Get()){const bool Hidden=Mesh->GetOwner()->IsHidden();if(Hidden && !Pair.Value && Mesh->GetStaticMesh())JustHarvested.Add(HarvestMagic::BaseMushroom(Mesh->GetStaticMesh()->GetName()),Mesh);Pair.Value=Hidden;}
  const auto Bag=ReadBag();for(const auto& Pair:Bag){if(!Pair.Key.StartsWith(TEXT("SM_Env_Mushroom")))continue;const int Delta=Pair.Value-Previous.FindRef(Pair.Key);if(Delta>0)Harvest(Pair.Key,Delta);}Previous=ReadBag();

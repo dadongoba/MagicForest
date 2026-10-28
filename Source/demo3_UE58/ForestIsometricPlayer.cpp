@@ -1,6 +1,7 @@
 #include "ForestIsometricPlayer.h"
 #include "ForestNPCInteraction.h"
 #include "ForestHarvestMagic.h"
+#include "ForestElementRegions.h"
 #include "ForestAlchemy.h"
 #include "ForestMinimap.h"
 #include "DailyMushroomSubsystem.h"
@@ -436,6 +437,8 @@ void UForestIsometricPlayer::UpdateOcclusion()
 void UForestIsometricPlayer::HarvestNearby()
 {
  auto* C=Character.Get();if(!C || MenuOpen())return;
+ if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
+ {Regions->TryHarvest(C,bSwimming);return;}
  auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();
  UStaticMeshComponent* Best=nullptr;float Dist=FMath::Square(230.f);
  for(auto& W:Mushrooms)if(auto* M=W.Get();M && !M->GetOwner()->IsHidden())

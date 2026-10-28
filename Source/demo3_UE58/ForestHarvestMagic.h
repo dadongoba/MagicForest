@@ -101,6 +101,8 @@ public:
  virtual void Deinitialize() override;
  UFUNCTION(BlueprintCallable) void ToggleInventory();
  UFUNCTION(BlueprintPure) bool FindItem(const FString& Key,FForestMagicItem& Item) const;
+ /** Grant a fixed region material; never roll a mushroom card or ask AI for its element. */
+ bool GrantRegionalMaterial(EAlchemyElement Element,int32 PipValue,UStaticMeshComponent* SourceMesh);
  /** Keep harvest traces, but never obstruct either character channel or navigation. */
  static void ConfigureMushroomCollision(UStaticMeshComponent* Mesh);
  TMap<FString,int32> ReadBag() const;
