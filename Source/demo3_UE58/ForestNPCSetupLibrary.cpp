@@ -1,5 +1,6 @@
 #include "ForestNPCSetupLibrary.h"
 #include "ForestCrouchNavigation.h"
+#include "ForestHarvestMagic.h"
 #include "Components/SplineComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -38,8 +39,13 @@ FString UForestNPCSetupLibrary::ConfigureNPCCollision(UObject* Context)
   TArray<UStaticMeshComponent*> Meshes;It->GetComponents<UStaticMeshComponent>(Meshes);
   for(auto* Mesh:Meshes)
   {
-   if(!Mesh->GetStaticMesh() || Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision)continue;
+   if(!Mesh->GetStaticMesh())continue;
    const FString Name=Mesh->GetStaticMesh()->GetName();
+   if(Name.StartsWith(TEXT("SM_Env_Mushroom")))
+   {
+    Mesh->Modify();UForestHarvestMagic::ConfigureMushroomCollision(Mesh);It->MarkPackageDirty();++Decoration;continue;
+   }
+   if(Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision)continue;
    const FVector Size=Mesh->GetStaticMesh()->GetBoundingBox().GetSize()*Mesh->GetComponentScale().GetAbs();
    const bool ExistingDecoration=Mesh->GetCollisionProfileName()==TEXT("ForestDecoration");
    const bool Foliage=Name.StartsWith(TEXT("SM_Env_Ground_Grass_")) || Name.StartsWith(TEXT("SM_Env_Vines_"));

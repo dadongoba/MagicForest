@@ -3,6 +3,7 @@
 #include "ForestNPCDialogueSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
 #include "ForestNPCInteraction.h"
+#include "ForestIsometricPlayer.h"
 #include "AlchemyGameplaySubsystem.h"
 #include "DailyMushroomSubsystem.h"
 #include "PotionMimicWorldSubsystem.h"
@@ -93,12 +94,15 @@ bool UForestAlchemy::OtherMenuOpen() const
 AActor* UForestAlchemy::FindFocus() const
 {
  auto* PC=Player.Get();APawn* Pawn=PC?PC->GetPawn():nullptr;if(!Pawn || OtherMenuOpen() || IsWorkbenchOpen())return nullptr;
- FVector Eye;FRotator Rotation;Pawn->GetActorEyesViewPoint(Eye,Rotation);const FVector End=Eye+Rotation.Vector()*FMath::Clamp(GetDefault<UForestAlchemyRules>()->InteractionDistance,50.f,500.f);
+ const bool bIsometric=Pawn->FindComponentByClass<UForestIsometricPlayer>()!=nullptr;
+ FVector Eye;FRotator Rotation;Pawn->GetActorEyesViewPoint(Eye,Rotation);if(bIsometric)Eye=Pawn->GetActorLocation()+FVector(0,0,25);
+ const float Reach=FMath::Clamp(GetDefault<UForestAlchemyRules>()->InteractionDistance,50.f,500.f);const FVector End=Eye+Rotation.Vector()*Reach;
  AActor* Best=nullptr;float BestDistance=MAX_flt;
  auto Consider=[&](AActor* Actor,UStaticMeshComponent* Mesh)
  {
   if(!Actor || !Mesh || Actor->IsHidden())return;
-  const FBox Box=Mesh->Bounds.GetBox().ExpandBy(5);if(!FMath::LineBoxIntersection(Box,Eye,End,End-Eye))return;
+  const FBox Box=Mesh->Bounds.GetBox().ExpandBy(5);if(!bIsometric && !FMath::LineBoxIntersection(Box,Eye,End,End-Eye))return;
+  if(bIsometric && FVector::DistSquared(Box.GetClosestPointTo(Eye),Eye)>FMath::Square(Reach))return;
   const FVector Point=Box.GetClosestPointTo(Eye);const float Distance=FVector::DistSquared(Point,Eye);if(Distance>=BestDistance)return;
   FCollisionQueryParams Params(SCENE_QUERY_STAT(ArcanaBottleSight),false);Params.AddIgnoredActor(Pawn);Params.AddIgnoredActor(Actor);FHitResult Hit;
   if(GetWorld()->LineTraceSingleByChannel(Hit,Eye,Mesh->Bounds.Origin,ECC_Visibility,Params))return;

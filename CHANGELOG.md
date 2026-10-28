@@ -2,6 +2,20 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+
+## 2026-10-28-01：Dreamscape 主地图、ChengYi 俯视角色与交互修正
+
+- **目的 / 基线 / 前置**：汇总本地尚未发布的场景与操作更新；完整 demo3_UE58 1.5、UE 5.8.3，基于 main `ac8142b`，前置截至 2026-10-27-15。已先快进同步远程界面更新，并三方合并本地采集修改，保留远程居中字条及炼药/NPC界面修订。
+- **新增源码**：Source/demo3_UE58/ForestIsometricPlayer.h/.cpp、ForestMinimap.h/.cpp。
+- **修改源码 / 配置**：Source/demo3_UE58/ForestAlchemy.cpp、ForestHarvestMagic.h/.cpp、ForestNPCSetupLibrary.cpp；Config/DefaultEngine.ini 仅三个默认地图/模式路径。
+- **新增资产**：Content/ForestMigration 下角色/模式蓝图、Dreamscape_Gameplay.umap、小地图纹理；Content/DreamscapeSeries 下修改后的 DemoMap.umap、两个预览 Pawn 蓝图、三份植被主材质（相对本增量仓库为新增）；Content/Forest/Camera/MPC_ForestCameraOcclusion.uasset；Content/Characters/Swimming/AS_Swimming.uasset。完整路径及 SHA256 见 [文件清单](Docs/Dreamscape_Upload_2026-10-28_files.json)。地图采用既有 Git LFS 规则。
+- **文档**：新增 Docs/Dreamscape_Upload_2026-10-28.md、对应清单、Dreamscape_Migration_2026-10-27.md、Minimap_and_Mushroom_Orientation_2026-10-27.md、Camera_Roof_Input_FX_2026-10-28.md；修改 README.md 与本记录。
+- **行为**：DemoMap 默认启动、ChengYi 固定俯视移动、右键拖动观察并松开回正、滚轮缩放；M全图及NPC/小屋定位；玩法/NPC迁移；蘑菇朝上且不挡玩家/NPC，删除39个独立菌盖Actor后保留872个采集对象；屋顶专用遮挡；移除前段漩涡/尘粒，保留后段光效；修正预览Pawn的EnableInput Controller参数。
+- **依赖 / 应用**：先备份并准备匹配第三方素材；LFS下载地图，按原路径应用清单，合并配置后重新编译。保留原Demo_Day与源蘑菇网格；不上传完整Dreamscape/ChengYi/Witch_House素材包、存档、缓存或二进制程序。已有未跟踪DefaultInput.ini保持原位且不纳入本次提交。详见 [应用与边界](Docs/Dreamscape_Upload_2026-10-28.md)。
+- **本次验证**：三方合并无冲突；Windows UE5.8.3 Development Editor UHT、源码编译及链接成功（Result: Succeeded，29.20秒）。上传前逐文件同步/哈希、差异及凭据检查；保留原有浮点截断编译警告。
+- **历史 / 未验证**：迁移、小地图早期PIE及蓝图编译读回见各说明；按用户要求本批不启动新PIE。最终相机、家具遮挡、采集粒子、碰撞、游泳与界面合并组合的运行测试及打包仍由用户验收。
+- **上传状态**：待上传，推送并核对远程SHA后补记。
+
 ## 2026-10-27-15：补记28号字条上传结果
 
 - **目的 / 基线 / 前置**：补记批次14，基于功能提交 `5f98c8c`。

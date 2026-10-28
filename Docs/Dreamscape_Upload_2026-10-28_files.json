@@ -1,0 +1,112 @@
+[
+  {
+    "path": "Source/demo3_UE58/ForestIsometricPlayer.h",
+    "sha256": "44427ef34a9ca4b0487e2fc73626c5372dc22f5d5b709e8a661210240d63b4de",
+    "bytes": 3454
+  },
+  {
+    "path": "Source/demo3_UE58/ForestIsometricPlayer.cpp",
+    "sha256": "ee1976735ab48c42564eb40251a950bc90795dcfb7c1f17e755f6520a705ad20",
+    "bytes": 23096
+  },
+  {
+    "path": "Source/demo3_UE58/ForestMinimap.h",
+    "sha256": "969365ba1ab5a3e769c514a7096191eefd052ebb7d59d718484a7bab653553eb",
+    "bytes": 1666
+  },
+  {
+    "path": "Source/demo3_UE58/ForestMinimap.cpp",
+    "sha256": "2ffba28ec2e88b1e53018be60fdd93ac48bf2d69fcde9818219f535b579a3c16",
+    "bytes": 9326
+  },
+  {
+    "path": "Source/demo3_UE58/ForestHarvestMagic.h",
+    "sha256": "76ee6bb6c16634bdc426197dca635d93a09e18f49679a149bc98ac25b08883e9",
+    "bytes": 4825
+  },
+  {
+    "path": "Source/demo3_UE58/ForestHarvestMagic.cpp",
+    "sha256": "02da8761e33fc85a5eb2f4e5c37e531ee04ef609e0a00eb469c8e227679510fe",
+    "bytes": 33172
+  },
+  {
+    "path": "Source/demo3_UE58/ForestAlchemy.cpp",
+    "sha256": "cac64110b0a335193794ebc169490f6a9d4be528fa946c575f774c30368597e6",
+    "bytes": 27747
+  },
+  {
+    "path": "Source/demo3_UE58/ForestNPCSetupLibrary.cpp",
+    "sha256": "c76f5a7d064c5453fa0a7c996d8eb03571e43c45169866cb05c1503025da6caf",
+    "bytes": 24056
+  },
+  {
+    "path": "Content/ForestMigration/Blueprints/BP_ChengYiPlayer.uasset",
+    "sha256": "57fbf3541dd379c050c952b26ccd9eb572cd376e8f93707785f3cf3c83822531",
+    "bytes": 32831
+  },
+  {
+    "path": "Content/ForestMigration/Blueprints/BP_DreamscapeGameMode.uasset",
+    "sha256": "c084adf0b2e26834a8c31de11cc02e3a2a7ab5d4ee55393af70e2718ac00ad84",
+    "bytes": 23786
+  },
+  {
+    "path": "Content/ForestMigration/Maps/Dreamscape_Gameplay.umap",
+    "sha256": "25400e33ba20ca571c45cfc42ac8d0bfe9a32ce25d9970820ebd15624720ed2c",
+    "bytes": 2853303
+  },
+  {
+    "path": "Content/ForestMigration/UI/T_DemoMap_Minimap.uasset",
+    "sha256": "01ddd4ce14c51c5c9fb48efe9245def98d64dff9099145e86aad7691b3653a04",
+    "bytes": 8016584
+  },
+  {
+    "path": "Content/DreamscapeSeries/DreamscapeTower/Maps/DemoMap.umap",
+    "sha256": "b584d4e28d511be51a9195d73fb6177ea23a6cae7c18721fb26e3f38ce69b5c4",
+    "bytes": 77775178
+  },
+  {
+    "path": "Content/DreamscapeSeries/SharedResources/Blueprints/BP_PlayerPawn.uasset",
+    "sha256": "4a931cd2585a6587f5941adf37377209403d732ba41d8d856828004c3c4e14e9",
+    "bytes": 390088
+  },
+  {
+    "path": "Content/DreamscapeSeries/SharedResources/Blueprints/CinemaCameraPawn.uasset",
+    "sha256": "567d5eab42c01d21e9e0450c9142c46bfab025383df8331829f19abef5a6d29a",
+    "bytes": 545281
+  },
+  {
+    "path": "Content/Forest/Camera/MPC_ForestCameraOcclusion.uasset",
+    "sha256": "7b9c46c4892feb2d170c59f7aaf4f7910705891197aaf21dcbed5f209e2ccd0f",
+    "bytes": 2280
+  },
+  {
+    "path": "Content/DreamscapeSeries/SharedResources/Materials/Foliage/M_Tree_GlobalWind_Master.uasset",
+    "sha256": "f9f3281898128a25886d9d7f39f55737d8236fe9471d231c8501189546ae8daa",
+    "bytes": 63114
+  },
+  {
+    "path": "Content/DreamscapeSeries/SharedResources/Materials/Foliage/M_Plants_Master.uasset",
+    "sha256": "c970cdf651f34909a297724b04ff4075e40d3a6e2dcd88b86ff6158af69f79f4",
+    "bytes": 80819
+  },
+  {
+    "path": "Content/DreamscapeSeries/SharedResources/Materials/Foliage/M_FoliageBillboard_Master.uasset",
+    "sha256": "f60d6b8aecb5c68173afdae9225c11a15f2adfaf43c5dc48b060fe6298d466fd",
+    "bytes": 34007
+  },
+  {
+    "path": "Content/Characters/Swimming/AS_Swimming.uasset",
+    "sha256": "efce1bfbd935cd95b002e90a30ff7913e52e0a21166b4c53dcf29e7d79e554c1",
+    "bytes": 832430
+  },
+  {
+    "path": "Docs/Dreamscape_Migration_2026-10-27.md",
+    "sha256": "5136587a33cfe94f5cdf62188d61296aacc1e88afb4640344603181f0c54ed63",
+    "bytes": 4702
+  },
+  {
+    "path": "Docs/Minimap_and_Mushroom_Orientation_2026-10-27.md",
+    "sha256": "a2db62660a730fc0d971b8165c3fdf9e4b82c9642efaf54d062db921695475d5",
+    "bytes": 2843
+  }
+]

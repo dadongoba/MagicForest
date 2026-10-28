@@ -101,6 +101,8 @@ public:
  virtual void Deinitialize() override;
  UFUNCTION(BlueprintCallable) void ToggleInventory();
  UFUNCTION(BlueprintPure) bool FindItem(const FString& Key,FForestMagicItem& Item) const;
+ /** Keep harvest traces, but never obstruct either character channel or navigation. */
+ static void ConfigureMushroomCollision(UStaticMeshComponent* Mesh);
  TMap<FString,int32> ReadBag() const;
  bool IsInventoryOpen() const{return Inventory && Inventory->IsInViewport();}
  void HandleResponse(UForestHarvestRequest*,bool,const FString&);
@@ -126,7 +128,6 @@ private:
   TWeakObjectPtr<AActor> Actor;
   TWeakObjectPtr<UStaticMeshComponent> Mushroom;
   TWeakObjectPtr<USkeletalMeshComponent> Book;
-  TWeakObjectPtr<UNiagaraComponent> Portal;
   FVector Origin;
   FVector Scale;
   EAlchemyElement Element;

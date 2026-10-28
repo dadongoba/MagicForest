@@ -69,3 +69,7 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 ## NPC 对话与记忆（2026-10-07-03）
 
 三个森林 NPC 已接入对话窗口、独立记忆与异步总结。场景默认离线模拟；在线通过本机环境变量配置 Key。见 [接入说明与实测报告](Docs/NPC_Dialogue_Integration_2026-10-07.md)。
+
+## Dreamscape 主地图更新（2026-10-28）
+
+批次 2026-10-28-01 将主地图改为 Dreamscape DemoMap，使用 ChengYi 俯视主角、小地图及右键观察。必须先准备原路径的第三方素材，本仓库仅包含选定改动；地图通过 Git LFS 下载。应用步骤、文件清单及运行验收边界见 [Dreamscape 增量说明](Docs/Dreamscape_Upload_2026-10-28.md)。

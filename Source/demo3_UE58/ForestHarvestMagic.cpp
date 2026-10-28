@@ -1,4 +1,5 @@
 #include "ForestHarvestMagic.h"
+#include "ForestIsometricPlayer.h"
 #include "ForestNPCInteraction.h"
 #include "ForestUITheme.h"
 #include "ForestAlchemy.h"
@@ -104,6 +105,7 @@ void UForestHarvestMagic::RefreshFieldUI()
    }
   });
  }
+ if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())Action=TEXT("WASD 移动  ·  E 交互  ·  B 背包  ·  V 找人  ·  M 地图  ·  右键拖动观察  ·  滚轮缩放");
  FieldHUD->Action->SetText(FText::FromString(Action));
 }
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
@@ -232,13 +234,22 @@ void UForestHarvestMagic::RefreshLegacyHUD()
 }
 bool UForestHarvestMagic::FindItem(const FString& Key,FForestMagicItem& Out) const{if(Ledger)for(const auto& Item:Ledger->Items)if(Item.InventoryKey==Key){Out=Item;return true;}return false;}
 void UForestHarvestMagic::Persist(){if(Ledger)UGameplayStatics::SaveGameToSlot(Ledger,HarvestMagic::Slot,0);}
+void UForestHarvestMagic::ConfigureMushroomCollision(UStaticMeshComponent* Mesh)
+{
+ if(!Mesh || !Mesh->GetStaticMesh() || !Mesh->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))return;
+ if(Mesh->CanEverAffectNavigation())Mesh->SetCanEverAffectNavigation(false);
+ // ForestDecoration retains Visibility queries, while ignoring Pawn, ForestNPC
+ // and Camera. Actor-level hiding after harvest can still disable all queries.
+ if(Mesh->GetCollisionProfileName()!=TEXT("ForestDecoration") || Mesh->GetCollisionEnabled()!=ECollisionEnabled::QueryOnly)
+  Mesh->SetCollisionProfileName(TEXT("ForestDecoration"));
+}
 void UForestHarvestMagic::Setup()
 {
  auto* PC=UGameplayStatics::GetPlayerController(GetWorld(),0);if(!PC || !PC->GetPawn())return;Player=PC;BagOwner=PC->GetPawn();if(!FindFProperty<FMapProperty>(BagOwner->GetClass(),TEXT("Backpack")))return;
  Ledger=Cast<UForestMagicItemSave>(UGameplayStatics::LoadGameFromSlot(HarvestMagic::Slot,0));if(!Ledger)Ledger=NewObject<UForestMagicItemSave>(this);
  Input=NewObject<UInputComponent>(PC);Input->RegisterComponent();Input->Priority=50;Input->BindKey(EKeys::B,IE_Pressed,this,&UForestHarvestMagic::ToggleInventory);PC->PushInputComponent(Input);Previous=ReadBag();bReady=true;
  FieldHUD=CreateWidget<UForestFieldHUDWidget>(PC);if(FieldHUD){FieldHUD->AddToViewport(10);FieldHUD->SetVisibility(ESlateVisibility::HitTestInvisible);}
- for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom")))MushroomVisibility.Add(M,It->IsHidden());
+ for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom"))){ConfigureMushroomCollision(M);MushroomVisibility.Add(M,It->IsHidden());}
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
  if(NewNotice){NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
 }
@@ -289,14 +300,13 @@ void UForestHarvestMagic::BeginVisual(const FString& Source,EAlchemyElement Elem
  if(!Original)return;FActorSpawnParameters Params;Params.ObjectFlags|=RF_Transient;auto* A=GetWorld()->SpawnActor<AActor>(AActor::StaticClass(),Original->GetComponentLocation(),FRotator::ZeroRotator,Params);if(!A)return;
  auto* Mushroom=NewObject<UStaticMeshComponent>(A);A->SetRootComponent(Mushroom);Mushroom->SetStaticMesh(Original->GetStaticMesh());for(int J=0;J<Original->GetNumMaterials();++J)Mushroom->SetMaterial(J,Original->GetMaterial(J));Mushroom->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mushroom->RegisterComponent();Mushroom->SetWorldTransform(Original->GetComponentTransform());
  auto* Book=NewObject<USkeletalMeshComponent>(A);Book->SetupAttachment(Mushroom);Book->SetSkeletalMeshAsset(LoadObject<USkeletalMesh>(nullptr,HarvestMagic::BookMesh));Book->SetCollisionEnabled(ECollisionEnabled::NoCollision);Book->RegisterComponent();Book->SetWorldScale3D(FVector(.35));Book->PlayAnimation(HarvestMagic::Anim(TEXT("Mimic-book_Open_Anim")),false);FLinearColor Color=Element==EAlchemyElement::Fire?FLinearColor(3,.3,.04):Element==EAlchemyElement::Wind?FLinearColor(.3,2,1):FLinearColor(.1,.5,3);for(int J=0;J<Book->GetNumMaterials();++J)if(auto* MID=Book->CreateDynamicMaterialInstance(J)){MID->SetVectorParameterValue(TEXT("EmissionColor"),Color);MID->SetScalarParameterValue(TEXT("EmissionPower"),4);}
- FVisual V;V.Actor=A;V.Mushroom=Mushroom;V.Book=Book;V.Origin=Original->GetComponentLocation();V.Scale=Original->GetComponentScale();V.Element=Element;V.Portal=HarvestMagic::FX(GetWorld(),TEXT("FXS_Portal_01"),V.Origin+FVector(0,0,55),.08);Visuals.Add(V);
- if(auto* Dust=HarvestMagic::FX(GetWorld(),TEXT("FXS_Dust_Spots_01"),V.Origin+FVector(0,0,35),.08)){FTimerHandle H;TWeakObjectPtr<UNiagaraComponent> Weak=Dust;GetWorld()->GetTimerManager().SetTimer(H,[Weak](){if(Weak.IsValid())Weak->Deactivate();},1.6f,false);}
+ FVisual V;V.Actor=A;V.Mushroom=Mushroom;V.Book=Book;V.Origin=Original->GetComponentLocation();V.Scale=Original->GetComponentScale();V.Element=Element;Visuals.Add(V);
 }
 void UForestHarvestMagic::UpdateVisuals(float DT)
 {
  for(int J=Visuals.Num()-1;J>=0;--J){auto& V=Visuals[J];V.Age+=DT;if(!V.Actor.IsValid()){Visuals.RemoveAt(J);continue;}auto* M=V.Mushroom.Get();auto* Book=V.Book.Get();float T=FMath::Clamp((V.Age-.4f)/1.3f,0.f,1.f);if(M){M->SetWorldLocation(V.Origin+FVector(0,0,50*FMath::Clamp(V.Age/.5f,0.f,1.f)));M->SetWorldScale3D(V.Scale*FMath::Max(.001f,1-T));if(T>=1)M->SetVisibility(false,false);}if(Book){Book->SetWorldLocation(V.Origin+FVector(45*FMath::Cos(V.Age*2),45*FMath::Sin(V.Age*2),80));Book->SetWorldScale3D(FVector(.35));Book->SetWorldRotation(FRotator(0,V.Age*50,0));}
- if(V.Age>=1.7f && !V.bBurst){V.bBurst=true;if(V.Portal.IsValid())V.Portal->Deactivate();if(Book)Book->PlayAnimation(HarvestMagic::Anim(TEXT("Mimic-book_Unfold_Anim")),false);auto* F=HarvestMagic::FX(GetWorld(),V.Element==EAlchemyElement::Water?TEXT("FXS_Water_Splash_01"):V.Element==EAlchemyElement::Wind?TEXT("FXS_Leaves_01"):TEXT("FXS_Sparkles"),V.Origin+FVector(0,0,85),.12);if(F){F->SetAutoDestroy(true);FTimerHandle Handle;TWeakObjectPtr<UNiagaraComponent> Weak=F;GetWorld()->GetTimerManager().SetTimer(Handle,[Weak](){if(Weak.IsValid())Weak->Deactivate();},1.2f,false);}if(V.Element==EAlchemyElement::Fire){auto* Sparks=UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),LoadObject<UParticleSystem>(nullptr,TEXT("/Game/Witch_House/Demo/StarterContent/Particles/P_Sparks.P_Sparks")),V.Origin+FVector(0,0,85),FRotator::ZeroRotator,FVector(.12));if(Sparks){FTimerHandle H;TWeakObjectPtr<UParticleSystemComponent> Weak=Sparks;GetWorld()->GetTimerManager().SetTimer(H,[Weak](){if(Weak.IsValid())Weak->DeactivateSystem();},1.f,false);}}}
- if(V.Age>3){if(V.Portal.IsValid())V.Portal->DestroyComponent();V.Actor->Destroy();Visuals.RemoveAt(J);}
+ if(V.Age>=1.7f && !V.bBurst){V.bBurst=true;if(Book)Book->PlayAnimation(HarvestMagic::Anim(TEXT("Mimic-book_Unfold_Anim")),false);auto* F=HarvestMagic::FX(GetWorld(),V.Element==EAlchemyElement::Water?TEXT("FXS_Water_Splash_01"):V.Element==EAlchemyElement::Wind?TEXT("FXS_Leaves_01"):TEXT("FXS_Sparkles"),V.Origin+FVector(0,0,85),.12);if(F){F->SetAutoDestroy(true);FTimerHandle Handle;TWeakObjectPtr<UNiagaraComponent> Weak=F;GetWorld()->GetTimerManager().SetTimer(Handle,[Weak](){if(Weak.IsValid())Weak->Deactivate();},1.2f,false);}if(V.Element==EAlchemyElement::Fire){auto* Sparks=UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),LoadObject<UParticleSystem>(nullptr,TEXT("/Game/Witch_House/Demo/StarterContent/Particles/P_Sparks.P_Sparks")),V.Origin+FVector(0,0,85),FRotator::ZeroRotator,FVector(.12));if(Sparks){FTimerHandle H;TWeakObjectPtr<UParticleSystemComponent> Weak=Sparks;GetWorld()->GetTimerManager().SetTimer(H,[Weak](){if(Weak.IsValid())Weak->DeactivateSystem();},1.f,false);}}}
+ if(V.Age>3){V.Actor->Destroy();Visuals.RemoveAt(J);}
  }
 }
 void UForestHarvestMagic::Tick(float DT)
