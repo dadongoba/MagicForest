@@ -85,6 +85,14 @@ bool UForestElementRegions::Discover()
   else if(It->ActorHasTag(TEXT("Forest.Region.Wind")) || Name==TEXT("SM_RuneStone_01_WIP_2") || Name==TEXT("SM_RuneStone_01_Wind")){Element=EAlchemyElement::Wind;Anchor=true;}
   if(Anchor)
   {
+   // The wind approach is the rune-stone mesh itself, not a Rock/Cliff asset.
+   // Mark only its static mesh components; never make foliage/chains climbable.
+   if(Element==EAlchemyElement::Wind)
+   {
+    TArray<UStaticMeshComponent*> Surfaces;It->GetComponents(Surfaces);
+    for(auto* Surface:Surfaces)if(Surface && Surface->Mobility==EComponentMobility::Static)
+    {Surface->ComponentTags.AddUnique(TEXT("ForestClimbable"));Surface->ComponentTags.AddUnique(TEXT("ForestClimbOverhang"));}
+   }
    FForestElementRegion Region;Region.Element=Element;Region.Center=It->GetActorLocation();Region.AnchorId=Name;
    Region.Radius=FMath::Max(1000.f,Element==EAlchemyElement::Fire?FireRadius:Element==EAlchemyElement::Water?WaterRadius:WindRadius);
    Regions.Add(Region);

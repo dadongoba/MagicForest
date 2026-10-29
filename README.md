@@ -73,3 +73,7 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 ## Dreamscape 主地图更新（2026-10-28）
 
 批次 2026-10-28-01 将主地图改为 Dreamscape DemoMap，使用 ChengYi 俯视主角、小地图及右键观察。必须先准备原路径的第三方素材，本仓库仅包含选定改动；地图通过 Git LFS 下载。应用步骤、文件清单及运行验收边界见 [Dreamscape 增量说明](Docs/Dreamscape_Upload_2026-10-28.md)。
+
+## 攀爬、采集与收获提醒更新（2026-10-29）
+
+最新攀爬仅忽略当前支撑组件的移动碰撞，保留独立贴面探测、其它障碍及安全退出；采集只播放一次，收获提醒用 ESC 关闭。第三方动作、网格和本地地图修改不随本批上传，应用时必须运行资产准备脚本。请先阅读[累计更新应用说明](Docs/Climbing_Upload_2026-10-29.md)，再生成新动作、重建碰撞并合并源码编译。

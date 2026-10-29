@@ -32,9 +32,10 @@ for stance in ('Crouched', 'Standing'):
         selected['Gather' + stance + (suffix or 'Loop')] = (
             '/Game/ResourceGatheringAnimationPack/Animations/Pickup' + stance + 'Right' + suffix)
 for name, source in (
-    ('ClimbIdle', 'climb_idle_cfoot'), ('ClimbUp', 'climb_U'), ('ClimbDown', 'climb_D'),
+    ('ClimbIdle', 'climb_idle_cfoot'), ('ClimbDown', 'climb_D'),
     ('ClimbLeft', 'climb_L'), ('ClimbRight', 'climb_R'), ('ClimbTop', 'climb_up_out')):
     selected[name] = '/Game/LaddersAndLedges/Animations/HangingAndLedges/' + source
+selected['ClimbUpLoop'] = '/Game/LaddersAndLedges/Animations/Ladder/ladder_up_loop'
 
 for name, path in selected.items():
     source = unreal.load_asset(path)
@@ -53,6 +54,8 @@ for name, path in selected.items():
         assert asset, destination
         asset.set_editor_property('enable_root_motion', False)
         asset.set_editor_property('force_root_lock', True)
+        if name == 'ClimbUpLoop':
+            asset.set_editor_property('root_motion_root_lock', unreal.RootMotionRootLock.ANIM_FIRST_FRAME)
         assert unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
     print(destination, asset.get_play_length(), asset.get_skeleton().get_path_name())
 print('Prepared 12 player action sequences; no gameplay was run.')

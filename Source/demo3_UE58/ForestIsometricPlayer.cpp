@@ -180,7 +180,7 @@ void UForestIsometricPlayer::ApplyGameplayInputMode()
 {
  auto* PC=Player.Get();if(!PC || MenuOpen())return;
  bSkipLookDelta=true;
- const bool FreeCursor=bAltNoticeCursor || (Minimap && Minimap->bOverview) || (ViewMode==EForestViewMode::Overhead && !bObserving);
+ const bool FreeCursor=(Minimap && Minimap->bOverview) || (ViewMode==EForestViewMode::Overhead && !bObserving);
  PC->bShowMouseCursor=FreeCursor;
  if(FreeCursor){FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);PC->SetInputMode(Mode);}
  else {FInputModeGameOnly Mode;Mode.SetConsumeCaptureMouseDown(false);PC->SetInputMode(Mode);}
@@ -229,7 +229,7 @@ bool UForestIsometricPlayer::CanUseTemplateInput() const
 {
  const auto* Viewport=GetWorld()->GetGameViewport();
  return ViewMode!=EForestViewMode::Overhead && !MenuOpen() && !(Minimap && Minimap->bOverview)
-  && !bAltNoticeCursor && Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
+  && Viewport && Viewport->Viewport && Viewport->Viewport->HasFocus();
 }
 void UForestIsometricPlayer::TemplateMove(const FInputActionValue& Value)
 {
@@ -322,10 +322,6 @@ void UForestIsometricPlayer::TickComponent(float DT,ELevelTick Type,FActorCompon
  if(Minimap)Minimap->UpdateMap(DT);
  auto* C=Character.Get();auto* PC=Player.Get();if(!C || !PC || !Boom)return;
  const bool Open=MenuOpen();
- const auto* HarvestUI=GetWorld()->GetSubsystem<UForestHarvestMagic>();
- const bool AltHeld=FSlateApplication::IsInitialized()?FSlateApplication::Get().GetModifierKeys().IsAltDown():(PC->IsInputKeyDown(EKeys::LeftAlt) || PC->IsInputKeyDown(EKeys::RightAlt));
- const bool AltCursor=HarvestUI && HarvestUI->IsNoticeVisible() && AltHeld;
- if(AltCursor!=bAltNoticeCursor){bAltNoticeCursor=AltCursor;ApplyGameplayInputMode();}
  // Slate tracks the physical button across viewport capture/focus changes.
  // PlayerInput may flush its key state when the input mode changes mid-press.
  const bool RightHeld=FSlateApplication::IsInitialized()
@@ -475,7 +471,7 @@ void UForestIsometricPlayer::HarvestNearby()
 void UForestIsometricPlayer::EndPlay(const EEndPlayReason::Type Reason)
 {
  if(bGathering)FinishGather(false);
- if(bClimbing)StopClimbing();
+ StopClimbing(true);
  if(CameraOcclusionParameters)UKismetMaterialLibrary::SetScalarParameterValue(this,CameraOcclusionParameters,TEXT("ForestCameraFadeEnabled"),0.f);
  if(SwimmingVolume)SwimmingVolume->Destroy();
  for(auto& W:Occluded)if(auto* M=W.Get())M->SetVisibility(true,false);

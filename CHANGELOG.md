@@ -2,6 +2,16 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-10-29-01：累计攀爬优化、单次采集与 ESC 收获提醒
+
+- **目的 / 基线 / 前置**：上传本次会话全部最终更新；基于 main `303c381`，功能前置 `eb210bc` / 2026-10-28-12。保留原有待推送说明提交 `303c381` 和未跟踪 Config/DefaultInput.ini，后者不提交。
+- **源码 / 类型**：修改 Source/demo3_UE58/ForestElementRegions.cpp、ForestHarvestMagic.cpp/.h、ForestIsometricPlayer.cpp/.h、ForestPlayerActions.cpp；新增 ForestClimbCollisionTests.cpp。
+- **脚本 / 文档**：修改 Tools/PreparePlayerActions.py，新增 Tools/OptimizeClimbingSurfaces.py、Tools/PrepareWindClimbingSurface.py；新增当天五份诊断/实现说明及 Docs/Climbing_Upload_2026-10-29.md；修改 README.md 与本记录。
+- **最终行为**：F 输入缓冲、多点贴面探测；攀爬仅忽略当前组件移动碰撞，保留其它障碍和身体核心防穿透，跨面/退出安全恢复。适用于全部攀爬对象，取代 Cliff_02 专用绕行。上爬换连续动作；采集完整动作仅一次、默认1秒；收获提醒 ESC 关闭，移除 X / Alt 鼠标逻辑。风符文石加入攀爬识别。
+- **依赖 / 应用 / 不含**：仍不公开第三方素材、骨架或派生动作/网格；不替换仓库地图。完整工程需先生成 AS_ClimbUpLoop，再按脚本重建11份地形碰撞及风区网格副本/地图引用，合并源码重新编译重开。无配置合并、存档或删除要求；详细步骤见[累计更新应用说明](Docs/Climbing_Upload_2026-10-29.md)。旧诊断说明保留开发时状态，以累计说明和最终组件忽略机制为准。
+- **验证 / 未验证**：完整工程 UE5.8.3 Windows 源码编译、标准DLL链接及MCP启动加载通过；隔离物理自动化测试 Forest.Climbing.ComponentCollision 成功1、失败0、警告0。碰撞及动作资产保存后重载通过；脚本语法检查通过，新风区重建脚本未额外执行apply。未进行用户关卡PIE操作、打包或手脚IK验收，实际手感/视觉/界面组合由用户测试。
+- **上传状态**：待上传；提交、推送并核对远程SHA后补记。不包含本机缓存、日志、编译产物、测试机器信息或 DefaultInput.ini。
+
 ## 2026-10-28-14：完成采集与攀爬模块链接并重开项目
 
 - **目的 / 基线 / 前置**：用户确认已关闭编辑器后，完成批次12/13剩余链接；基于 main `0cae73e`，功能提交 `eb210bc`。

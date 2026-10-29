@@ -44,6 +44,32 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Framework/Application/IInputProcessor.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Engine/GameViewportClient.h"
+#include "UnrealClient.h"
+
+// Consume Escape before the editor's PIE-stop shortcut, only for a visible
+// gameplay notice. No focus or mouse-mode changes are needed for the notice.
+class FForestNoticeInputProcessor : public IInputProcessor
+{
+ TWeakObjectPtr<UForestHarvestMagic> Owner;
+ bool bConsumedEscape=false;
+public:
+ explicit FForestNoticeInputProcessor(UForestHarvestMagic* InOwner):Owner(InOwner){}
+ virtual void Tick(const float,FSlateApplication&,TSharedRef<ICursor>) override {}
+ virtual bool HandleKeyDownEvent(FSlateApplication&,const FKeyEvent& Event) override
+ {
+  if(Event.GetKey()!=EKeys::Escape)return false;
+  if(Event.IsRepeat())return bConsumedEscape;
+  bConsumedEscape=Owner.IsValid() && Owner->TryDismissNoticeWithEscape();return bConsumedEscape;
+ }
+ virtual bool HandleKeyUpEvent(FSlateApplication&,const FKeyEvent& Event) override
+ {
+  if(Event.GetKey()!=EKeys::Escape)return false;
+  const bool Consumed=bConsumedEscape;bConsumedEscape=false;return Consumed;
+ }
+};
 
 namespace HarvestMagic
 {
@@ -115,6 +141,7 @@ void UForestHarvestMagic::RefreshFieldUI()
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
    if(View->bClimbing){FieldHUD->Action->SetText(FText::FromString(TEXT("攀爬中 · W 上爬 / S 下爬 / A D 横移 · F 松手 · 到达边缘自动登顶")));return;}
    if(View->bGathering){FieldHUD->Action->SetText(FText::FromString(TEXT("正在采集…")));return;}
+   if(View->bCanClimb)Action=TEXT("靠近可攀爬面 · 按 F 抓附（可提前按）\n")+Action;
    Action=Regions->GetHarvestHint(Cast<ACharacter>(Pawn),View && View->bSwimming)+TEXT("\n")+Action;
   }
  }
@@ -128,13 +155,8 @@ TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
  [SAssignNew(Frame,SBox).WidthOverride(960)
   [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
    [SNew(SVerticalBox)
-    +SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("采集收获"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss)]
-     +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).IsFocusable(false).ContentPadding(FMargin(14,6))
-      .ToolTipText(FText::FromString(TEXT("关闭提示（第一、第三人称按住 Alt 显示鼠标）")))
-      .OnClicked_Lambda([this](){if(Owner.IsValid())Owner->DismissNotice();return FReply::Handled();})
-      [SNew(STextBlock).Text(FText::FromString(TEXT("X"))).Font(HarvestMagic::Font(18,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
-    +SVerticalBox::Slot().AutoHeight().Padding(0,6)[SNew(STextBlock).Text(FText::FromString(TEXT("点击 X 关闭 · 按住 Alt 显示鼠标"))).Font(HarvestMagic::Font(11)).ColorAndOpacity(HarvestMagic::Muted)]
+    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("采集收获"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,6)[SNew(STextBlock).Text(FText::FromString(TEXT("按 ESC 关闭"))).Font(HarvestMagic::Font(11)).ColorAndOpacity(HarvestMagic::Muted)]
     +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(26)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
 }
 void UForestHarvestNoticeWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
@@ -299,10 +321,21 @@ void UForestHarvestMagic::Setup()
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom"))){ConfigureMushroomCollision(M);MushroomVisibility.Add(M,It->IsHidden());}
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
  if(NewNotice){NewNotice->Owner=this;NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
+ if(FSlateApplication::IsInitialized())
+ {NoticeInputProcessor=MakeShared<FForestNoticeInputProcessor>(this);FSlateApplication::Get().RegisterInputPreProcessor(NoticeInputProcessor,0);}
 }
 void UForestHarvestMagic::DismissNotice()
 {
  NoticeUntil=0;if(NoticeWidget)NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
+bool UForestHarvestMagic::TryDismissNoticeWithEscape()
+{
+ if(!IsNoticeVisible() || IsInventoryOpen())return false;
+ auto* Viewport=GetWorld()->GetGameViewport();
+ if(!Viewport || !Viewport->Viewport || !Viewport->Viewport->HasFocus())return false;
+ if(auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();Alchemy && Alchemy->IsWorkbenchOpen())return false;
+ if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));Manager && (Manager->IsDialogueOpen() || Manager->IsFinderMenuOpen()))return false;
+ DismissNotice();return true;
 }
 void UForestHarvestMagic::ToggleInventory()
 {
@@ -372,4 +405,4 @@ void UForestHarvestMagic::Tick(float DT)
  const auto Bag=ReadBag();for(const auto& Pair:Bag){if(!Pair.Key.StartsWith(TEXT("SM_Env_Mushroom")))continue;const int Delta=Pair.Value-Previous.FindRef(Pair.Key);if(Delta>0)Harvest(Pair.Key,Delta);}Previous=ReadBag();
 }
 TStatId UForestHarvestMagic::GetStatId() const{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestHarvestMagic,STATGROUP_Tickables);}
-void UForestHarvestMagic::Deinitialize(){for(auto& R:Requests)if(R)R->Owner.Reset();Requests.Reset();for(auto& V:Visuals)if(V.Actor.IsValid())V.Actor->Destroy();Visuals.Reset();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);if(Inventory)Inventory->RemoveFromParent();if(NoticeWidget)NoticeWidget->RemoveFromParent();if(FieldHUD)FieldHUD->RemoveFromParent();Super::Deinitialize();}
+void UForestHarvestMagic::Deinitialize(){if(NoticeInputProcessor && FSlateApplication::IsInitialized())FSlateApplication::Get().UnregisterInputPreProcessor(NoticeInputProcessor);NoticeInputProcessor.Reset();for(auto& R:Requests)if(R)R->Owner.Reset();Requests.Reset();for(auto& V:Visuals)if(V.Actor.IsValid())V.Actor->Destroy();Visuals.Reset();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);if(Inventory)Inventory->RemoveFromParent();if(NoticeWidget)NoticeWidget->RemoveFromParent();if(FieldHUD)FieldHUD->RemoveFromParent();Super::Deinitialize();}

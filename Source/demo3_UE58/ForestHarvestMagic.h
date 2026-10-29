@@ -110,6 +110,7 @@ public:
  bool IsInventoryOpen() const{return Inventory && Inventory->IsInViewport();}
  bool IsNoticeVisible() const { return NoticeWidget && NoticeWidget->GetVisibility()!=ESlateVisibility::Collapsed; }
  void DismissNotice();
+ bool TryDismissNoticeWithEscape();
  void HandleResponse(UForestHarvestRequest*,bool,const FString&);
  static FString ElementText(EAlchemyElement Element);
 private:
@@ -119,6 +120,7 @@ private:
  UPROPERTY() TObjectPtr<UUserWidget> NoticeWidget;
  UPROPERTY() TObjectPtr<UForestFieldHUDWidget> FieldHUD;
  TSharedPtr<STextBlock> Notice;
+ TSharedPtr<class IInputProcessor> NoticeInputProcessor;
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  TWeakObjectPtr<class APlayerController> Player;
  TWeakObjectPtr<class APawn> BagOwner;
