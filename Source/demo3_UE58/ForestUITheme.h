@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Styling/SlateTypes.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Rendering/RenderingCommon.h"
 
 /** Shared runtime Slate styles, aligned with the warm hand-painted woodland reference. */
 namespace ForestTheme
@@ -18,7 +19,7 @@ namespace ForestTheme
  const FTableRowStyle& ComboRowStyle();
 }
 
-/** Paper drawn in the panel's own Slate geometry, with a protected text gutter. */
+/** Original paper artwork with silhouette clipping and independent corner scaling. */
 class SForestPaperBorder : public SBorder
 {
 public:
@@ -26,4 +27,9 @@ public:
  void Construct(const FArguments& Args);
  void SetPadding(TAttribute<FMargin> InPadding);
  virtual int32 OnPaint(const FPaintArgs&,const FGeometry&,const FSlateRect&,FSlateWindowElementList&,int32,const FWidgetStyle&,bool) const override;
+private:
+ // Rebuild clipping only on resize; transforms and tint remain live each paint.
+ mutable FVector2f CachedPaperSize=FVector2f(-1,-1);
+ mutable TArray<FVector2f> PaperPositions,PaperUVs;
+ mutable TArray<SlateIndex> PaperIndices;
 };
