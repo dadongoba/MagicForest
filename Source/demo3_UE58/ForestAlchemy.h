@@ -6,6 +6,7 @@
 #include "AlchemyGameplayTypes.h"
 #include "ForestAlchemy.generated.h"
 class UInputComponent;class APlayerController;class UStaticMeshComponent;class UForestAlchemy;
+struct FForestMagicItem;
 class STextBlock;class SVerticalBox;class SBox;class SBorder;
 
 /** Future restrictions are data, not an LLM decision. Empty allowlists mean unrestricted. */
@@ -127,6 +128,7 @@ public:
  void HandleConsequence(UForestConsequenceRequest* Context,bool bSuccess,const FString& Text);
  bool bNarrativePending=false;
  void RefreshUI();
+ void RefreshHarvestItem(const FForestMagicItem& Item);
  TArray<FForestBrewChoice> Sequence;
  int32 SelectedSlot=INDEX_NONE;
  FString Status;

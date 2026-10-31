@@ -15,6 +15,7 @@ class STextBlock;
 class SVerticalBox;
 class SWrapBox;
 class SBox;
+class SImage;
 
 USTRUCT(BlueprintType)
 struct DEMO3_UE58_API FForestMagicItem
@@ -30,6 +31,7 @@ struct DEMO3_UE58_API FForestMagicItem
  UPROPERTY(BlueprintReadOnly) int32 HarvestDay=1;
  UPROPERTY(BlueprintReadOnly) FAlchemyVector Value;
  UPROPERTY(BlueprintReadOnly) bool bGeneratedByAI=false;
+ UPROPERTY(BlueprintReadOnly) bool bNamingPending=false;
 };
 UCLASS()
 class DEMO3_UE58_API UForestMagicItemSave : public USaveGame
@@ -54,11 +56,14 @@ class DEMO3_UE58_API UForestHarvestNoticeWidget : public UUserWidget
 public:
  TWeakObjectPtr<UForestHarvestMagic> Owner;
  TSharedPtr<STextBlock> Text;
+ void ShowItem(const FForestMagicItem& Item);
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
  virtual void NativeTick(const FGeometry&,float) override;
 private:
  TSharedPtr<SBox> Frame;
+ TSharedPtr<SImage> ElementImage;
+ TSharedPtr<STextBlock> ItemName,Attribute,GenerationStatus;
 };
 UCLASS()
 class DEMO3_UE58_API UForestFieldHUDWidget : public UUserWidget
@@ -102,7 +107,7 @@ public:
  virtual void Deinitialize() override;
  UFUNCTION(BlueprintCallable) void ToggleInventory();
  UFUNCTION(BlueprintPure) bool FindItem(const FString& Key,FForestMagicItem& Item) const;
- /** Grant a fixed region material; never roll a mushroom card or ask AI for its element. */
+ /** Preserve region element/value; refine every collected source into an AI-named magic item. */
  bool GrantRegionalMaterial(EAlchemyElement Element,int32 PipValue,UStaticMeshComponent* SourceMesh);
  /** Keep harvest traces, but never obstruct either character channel or navigation. */
  static void ConfigureMushroomCollision(UStaticMeshComponent* Mesh);
@@ -119,7 +124,7 @@ private:
  UPROPERTY() TObjectPtr<UForestMagicInventoryWidget> Inventory;
  UPROPERTY() TObjectPtr<UUserWidget> NoticeWidget;
  UPROPERTY() TObjectPtr<UForestFieldHUDWidget> FieldHUD;
- TSharedPtr<STextBlock> Notice;
+ FString NoticeItemId;
  TSharedPtr<class IInputProcessor> NoticeInputProcessor;
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  TWeakObjectPtr<class APlayerController> Player;
@@ -147,6 +152,9 @@ private:
  void Setup();
  void RefreshFieldUI();
  void Harvest(const FString& Source,int32 Count);
+ void PrepareItem(FForestMagicItem& Item);
+ void RequestItemName(const FString& ItemId);
+ void RefreshItemViews(const FForestMagicItem& Item);
  void Adjust(const FString& Key,int32 Delta);
  void RefreshLegacyHUD();
  void Persist();

@@ -1,4 +1,5 @@
 #include "ForestAlchemy.h"
+#include "Widgets/Images/SImage.h"
 #include "ForestUITheme.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SBoxPanel.h"
@@ -97,8 +98,12 @@ void UForestBrewWidget::Refresh()
  for(const auto& C:Choices)
  {
   if(C.Key.StartsWith(TEXT("court:")))continue;const bool IsPip=C.Card.Type==EAlchemyCardType::Pip;HasPips|=IsPip;HasMajors|=!IsPip;
-  (IsPip?Materials:Majors)->AddSlot().AutoHeight().Padding(0,0,0,7)
-   [BrewUI::Button(C.Name+FString::Printf(TEXT("   额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
+  auto ChoiceButton=BrewUI::Button(C.Name+FString::Printf(TEXT("   额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}));
+  if(IsPip)Materials->AddSlot().AutoHeight().Padding(0,0,0,7)
+   [SNew(SHorizontalBox)+SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)
+    [SNew(SBox).WidthOverride(40).HeightOverride(40)[SNew(SImage).Image(ForestTheme::ElementIcon(C.Card.Element==EAlchemyElement::Fire?0:C.Card.Element==EAlchemyElement::Water?2:1))]]
+    +SHorizontalBox::Slot().FillWidth(1)[ChoiceButton]];
+  else Majors->AddSlot().AutoHeight().Padding(0,0,0,7)[ChoiceButton];
  }
  if(!HasPips)Materials->AddSlot().AutoHeight()[BrewUI::Text(TEXT("背包中还没有可用于炼药的元素小物。"))];
  if(!HasMajors)Majors->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今日还没有大牌。白天拿起小屋药瓶即可抽取。"))];

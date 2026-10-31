@@ -3,6 +3,16 @@
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
 
+
+## 2026-10-31-02：恢复产区采集涌现，补全物品显示链路
+
+- **目的 / 基线**：基于 `e7b9ae9`，修复新产区绕过AI命名/描述；火、风蘑菇与水贝壳调用既有共享AI，元素与数值仍由游戏决定。
+- **修改**：Source/demo3_UE58/ForestHarvestMagic.cpp/.h、ForestAlchemy.cpp/.h、ForestAlchemyUI.cpp、ForestNPCInteraction.cpp/.h；Docs/Paper_Restoration_Preview.html。新采集独立ID、库存键稳定、存量固定名称迁移、迟到回复保护、物品显示刷新、采集弹窗和炼药材料图标。
+- **新增**：Docs/Regional_Harvest_Emergence_2026-10-31.md；Docs/Harvest_Emergence_Fire_2026-10-31.jpg、Docs/Harvest_Emergence_Water_2026-10-31.jpg（离线示例）。
+- **依赖 / 应用**：需已有产区、动作、共享AI及原图片；按原路径应用源码并重新编译。未改地图、配置或素材，不上传二进制模块。
+- **验证**：macOS UE5.8编译链接通过（25.04秒），离线预览及源码链路检查通过。未打开UE/PIE，未真实调用AI，Windows与游戏内存档/交互未验收。详见[说明](Docs/Regional_Harvest_Emergence_2026-10-31.md)。
+- **上传状态**：本地检查完成；待推送核对，最终状态以远端SHA为准。
+
 ## 2026-10-31-01：恢复旧纸张美术与分区自适应
 
 - **目的 / 基线 / 前置**：按用户确认恢复原 WoodlandPaper.png 的纸纹、卷角与花叶，基于 main `6735621`；替换2026-10-28-03/04的程序渐变底板，保留公共容器接入。

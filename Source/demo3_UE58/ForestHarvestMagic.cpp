@@ -149,21 +149,41 @@ void UForestHarvestMagic::RefreshFieldUI()
 }
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
 {
- // Full-viewport anchor; only the paper has a preferred width. Height follows the text.
  return SNew(SOverlay)
  +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(FMargin(24))
  [SAssignNew(Frame,SBox).WidthOverride(960)
   [SNew(SForestPaperBorder).Padding(FMargin(32,28,32,36))
-   [SNew(SVerticalBox)
-    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("采集收获"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss)]
-    +SVerticalBox::Slot().AutoHeight().Padding(0,6)[SNew(STextBlock).Text(FText::FromString(TEXT("按 ESC 关闭"))).Font(HarvestMagic::Font(11)).ColorAndOpacity(HarvestMagic::Muted)]
-    +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(26)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]];
+   [SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("魔法书的收获"))).Font(HarvestMagic::Font(16,true)).ColorAndOpacity(HarvestMagic::Moss)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,14)
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,18,0)
+      [SNew(SBox).WidthOverride(64).HeightOverride(64)[SAssignNew(ElementImage,SImage)]]
+     +SHorizontalBox::Slot().FillWidth(1)
+      [SNew(SVerticalBox)
+       +SVerticalBox::Slot().AutoHeight()[SAssignNew(ItemName,STextBlock).Font(HarvestMagic::Font(28,true)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
+       +SVerticalBox::Slot().AutoHeight().Padding(0,6)[SAssignNew(Attribute,STextBlock).Font(HarvestMagic::Font(20,true)).ColorAndOpacity(HarvestMagic::Moss)]]]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,8)[SAssignNew(Text,STextBlock).Font(HarvestMagic::Font(26)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,10)[SAssignNew(GenerationStatus,STextBlock).Font(HarvestMagic::Font(13)).ColorAndOpacity(HarvestMagic::Muted).AutoWrapText(true)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,8)[SNew(STextBlock).Text(FText::FromString(TEXT("已收入背包 · 按 B 查看 · 按 ESC 关闭"))).Font(HarvestMagic::Font(13)).ColorAndOpacity(HarvestMagic::Muted)]]]]];
+}
+void UForestHarvestNoticeWidget::ShowItem(const FForestMagicItem& Item)
+{
+ if(!Text.IsValid())return;
+ const int32 Icon=Item.Element==EAlchemyElement::Fire?0:Item.Element==EAlchemyElement::Water?2:1;
+ ElementImage->SetImage(ForestTheme::ElementIcon(Icon));
+ ItemName->SetText(FText::FromString(Item.Name));
+ Attribute->SetText(FText::FromString(FString::Printf(TEXT("%s × %d"),*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue)));
+ const FString Source=Item.SourceMushroom==TEXT("Region_Water_Shell")?TEXT("贝壳"):TEXT("蘑菇");
+ Text->SetText(FText::FromString(FString::Printf(TEXT("%s散作星尘，魔法书将其中的%s凝成了一件小物。\n\n%s"),*Source,*UForestHarvestMagic::ElementText(Item.Element),*Item.Description)));
+ GenerationStatus->SetText(FText::FromString(Item.bNamingPending?TEXT("魔法书正在为它写下名字…… 暂显示本地记述。"):
+  Item.bGeneratedByAI?TEXT("魔法书已写下这件小物的名字与来历。 "):TEXT("暂以本地记述收存，元素与数值已确定。")));
 }
 void UForestHarvestNoticeWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
 {
  Super::NativeTick(Geometry,DeltaTime);
  const float Width=static_cast<float>(Geometry.GetLocalSize().X);
- if(Frame.IsValid() && Width>0)Frame->SetWidthOverride(FMath::Max(1.f,FMath::Min(960.f,Width-48.f)));
+ if(Frame.IsValid() && Width>0){Frame->SetWidthOverride(FMath::Max(1.f,FMath::Min(960.f,Width-48.f)));Frame->SetMaxDesiredHeight(FMath::Max(1.f,static_cast<float>(Geometry.GetLocalSize().Y)-48.f));}
 }
 TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
 {
@@ -235,7 +255,7 @@ void UForestMagicInventoryWidget::Refresh()
     .ToolTipText(FText::FromString(Key)).OnClicked_Lambda([this,Key](){Select(Key);return FReply::Handled();})
     [SNew(SVerticalBox)
      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-      [SNew(SBox).WidthOverride(48).HeightOverride(40)[SNew(SImage).Image(ForestTheme::ElementIcon(Known?(Item.Element==EAlchemyElement::Fire?0:Item.Element==EAlchemyElement::Water?2:1):-1))]]
+      [SNew(SBox).WidthOverride(48).HeightOverride(48)[SNew(SImage).Image(ForestTheme::ElementIcon(Known?(Item.Element==EAlchemyElement::Fire?0:Item.Element==EAlchemyElement::Water?2:1):-1))]]
      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
       [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(Accent.CopyWithNewOpacity(.12f)).Padding(FMargin(8,1))
        [SNew(STextBlock).Text(FText::FromString(Attribute)).Font(HarvestMagic::Font(12,true)).ColorAndOpacity(HarvestMagic::Ink)]]
@@ -270,35 +290,29 @@ void UForestHarvestMagic::Adjust(const FString& Name,int32 Delta)
 }
 void UForestHarvestMagic::RefreshLegacyHUD()
 {
- auto* Pawn=BagOwner.Get();if(!Pawn)return;const auto Bag=ReadBag();TArray<FString> Keys;Bag.GetKeys(Keys);Keys.Sort();FString Text;for(const auto& K:Keys)if(Bag[K]>0)Text+=FString::Printf(TEXT("%s ×%d\n"),*K,Bag[K]);if(auto* P=FindFProperty<FStrProperty>(Pawn->GetClass(),TEXT("BackpackList")))P->SetPropertyValue_InContainer(Pawn,Text);if(auto* F=Pawn->FindFunction(TEXT("RefreshHUD")))Pawn->ProcessEvent(F,nullptr);if(Inventory && Inventory->IsInViewport())Inventory->Refresh();
+ auto* Pawn=BagOwner.Get();if(!Pawn)return;const auto Bag=ReadBag();TArray<FString> Keys;Bag.GetKeys(Keys);Keys.Sort();FString Text;for(const auto& K:Keys)if(Bag[K]>0){FForestMagicItem I;const FString Label=FindItem(K,I)?FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue):K;Text+=FString::Printf(TEXT("%s ×%d\n"),*Label,Bag[K]);}if(auto* P=FindFProperty<FStrProperty>(Pawn->GetClass(),TEXT("BackpackList")))P->SetPropertyValue_InContainer(Pawn,Text);if(auto* F=Pawn->FindFunction(TEXT("RefreshHUD")))Pawn->ProcessEvent(F,nullptr);if(Inventory && Inventory->IsInViewport())Inventory->Refresh();
 }
 bool UForestHarvestMagic::FindItem(const FString& Key,FForestMagicItem& Out) const{if(Ledger)for(const auto& Item:Ledger->Items)if(Item.InventoryKey==Key){Out=Item;return true;}return false;}
 bool UForestHarvestMagic::GrantRegionalMaterial(EAlchemyElement Element,int32 Pip,UStaticMeshComponent* SourceMesh)
 {
  if(!bReady)Setup();if(!bReady || !Ledger || !BagOwner.IsValid() || !SourceMesh)return false;
- FForestMagicItem Item;Item.Element=Element;Item.PipValue=FMath::Clamp(Pip,1,9);
+ FForestMagicItem Item;Item.Id=FGuid::NewGuid().ToString();Item.Element=Element;Item.PipValue=FMath::Clamp(Pip,1,9);
  auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();Item.HarvestDay=Daily?Daily->GetCurrentDay():1;
- if(Element==EAlchemyElement::Water)
- {Item.Name=TEXT("水灵贝壳");Item.SourceMushroom=TEXT("Region_Water_Shell");Item.Description=TEXT("只在水符文石产区的水面漂浮，需要游泳靠近采集。贝壳中的水元素稳定，不会变成其他元素。");Item.Value.Water=Item.PipValue;}
- else if(Element==EAlchemyElement::Wind)
- {Item.Name=TEXT("风息蘑菇");Item.SourceMushroom=TEXT("Region_Wind_Mushroom");Item.Description=TEXT("生长在风符文石周围的陆地产区，菌褶间藏着轻柔的风。采集后固定获得风元素素材。");Item.Value.Wind=Item.PipValue;}
- else
- {Item.Name=TEXT("火纹蘑菇");Item.SourceMushroom=TEXT("Region_Fire_Mushroom");Item.Description=TEXT("生长在火符文石周围的陆地产区，菌盖里蕴着温热的火。采集后固定获得火元素素材。");Item.Value.Fire=Item.PipValue;}
- Item.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*Item.Name,*ElementText(Element),Item.PipValue);
- Item.Id=Item.SourceMushroom+FString::Printf(TEXT("_%d"),Item.PipValue);
- const bool NewEntry=!Ledger->Items.ContainsByPredicate([&](const auto& Existing){return Existing.InventoryKey==Item.InventoryKey;});
- if(NewEntry)Ledger->Items.Add(Item);Adjust(Item.InventoryKey,1);
+ Item.SourceMushroom=Element==EAlchemyElement::Water?TEXT("Region_Water_Shell"):Element==EAlchemyElement::Wind?TEXT("Region_Wind_Mushroom"):TEXT("Region_Fire_Mushroom");
+ if(Element==EAlchemyElement::Water)Item.Value.Water=Item.PipValue;
+ else if(Element==EAlchemyElement::Wind)Item.Value.Wind=Item.PipValue;
+ else Item.Value.Fire=Item.PipValue;
+ PrepareItem(Item);Item.bNamingPending=true;
+ // One immutable inventory identity per harvest. A late name never moves bag
+ // quantities or invalidates an item already selected for a commission/finder.
+ Ledger->Items.Add(Item);Adjust(Item.InventoryKey,1);
  if(!UGameplayStatics::SaveGameToSlot(Ledger,HarvestMagic::Slot,0))
- {Adjust(Item.InventoryKey,-1);if(NewEntry)Ledger->Items.Pop();return false;}
+ {Adjust(Item.InventoryKey,-1);Ledger->Items.Pop();return false;}
  if(auto* Last=FindFProperty<FStrProperty>(BagOwner->GetClass(),TEXT("LastPicked")))Last->SetPropertyValue_InContainer(BagOwner.Get(),Item.InventoryKey);
- RefreshLegacyHUD();
- if(Notice.IsValid())
- {
-  Notice->SetText(FText::FromString(FString::Printf(TEXT("采集获得：%s\n%s\n已收入背包 · 按 B 查看"),*Item.InventoryKey,*Item.Description)));
-  NoticeUntil=GetWorld()->GetTimeSeconds()+6;NoticeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
- }
+ Previous=ReadBag();RefreshLegacyHUD();ShowResult(Item);
  JustHarvested.Add(Item.SourceMushroom,SourceMesh);BeginVisual(Item.SourceMushroom,Element);
- UE_LOG(LogTemp,Log,TEXT("Regional harvest: %s, fixed element %s"),*Item.InventoryKey,*ElementText(Element));
+ RequestItemName(Item.Id);
+ UE_LOG(LogTemp,Log,TEXT("Regional source refined; fixed element/value, naming requested."));
  return true;
 }
 void UForestHarvestMagic::Persist(){if(Ledger)UGameplayStatics::SaveGameToSlot(Ledger,HarvestMagic::Slot,0);}
@@ -320,9 +334,19 @@ void UForestHarvestMagic::Setup()
  FieldHUD=CreateWidget<UForestFieldHUDWidget>(PC);if(FieldHUD){FieldHUD->AddToViewport(10);FieldHUD->SetVisibility(ESlateVisibility::HitTestInvisible);}
  for(TActorIterator<AActor> It(GetWorld());It;++It)if(auto* M=It->FindComponentByClass<UStaticMeshComponent>(); M && M->GetStaticMesh() && M->GetStaticMesh()->GetName().StartsWith(TEXT("SM_Env_Mushroom"))){ConfigureMushroomCollision(M);MushroomVisibility.Add(M,It->IsHidden());}
  auto* NewNotice=CreateWidget<UForestHarvestNoticeWidget>(PC);
- if(NewNotice){NewNotice->Owner=this;NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);Notice=NewNotice->Text;NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
+ if(NewNotice){NewNotice->Owner=this;NoticeWidget=NewNotice;NoticeWidget->AddToViewport(30);NoticeWidget->SetVisibility(ESlateVisibility::Collapsed);}
  if(FSlateApplication::IsInitialized())
  {NoticeInputProcessor=MakeShared<FForestNoticeInputProcessor>(this);FSlateApplication::Get().RegisterInputPreProcessor(NoticeInputProcessor,0);}
+ // Upgrade fixed regional names already saved by the disconnected collector.
+ // Preserve their key, quantity, source/day and attributes; only metadata changes.
+ bool Migrated=false;
+ for(auto& Item:Ledger->Items)
+  if(Item.SourceMushroom.StartsWith(TEXT("Region_")) && !Item.bGeneratedByAI &&
+    (Item.Name==TEXT("火纹蘑菇") || Item.Name==TEXT("风息蘑菇") || Item.Name==TEXT("水灵贝壳")))
+  {const FString Key=Item.InventoryKey;PrepareItem(Item);Item.InventoryKey=Key;Item.bNamingPending=true;Migrated=true;}
+ if(Migrated){Persist();RefreshLegacyHUD();}
+ TArray<FString> Resume;for(const auto& Item:Ledger->Items)if(Item.bNamingPending && ReadBag().FindRef(Item.InventoryKey)>0)Resume.Add(Item.Id);
+ for(const auto& Id:Resume)RequestItemName(Id);
 }
 void UForestHarvestMagic::DismissNotice()
 {
@@ -345,7 +369,38 @@ void UForestHarvestMagic::ToggleInventory()
 }
 FString UForestHarvestMagic::Prompt(const FForestMagicItem& I)
 {
- return FString::Printf(TEXT("森林魔法书把刚采下的蘑菇炼尽，将其中的%s元素（强度%d，范围1至9）凝成一件能拿在手里的奇异物件。生成名称与道具描述。\n规则：名称4至12个汉字，必须具象，包含具体物件，如纽扣、胡桃、线轴、铜铃、蜡烛、怀表、钥匙、梳子、小瓶、石子；可以创造其他日常小物。名称体现物件形态和一个魔法异常，禁止仅用余响、灵质、暖意等抽象词作物品。避免重复套用模板。描述25至65个汉字，写材质、触感、外形和一个可感知的奇异性质，像童话道具说明；不写实验室用语，不引用哈利波特，不新增伤害、治疗、增益、任务或任何实际机制。低强度魔法细微，高强度鲜明。不要继续绑定蘑菇外观。元素与数字由游戏决定，你不得修改或输出数值。只输出JSON：{\"name\":\"物品名\",\"description\":\"一句道具描述\"}"),*ElementText(I.Element),I.PipValue);
+ return FString::Printf(TEXT("森林魔法书把刚采下的%s炼尽，将其中的%s元素（强度%d，范围1至9）凝成一件能拿在手里的奇异物件。生成名称与道具描述。\n规则：名称4至12个汉字，必须具象，包含具体物件，如纽扣、胡桃、线轴、铜铃、蜡烛、怀表、钥匙、梳子、小瓶、石子；可以创造其他日常小物。名称体现物件形态和一个魔法异常，禁止仅用余响、灵质、暖意等抽象词作物品。避免重复套用模板。描述25至65个汉字，写材质、触感、外形和一个可感知的奇异性质，像童话道具说明；不写实验室用语，不引用哈利波特，不新增伤害、治疗、增益、任务或任何实际机制。低强度魔法细微，高强度鲜明。不要继续绑定蘑菇外观。元素与数字由游戏决定，你不得修改或输出数值。只输出JSON：{\"name\":\"物品名\",\"description\":\"一句道具描述\"}"),I.SourceMushroom==TEXT("Region_Water_Shell")?TEXT("贝壳"):TEXT("蘑菇"),*ElementText(I.Element),I.PipValue);
+}
+void UForestHarvestMagic::PrepareItem(FForestMagicItem& I)
+{
+ const int Variant=FCrc::StrCrc32(*I.Id)%3;
+  static const TCHAR* Names[3][3]={{TEXT("炉火纽扣"),TEXT("藏火胡桃"),TEXT("不肯熄灭的短蜡烛")},{TEXT("留住叹息的线轴"),TEXT("没有舌头的铜铃"),TEXT("追风的小梳子")},{TEXT("雨珠玻璃扣"),TEXT("装着小雨的瓶子"),TEXT("潮汐怀表")}};
+  static const TCHAR* Descriptions[3][3]={{TEXT("黄铜边缘始终温热，中央的小火苗偶尔探出头，仿佛还在等一件合身的外套。"),TEXT("胡桃壳缝中漏出暖光，贴近耳边，能听见里面细小的柴火声。"),TEXT("蜡烛只有指节长，每当火苗垂下头，烛芯便悄悄把它扶起来。")},{TEXT("苍白的细线会自行松开一小截，随后传来一声不知属于谁的叹息。"),TEXT("铃内空空如也，风经过时，却会响起三声清楚的铃音。"),TEXT("木梳的齿间总有细风穿过，握在手里，发梢便朝森林深处轻轻偏去。")},{TEXT("透明扣子里封着一扇小窗，窗外总在下雨，窗内却没有人。"),TEXT("软木塞下飘着一片小云，瓶壁上不时滑过一滴刚落下的雨。"),TEXT("表盘没有指针，只有一片缓慢涨落的海，浪花会轻轻碰响银色刻度。")}};
+  const int E=I.Element==EAlchemyElement::Wind?1:I.Element==EAlchemyElement::Water?2:0;I.Name=Names[E][Variant];I.Description=Descriptions[E][Variant];I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);
+  // Do not merge different descriptions or generation requests under the same legacy key.
+  int Serial=1;const FString BaseName=I.Name;while(Ledger->Items.ContainsByPredicate([&](const auto& Existing){return Existing.InventoryKey==I.InventoryKey;})){I.Name=FString::Printf(TEXT("%s（%d）"),*BaseName,++Serial);I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);}
+}
+void UForestHarvestMagic::RequestItemName(const FString& ItemId)
+{
+ if(!Ledger || Requests.ContainsByPredicate([&](const auto& R){return R && R->ItemId==ItemId;}))return;
+ auto* Item=Ledger->Items.FindByPredicate([&](const auto& I){return I.Id==ItemId;});if(!Item)return;
+ Item->bNamingPending=true;
+ auto* Request=NewObject<UForestHarvestRequest>(this);Request->Owner=this;Request->ItemId=ItemId;Requests.Add(Request);
+ auto* AI=GetWorld()->GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
+ if(!AI || !AI->HasApiKey()){HandleResponse(Request,false,TEXT("AI unavailable"));return;}
+ FDialogueAICompletion Completion;Completion.BindDynamic(Request,&UForestHarvestRequest::Completed);
+ FDialogueMessage System;System.Role=TEXT("system");System.Content=TEXT("你为森林童话游戏设计具象的魔法道具。遵守输入事实与JSON格式，名称富有变化，描述具体自然。");
+ FDialogueMessage User;User.Role=TEXT("user");User.Content=Prompt(*Item);
+ AI->RequestChatCompletion({System,User},.95f,260,Completion);
+}
+void UForestHarvestMagic::RefreshItemViews(const FForestMagicItem& Item)
+{
+ RefreshLegacyHUD();
+ if(auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();Alchemy && Alchemy->IsWorkbenchOpen())Alchemy->RefreshHarvestItem(Item);
+ if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass())))Manager->RefreshHarvestItemViews();
+ // Never reopen a dismissed/expired notice or overwrite a newer harvest.
+ if(IsNoticeVisible() && NoticeItemId==Item.Id)
+  if(auto* Widget=Cast<UForestHarvestNoticeWidget>(NoticeWidget)){Widget->ShowItem(Item);NoticeUntil=GetWorld()->GetTimeSeconds()+8;}
 }
 void UForestHarvestMagic::Harvest(const FString& Source,int32 Count)
 {
@@ -353,30 +408,35 @@ void UForestHarvestMagic::Harvest(const FString& Source,int32 Count)
  for(int N=0;N<Count;++N)
  {
   FForestMagicItem I;I.Id=FGuid::NewGuid().ToString();I.SourceMushroom=Source;I.Element=Row.Element;I.PipValue=Row.PipValue;I.Value=Row.Value;I.HarvestDay=Row.Day;
-  const int Variant=FCrc::StrCrc32(*I.Id)%3;
-  static const TCHAR* Names[3][3]={{TEXT("炉火纽扣"),TEXT("藏火胡桃"),TEXT("不肯熄灭的短蜡烛")},{TEXT("留住叹息的线轴"),TEXT("没有舌头的铜铃"),TEXT("追风的小梳子")},{TEXT("雨珠玻璃扣"),TEXT("装着小雨的瓶子"),TEXT("潮汐怀表")}};
-  static const TCHAR* Descriptions[3][3]={{TEXT("黄铜边缘始终温热，中央的小火苗偶尔探出头，仿佛还在等一件合身的外套。"),TEXT("胡桃壳缝中漏出暖光，贴近耳边，能听见里面细小的柴火声。"),TEXT("蜡烛只有指节长，每当火苗垂下头，烛芯便悄悄把它扶起来。")},{TEXT("苍白的细线会自行松开一小截，随后传来一声不知属于谁的叹息。"),TEXT("铃内空空如也，风经过时，却会响起三声清楚的铃音。"),TEXT("木梳的齿间总有细风穿过，握在手里，发梢便朝森林深处轻轻偏去。")},{TEXT("透明扣子里封着一扇小窗，窗外总在下雨，窗内却没有人。"),TEXT("软木塞下飘着一片小云，瓶壁上不时滑过一滴刚落下的雨。"),TEXT("表盘没有指针，只有一片缓慢涨落的海，浪花会轻轻碰响银色刻度。")}};
-  const int E=I.Element==EAlchemyElement::Wind?1:I.Element==EAlchemyElement::Water?2:0;I.Name=Names[E][Variant];I.Description=Descriptions[E][Variant];I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);
-  // Do not merge different descriptions or generation requests under the same legacy key.
-  int Serial=1;const FString BaseName=I.Name;while(Ledger->Items.ContainsByPredicate([&](const auto& Existing){return Existing.InventoryKey==I.InventoryKey;})){I.Name=FString::Printf(TEXT("%s（%d）"),*BaseName,++Serial);I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);}
+  PrepareItem(I);I.bNamingPending=true;
   Adjust(Source,-1);Adjust(I.InventoryKey,1);Ledger->Items.Add(I);if(auto* P=FindFProperty<FStrProperty>(BagOwner->GetClass(),TEXT("LastPicked")))P->SetPropertyValue_InContainer(BagOwner.Get(),I.InventoryKey);ShowResult(I);BeginVisual(Source,I.Element);
-  auto* AI=GetWorld()->GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();if(AI && AI->HasApiKey()){auto* Request=NewObject<UForestHarvestRequest>(this);Request->Owner=this;Request->ItemId=I.Id;Requests.Add(Request);FDialogueAICompletion Completion;Completion.BindDynamic(Request,&UForestHarvestRequest::Completed);FDialogueMessage System;System.Role=TEXT("system");System.Content=TEXT("你为森林童话游戏设计具象的魔法道具。遵守输入事实与JSON格式，名称富有变化，描述具体自然。");FDialogueMessage User;User.Role=TEXT("user");User.Content=Prompt(I);AI->RequestChatCompletion({System,User},.95f,260,Completion);}
+  Persist();RequestItemName(I.Id);
  }
  RefreshLegacyHUD();Persist();
 }
 void UForestHarvestMagic::HandleResponse(UForestHarvestRequest* Request,bool Success,const FString& Text)
 {
- if(!Request || !Requests.Contains(Request))return;Requests.Remove(Request);if(!Success || !Ledger)return;FString Clean=Text;Clean.TrimStartAndEndInline();if(Clean.StartsWith(TEXT("```"))){int End=Clean.Find(TEXT("\n"));if(End!=INDEX_NONE)Clean=Clean.Mid(End+1);Clean.RemoveFromEnd(TEXT("```"));}TSharedPtr<FJsonObject> JSON;if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Clean),JSON) || !JSON)return;FString Name,Description;if(!JSON->TryGetStringField(TEXT("name"),Name) || !JSON->TryGetStringField(TEXT("description"),Description))return;Name.TrimStartAndEndInline();Description.TrimStartAndEndInline();if(Name.Len()<2 || Name.Len()>16 || Description.Len()<10 || Description.Len()>100 || Name.Contains(TEXT("\n")) || Name.Contains(TEXT("·")))return;
- for(auto& I:Ledger->Items)if(I.Id==Request->ItemId)
- {
-  // Freeze identity once the item has been moved or spent. A late reply must never re-create it.
-  const FString Old=I.InventoryKey;const auto Bag=ReadBag();if(!Bag.Contains(Old) || Bag[Old]<=0)return;const FString New=FString::Printf(TEXT("%s · %s%d"),*Name,*ElementText(I.Element),I.PipValue);if(Ledger->Items.ContainsByPredicate([&](const auto& Other){return Other.Id!=I.Id && Other.InventoryKey==New;}))return;
-  Adjust(Old,-Bag[Old]);Adjust(New,Bag[Old]);if(auto* P=FindFProperty<FStrProperty>(BagOwner->GetClass(),TEXT("LastPicked")))if(P->GetPropertyValue_InContainer(BagOwner.Get())==Old)P->SetPropertyValue_InContainer(BagOwner.Get(),New);I.Name=Name;I.Description=Description;I.InventoryKey=New;I.bGeneratedByAI=true;Previous=ReadBag();RefreshLegacyHUD();Persist();ShowResult(I);return;
- }
+ if(!Request || !Requests.Contains(Request))return;Requests.Remove(Request);if(!Ledger)return;
+ auto* Item=Ledger->Items.FindByPredicate([&](const auto& I){return I.Id==Request->ItemId;});if(!Item)return;
+ Item->bNamingPending=false;
+ FString Clean=Text;Clean.TrimStartAndEndInline();
+ if(Clean.StartsWith(TEXT("```"))){int End=Clean.Find(TEXT("\n"));if(End!=INDEX_NONE)Clean=Clean.Mid(End+1);Clean.RemoveFromEnd(TEXT("```"));}
+ TSharedPtr<FJsonObject> JSON;FString Name,Description;
+ bool Valid=Success && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Clean),JSON) && JSON.IsValid();
+ Valid=Valid && JSON->TryGetStringField(TEXT("name"),Name) && JSON->TryGetStringField(TEXT("description"),Description);
+ Name.TrimStartAndEndInline();Description.TrimStartAndEndInline();
+ Valid=Valid && Name.Len()>=4 && Name.Len()<=12 && Description.Len()>=25 && Description.Len()<=65 && !Name.Contains(TEXT("\n")) && !Name.Contains(TEXT("·"));
+ // Never recreate a consumed object. Sequence entries already hold their own
+ // immutable text/value snapshot; stable keys keep payment and brewing valid.
+ if(Valid && ReadBag().FindRef(Item->InventoryKey)>0)
+ {Item->Name=Name;Item->Description=Description;Item->bGeneratedByAI=true;}
+ else if(!Valid)UE_LOG(LogTemp,Warning,TEXT("Harvest naming failed or invalid; keeping local item description."));
+ Persist();RefreshItemViews(*Item);
 }
 void UForestHarvestMagic::ShowResult(const FForestMagicItem& I)
 {
- if(!Notice.IsValid())return;Notice->SetText(FText::FromString(FString::Printf(TEXT("蘑菇散作星尘，魔法书将其中的%s凝成了一件小物。\n获得：%s · %s%d\n%s\n已收入背包 · 按 B 查看"),*ElementText(I.Element),*I.Name,*ElementText(I.Element),I.PipValue,*I.Description)));NoticeUntil=GetWorld()->GetTimeSeconds()+8;NoticeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+ auto* Widget=Cast<UForestHarvestNoticeWidget>(NoticeWidget);if(!Widget)return;
+ NoticeItemId=I.Id;Widget->ShowItem(I);NoticeUntil=GetWorld()->GetTimeSeconds()+(I.bNamingPending?40.f:8.f);Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 void UForestHarvestMagic::BeginVisual(const FString& Source,EAlchemyElement Element)
 {

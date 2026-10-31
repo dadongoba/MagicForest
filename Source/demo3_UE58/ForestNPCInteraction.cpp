@@ -214,7 +214,7 @@ void UForestNPCInteractionWidget::ShowFinderConfirmation(const FString& Characte
     .ButtonColorAndOpacity_Lambda([this,Key](){return SelectedFee==Key?ForestTheme::SelectedPaper:FLinearColor::White;})
     .OnClicked_Lambda([this,Key](){if(Manager.IsValid())Manager->SelectFeeItem(Key);return FReply::Handled();})
     [SNew(SVerticalBox)
-     +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SBox).WidthOverride(54).HeightOverride(42)[SNew(SImage).Image(ForestTheme::ElementIcon(View.Icon))]]
+     +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SBox).WidthOverride(54).HeightOverride(54)[SNew(SImage).Image(ForestTheme::ElementIcon(View.Icon))]]
      +SVerticalBox::Slot().FillHeight(1).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(View.Name)).Font(ForestUI::FinderFont(12)).ColorAndOpacity(ForestUI::Ink).AutoWrapText(true).Justification(ETextJustify::Center)]
      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(View.Attribute+(View.Count>0?FString::Printf(TEXT(" · 持有%d个"),View.Count):TEXT(" · 可交付1个")))).Font(ForestUI::FinderFont(9)).ColorAndOpacity(ForestUI::Muted).AutoWrapText(true)]]]];
  }
@@ -474,3 +474,10 @@ void UForestNPCInteractionWorldSubsystem::Tick(float DeltaTime)
 }
 TStatId UForestNPCInteractionWorldSubsystem::GetStatId() const
 {RETURN_QUICK_DECLARE_CYCLE_STAT(UForestNPCInteractionWorldSubsystem,STATGROUP_Tickables);}
+
+void AForestNPCInteraction::RefreshHarvestItemViews()
+{
+ if(FinderStage!=EFinderStage::Confirming || !Widget)return;
+ if(auto* Target=FindCharacterByPersona(PendingFinderPersona))
+ {Widget->ShowFinderConfirmation(CharacterName(Target),GetFeeItems());Widget->ShowSelectedFee(PendingFeeItem);}
+}

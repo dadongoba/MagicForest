@@ -274,3 +274,11 @@ void UForestAlchemy::FinishResult()
  if(!Persist()){Save->PendingResultId=PendingId;Save->PendingAdvanceFromDay=ReceiptDay;Status=TEXT("换天已记录，结算归档失败，请重试。");RefreshUI();return;}
  CloseWorkbench();SyncDay();Tell(TEXT("新的一天从小屋开始，药瓶与今日大牌已经更新。"));
 }
+
+void UForestAlchemy::RefreshHarvestItem(const FForestMagicItem& Item)
+{
+ // Draft choices may update their prose; committed receipts remain snapshots.
+ for(auto& Choice:Sequence)if(Choice.Key==TEXT("pip:")+Item.InventoryKey)
+ {Choice.Name=Item.Name+FString::Printf(TEXT(" · %s%d"),*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue);Choice.Description=Item.Description;}
+ RefreshUI();
+}

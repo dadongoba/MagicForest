@@ -1,8 +1,8 @@
-<!doctype html><meta charset="utf-8"><title>旧纸张自适应 · 离线预览</title><style>body{background:#343c32;margin:24px;color:#f4e8d1;font:16px system-ui}h1{font-size:22px}p{color:#d0cbbd}section{margin:24px 0}canvas{display:block;max-width:100%;height:auto}small{display:block;margin:8px 0}</style><h1>旧纸张自适应 · 离线绘制预览</h1><p>复用原始 WoodlandPaper.png。此页检查切分与比例，不代表 UE 游戏内截图或 DPI 验收。</p><div id="previews"></div><script>
+<!doctype html><meta charset="utf-8"><title>旧纸张自适应 · 离线预览</title><style>body{background:#343c32;margin:24px;color:#f4e8d1;font:16px system-ui}h1{font-size:22px}p{color:#d0cbbd}section{margin:24px 0}canvas{display:block;max-width:100%;height:auto}small{display:block;margin:8px 0}</style><h1>采集涌现与旧纸张 · 离线预览</h1><p>复用原始 WoodlandPaper.png。示例补全了名称、三种元素图标、属性与描述；仅为离线排版示意，不是实际 AI 回复、UE 游戏截图或 DPI 验收。</p><div id="previews"></div><script>
 const contour=[[28.0, 108.0], [60.0, 77.0], [88.0, 52.0], [120.0, 60.0], [159.0, 56.0], [193.0, 64.0], [276.0, 58.0], [388.0, 61.0], [505.0, 54.0], [636.0, 57.0], [752.0, 52.0], [889.0, 56.0], [1020.0, 52.0], [1135.0, 57.0], [1260.0, 54.0], [1370.0, 50.0], [1403.0, 58.0], [1432.0, 54.0], [1458.0, 68.0], [1482.0, 76.0], [1502.0, 94.0], [1501.0, 158.0], [1508.0, 215.0], [1502.0, 284.0], [1507.0, 356.0], [1499.0, 422.0], [1506.0, 470.0], [1501.0, 544.0], [1506.0, 615.0], [1500.0, 690.0], [1507.0, 751.0], [1500.0, 822.0], [1487.0, 872.0], [1465.0, 902.0], [1454.0, 929.0], [1422.0, 947.0], [1376.0, 944.0], [1324.0, 955.0], [1240.0, 948.0], [1125.0, 957.0], [1000.0, 950.0], [880.0, 955.0], [751.0, 950.0], [630.0, 957.0], [502.0, 950.0], [390.0, 955.0], [280.0, 950.0], [193.0, 955.0], [128.0, 946.0], [84.0, 932.0], [47.0, 917.0], [29.0, 890.0], [33.0, 818.0], [28.0, 744.0], [33.0, 671.0], [28.0, 598.0], [34.0, 524.0], [29.0, 455.0], [33.0, 383.0], [29.0, 310.0], [33.0, 238.0], [28.0, 169.0]];
-const img=new Image();img.src='../Content/UI/Textures/WoodlandPaper.png';
-img.onload=()=>{
-for(const [w,h,label] of [[940,600,'背包 / 大面板 940 × 600'],[1000,480,'引路叙述 1000 × 480'],[480,280,'窄弹窗 480 × 280'],[360,220,'小弹窗 360 × 220'],[600,96,'短纸条 600 × 96']]){
+const img=new Image(),icons=new Image();img.src='../Content/UI/Textures/WoodlandPaper.png';icons.src='../Content/UI/Textures/ElementEmblems.png';
+Promise.all([img.decode(),icons.decode()]).then(()=>{
+for(const [w,h,label] of [[940,540,'火元素 · 宽面板 940 × 540'],[760,540,'风元素 · 面板 760 × 540'],[480,620,'水元素 · 窄面板 480 × 620']]){
  const sec=document.createElement('section'),cap=document.createElement('small'),c=document.createElement('canvas');cap.textContent=label;sec.append(cap,c);document.querySelector('#previews').append(sec);c.width=w;c.height=h;const ctx=c.getContext('2d');
  const scale=Math.min(128/320,w/800,h/600),sx=[0,320,1216,1536],sy=[0,160,704,1024],dx=[0,320*scale,w-320*scale,w],dy=[0,160*scale,h-320*scale,h];
  const map=(v,a,b)=>{const i=v<a[1]?0:v<a[2]?1:2;return b[i]+(v-a[i])/(a[i+1]-a[i])*(b[i+1]-b[i]);};
@@ -14,8 +14,18 @@ for(const [w,h,label] of [[940,600,'背包 / 大面板 940 × 600'],[1000,480,'�
   ctx.drawImage(img,sx[sc],sy[r],sx[sc+1]-sx[sc],sy[r+1]-sy[r],dx[col],dy[r],dx[col+1]-dx[col],dy[r+1]-dy[r]);ctx.restore();
  }
  ctx.restore();
- ctx.fillStyle='#57452f';ctx.font=(h<110?'18px':'bold 26px')+' system-ui';ctx.fillText(h<110?'已收下这份元素。':(h<300?'新物品 · 火 5':'寻找传信人'),28,h<110?55:65);
- if(h>=240){ctx.font='22px system-ui';const lines=['你交出掌心的「余烬铃」。','铃舌轻轻一晃，暖光便向林间飘去。','你循着它的微光，找到了传信人。'];lines.forEach((s,i)=>{if(w>=700||i===0)ctx.fillText(s,28,115+i*42,w-140)});}
+ const variant=w===940?0:w===760?1:2;
+ const samples=[['藏烬小铜铃','火',5,'小小的铜铃里蜷着一粒红炭，轻晃时不响铃声，只传来壁炉里木柴裂开的细响。'],['追风的小梳子','风',3,'木梳的齿间总有细风穿过，握在手里，发梢便朝森林深处轻轻偏去。'],['装着小雨的瓶子','水',3,'软木塞下飘着一片小云，瓶壁上不时滑过一滴刚落下的雨。']];
+ const [name,element,value,description]=samples[variant];
+ function text(t,x,y,size,maxWidth){ctx.fillStyle='#57452f';ctx.font=size+'px system-ui';let line='',yy=y;for(const ch of t){if(ctx.measureText(line+ch).width>maxWidth&&line){ctx.fillText(line,x,yy);line='';yy+=size*1.55;}line+=ch;}if(line)ctx.fillText(line,x,yy);return yy;}
+ text('魔法书的收获',36,55,20,w-160);
+ ctx.drawImage(icons,variant*icons.width/3,0,icons.width/3,icons.height,36,83,64,64);
+ text(name,120,110,30,w-240);text(element+' × '+value,120,150,24,w-240);
+ const source=variant===2?'贝壳':'蘑菇';let y=text(source+'散作星尘，魔法书将其中的'+element+'凝成了一件小物。',36,203,26,w-160);
+ y=text(description,36,y+58,26,w-160);
+ y=text('魔法书已写下这件小物的名字与来历。',36,y+52,16,w-160);
+ text('已收入背包 · 按 B 查看 · 按 ESC 关闭',36,y+40,16,w-160);
+
  }
  document.body.dataset.ready='true';
-};</script>
+});</script>

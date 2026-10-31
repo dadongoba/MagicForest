@@ -76,6 +76,7 @@ public:
  void SelectNpcForFinding(FName PersonaId);
  void ConfirmNpcFinding();
  void SelectFeeItem(const FString& Item);
+ void RefreshHarvestItemViews();
 protected:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 private:
