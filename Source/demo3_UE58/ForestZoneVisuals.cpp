@@ -1,5 +1,7 @@
 #include "ForestZoneVisuals.h"
 #include "Components/LocalFogVolumeComponent.h"
+#include "Components/DecalComponent.h"
+#include "Engine/Texture2D.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -9,7 +11,7 @@
 bool FForestZoneVisualPreset::IsValid() const
 {
  auto ValidColor=[](const FLinearColor& C){return FMath::IsFinite(C.R) && FMath::IsFinite(C.G) && FMath::IsFinite(C.B) && FMath::IsFinite(C.A) && C.R>=0 && C.G>=0 && C.B>=0;};
- return !Id.IsNone() && ValidColor(FogColor) && ValidColor(ResourceColor) &&
+ return !Id.IsNone() && ValidColor(FogColor) && ValidColor(ResourceColor) && ValidColor(GroundColor) && FMath::IsFinite(GroundOpacity) && GroundOpacity>=0 && GroundOpacity<=1 &&
   FMath::IsFinite(FogDensity) && FogDensity>=0 && FogDensity<=2 &&
   FMath::IsFinite(FogRadius) && FogRadius>=200 && FogRadius<=1500 &&
   FMath::IsFinite(ResourceScale) && ResourceScale>=.5f && ResourceScale<=1.5f &&
@@ -28,11 +30,18 @@ void FForestZoneVisualPreset::ResolveRegionColor(FName ZoneId)
  const FString Zone=ZoneId.ToString();
  ResourceColor=Zone.StartsWith(TEXT("fire"))?FLinearColor(1,.32f,.06f):Zone.StartsWith(TEXT("wind"))?FLinearColor(.25f,1,.55f):FLinearColor(.15f,.55f,1);
  FogColor=ResourceColor*.55f;FogColor.A=1;
+ GroundColor=ResourceColor*.45f;GroundColor.A=1;
 }
 AForestZoneVisuals::AForestZoneVisuals()
 {
  PrimaryActorTick.bCanEverTick=true;PrimaryActorTick.TickInterval=.1f;
  auto* Root=CreateDefaultSubobject<USceneComponent>(TEXT("Root"));SetRootComponent(Root);
+ Ground=CreateDefaultSubobject<UDecalComponent>(TEXT("ZoneGround"));Ground->SetupAttachment(Root);
+ Ground->SetVisibility(false);Ground->SetFadeScreenSize(0.f);Ground->SortOrder=5;
+ static ConstructorHelpers::FObjectFinder<UMaterialInterface> Decal(TEXT("/Game/Witch_House/Materials/Masters/M_DecalMain.M_DecalMain"));
+ GroundBase=Decal.Object;
+ static ConstructorHelpers::FObjectFinder<UTexture2D> Normal(TEXT("/Engine/EngineMaterials/DefaultNormal.DefaultNormal"));
+ FlatNormal=Normal.Object;
  Motes=CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Motes"));Motes->SetupAttachment(Root);
  Motes->SetCollisionEnabled(ECollisionEnabled::NoCollision);Motes->SetCanEverAffectNavigation(false);Motes->SetCastShadow(false);
  static ConstructorHelpers::FObjectFinder<UStaticMesh> Sphere(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
@@ -76,4 +85,24 @@ void AForestZoneVisuals::Tick(float DT)
   Motes->UpdateInstanceTransform(I,FTransform(FQuat::Identity,Origins[I]+Offset,FVector(S)),false,false,true);
  }
  if(!Origins.IsEmpty())Motes->MarkRenderStateDirty();
+}
+
+bool AForestZoneVisuals::ConfigureGround(const FVector& Center,float Radius,UTexture2D* ColorMask,UTexture2D* PackedMask,const FForestZoneVisualPreset& Preset)
+{
+ if(!GroundBase || !ColorMask || !PackedMask)return false;
+ // Use the existing house decal master. Check the real parameter types before assigning.
+ TArray<FMaterialParameterInfo> Parameters;TArray<FGuid> Guids;GroundBase->GetAllTextureParameterInfo(Parameters,Guids);
+ for(FName Required:{FName(TEXT("Color")),FName(TEXT("ARMO"))})
+  if(!Parameters.ContainsByPredicate([&](const auto& P){return P.Name==Required;}))
+  {UE_LOG(LogTemp,Warning,TEXT("Zone ground decal missing texture parameter %s; ground layer not applied."),*Required.ToString());return false;}
+ GroundColorMask=ColorMask;GroundPackedMask=PackedMask;
+ GroundInstance=UMaterialInstanceDynamic::Create(GroundBase,this);
+ GroundInstance->SetTextureParameterValue(TEXT("Color"),ColorMask);
+ GroundInstance->SetTextureParameterValue(TEXT("ARMO"),PackedMask);
+ if(FlatNormal)GroundInstance->SetTextureParameterValue(TEXT("Normal"),FlatNormal);
+ GroundInstance->SetScalarParameterValue(TEXT("Opacity Strength"),Preset.GroundOpacity);
+ Ground->SetDecalMaterial(GroundInstance);
+ Ground->DecalSize=FVector(20000,Radius,Radius);
+ Ground->SetRelativeLocation(Center);Ground->SetRelativeRotation(FRotator(-90,0,0));Ground->SetVisibility(true);
+ return true;
 }

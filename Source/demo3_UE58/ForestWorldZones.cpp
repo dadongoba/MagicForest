@@ -1,5 +1,7 @@
 #include "ForestWorldZones.h"
 #include "ForestZonePolicy.h"
+#include "ForestGroundPattern.h"
+#include "Engine/Texture2D.h"
 #include "ForestElementRegions.h"
 #include "DailyMushroomSubsystem.h"
 #include "EngineUtils.h"
@@ -291,8 +293,37 @@ void UForestWorldZones::ApplyVisuals()
   // Stable spatial sampling spreads up to six patches instead of taking one edge of the grid.
   Samples.Sort([](const FVector& A,const FVector& B){return GetTypeHash(FIntPoint(FMath::RoundToInt(A.X),FMath::RoundToInt(A.Y)))<GetTypeHash(FIntPoint(FMath::RoundToInt(B.X),FMath::RoundToInt(B.Y)));});
   if(Samples.Num()>6)Samples.SetNum(6);
-  if(Samples.IsEmpty())continue; // Retry after streamed terrain becomes available.
   auto* Visual=GetWorld()->SpawnActor<AForestZoneVisuals>();
-  if(Visual){Visual->Configure(Samples,Preset);VisualActors.Add(Zone.ZoneId,Visual);AppliedVisualIds.Add(Zone.ZoneId,Id);}
+  if(Visual)
+  {
+   Visual->Configure(Samples,Preset);
+   constexpr int32 Resolution=256;
+   auto MakeTexture=[](bool SRGB)
+   {
+    auto* T=UTexture2D::CreateTransient(Resolution,Resolution,PF_B8G8R8A8);
+    if(T){T->SRGB=SRGB;T->NeverStream=true;T->Filter=TF_Bilinear;T->AddressX=TA_Clamp;T->AddressY=TA_Clamp;}
+    return T;
+   };
+   auto* Color=MakeTexture(true);auto* Packed=MakeTexture(false);
+   if(Color && Packed)
+   {
+    auto* Colors=static_cast<FColor*>(Color->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+    auto* Masks=static_cast<FColor*>(Packed->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+    for(int32 V=0;V<Resolution;++V)for(int32 U=0;U<Resolution;++U)
+    {
+     const auto P=ForestGroundPattern::WorldPoint((U+.5)/Resolution,(V+.5)/Resolution,Radius,Zone.Center.X,Zone.Center.Y);
+     const auto Inside=[&](double X,double Y){return Locate(FVector(X,Y,Zone.Center.Z))==Zone.ZoneId;};
+     const float Coverage=ForestGroundPattern::Coverage(P.X,P.Y,Zone.Center.X,Zone.Center.Y,Radius,2*Radius/Resolution,Inside);
+     const float Mottle=ForestGroundPattern::Mottle(P.X,P.Y,Id==TEXT("disturbed"));
+     FLinearColor Tint=Preset.GroundColor*Mottle;Tint.A=Coverage;
+     Colors[V*Resolution+U]=Tint.ToFColorSRGB();
+     Masks[V*Resolution+U]=FColor(255,230,0,FMath::RoundToInt(Coverage*255));
+    }
+    Color->GetPlatformData()->Mips[0].BulkData.Unlock();Packed->GetPlatformData()->Mips[0].BulkData.Unlock();
+    Color->UpdateResource();Packed->UpdateResource();
+    Visual->ConfigureGround(Zone.Center,Radius,Color,Packed,Preset);
+   }
+   VisualActors.Add(Zone.ZoneId,Visual);AppliedVisualIds.Add(Zone.ZoneId,Id);
+  }
  }
 }

@@ -29,7 +29,14 @@
       "FogRadius": 850,
       "ResourceScale": 0.85,
       "Glow": 0,
-      "bShowInactiveResources": true
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.2,
+        "G": 0.13,
+        "B": 0.065,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
     },
     {
       "Id": "overgrown",
@@ -50,7 +57,14 @@
       "ResourceScale": 1.2,
       "Glow": 0.65,
       "bShowInactiveResources": true,
-      "bUseRegionColor": true
+      "bUseRegionColor": true,
+      "GroundColor": {
+        "R": 0.4,
+        "G": 0.2,
+        "B": 0.05,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
     },
     {
       "Id": "disturbed",
@@ -70,7 +84,14 @@
       "FogRadius": 850,
       "ResourceScale": 1,
       "Glow": 0.45,
-      "bShowInactiveResources": true
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.22,
+        "G": 0.08,
+        "B": 0.32,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
     },
     {
       "Id": "inactive",
@@ -90,7 +111,14 @@
       "FogRadius": 850,
       "ResourceScale": 0.85,
       "Glow": 0,
-      "bShowInactiveResources": true
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.1,
+        "G": 0.115,
+        "B": 0.12,
+        "A": 1
+      },
+      "GroundOpacity": 0.7
     }
   ]
 }

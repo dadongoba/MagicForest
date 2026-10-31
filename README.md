@@ -83,3 +83,5 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 批次2026-10-31-05增加默认中性的十个逻辑区块。真正读取的表是 `Config/ForestZones.json`，按工程路径应用并重新编译；默认没有控制项，地图与资源生成方式保持原状。单区资源、按天状态与绑定物件的接法见[区块控制说明](Docs/World_Zones_Runtime_2026-10-31.md)。评分条件、NPC行为和天气效果尚未自动接入，不要把此前Docs下的设计草案当作运行配置。
 
 区块俯视状态表现见[区块外观应用说明](Docs/World_Zone_Visuals_2026-10-31.md)：四种数据驱动外观预设已接入，默认保持中性，结算条件仍待配置。
+
+整区地表颜色与斑纹覆盖见[地表状态说明](Docs/World_Zone_Ground_2026-10-31.md)，与区块外观同步；需目标表面支持接收贴花。
