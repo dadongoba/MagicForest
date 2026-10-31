@@ -31,12 +31,18 @@ class DEMO3_UE58_API AForestElementResource : public AActor
 public:
  AForestElementResource();
  void SetHarvestHighlighted(bool bHighlighted);
+ void ApplyZoneAvailability(bool bAvailable,bool bHideUnavailable);
  virtual void Tick(float DeltaTime) override;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UStaticMeshComponent> Mesh;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) EAlchemyElement Element=EAlchemyElement::Fire;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bWaterShell=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bCollected=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FString ResourceId;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FName ZoneId;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bZoneAvailable=true;
+ FString ProductionAnchorId;
+ int32 ProductionOrdinal=0,ZoneOrdinal=0;
+ bool bZoneReserve=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FVector RestLocation=FVector::ZeroVector;
  float FloatPhase=0;
 private:
@@ -44,6 +50,7 @@ private:
  UPROPERTY(Transient) TObjectPtr<UMaterialInterface> SavedOverlay;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> HighlightOverlay;
  bool bHarvestHighlighted=false;
+ bool bZoneHidden=false;
 
 };
 

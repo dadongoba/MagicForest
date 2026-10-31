@@ -7,6 +7,7 @@ public class demo3_UE58 : ModuleRules
 	public demo3_UE58(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		RuntimeDependencies.Add("$(ProjectDir)/Config/ForestZones.json", StagedFileType.NonUFS);
 		// File-backed Slate brush must be staged as a loose file in packaged builds.
 		RuntimeDependencies.Add("$(ProjectDir)/Content/UI/Textures/WoodlandPaper.png", StagedFileType.NonUFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/UI/Textures/ElementEmblems.png", StagedFileType.NonUFS);

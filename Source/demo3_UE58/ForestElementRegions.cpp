@@ -1,4 +1,6 @@
 #include "ForestElementRegions.h"
+#include "ForestWorldZones.h"
+#include "ForestZonePolicy.h"
 #include "ForestHarvestMagic.h"
 #include "ForestIsometricPlayer.h"
 #include "DailyMushroomSubsystem.h"
@@ -61,6 +63,15 @@ void AForestElementResource::SetHarvestHighlighted(bool Highlighted)
  }
  else{Mesh->SetOverlayMaterial(SavedOverlay);SavedOverlay=nullptr;}
  bHarvestHighlighted=Highlighted;
+}
+void AForestElementResource::ApplyZoneAvailability(bool Available,bool HideUnavailable)
+{
+ const bool Hidden=!Available && HideUnavailable;
+ if(Available==bZoneAvailable && Hidden==bZoneHidden)return;
+ bZoneAvailable=Available;bZoneHidden=Hidden;
+ if(!Available)SetHarvestHighlighted(false);
+ const auto P=ForestZonePolicy::ResourcePresentation(bCollected,Available,HideUnavailable,bWaterShell);
+ SetActorHiddenInGame(P.Hidden);SetActorEnableCollision(P.Collision);SetActorTickEnabled(P.Tick);
 }
 void AForestElementResource::Tick(float DT)
 {
@@ -172,7 +183,7 @@ bool UForestElementRegions::FindGround(const FVector& Point,FHitResult& Ground) 
 void UForestElementRegions::BeginRegrowth(int32 Day)
 {
  for(const auto& Resource:Resources)if(IsValid(Resource))Resource->Destroy();Resources.Reset();
- CurrentDay=Day;BuildRegion=0;BuildAttempt=0;BuildCount=0;
+ CurrentDay=Day;if(auto* Zones=GetWorld()->GetSubsystem<UForestWorldZones>())Zones->BeginResourceDay(Day);BuildRegion=0;BuildAttempt=0;BuildCount=0;
  if(!Regions.IsEmpty())PlacementRandom.Initialize(static_cast<int32>(FCrc::StrCrc32(*Regions[0].AnchorId)));
 }
 void UForestElementRegions::GrowCandidates(int32 Budget)
@@ -229,13 +240,14 @@ void UForestElementRegions::GrowCandidates(int32 Budget)
   Resource->SetActorHiddenInGame(Resource->bCollected);Resource->SetActorEnableCollision(!Resource->bCollected);
   Resource->SetActorTickEnabled(Water && !Resource->bCollected);
   Resources.Add(Resource);
+  if(auto* Zones=GetWorld()->GetSubsystem<UForestWorldZones>())Zones->RegisterResource(Resource,Region.AnchorId,BuildCount-1);
  }
 }
 AForestElementResource* UForestElementRegions::Nearest(const ACharacter* Character,float Range) const
 {
  if(!Character)return nullptr;
  AForestElementResource* Best=nullptr;float Distance=FMath::Square(Range);
- for(const auto& Resource:Resources)if(IsValid(Resource) && !Resource->bCollected)
+ for(const auto& Resource:Resources)if(IsValid(Resource) && !Resource->bCollected && Resource->bZoneAvailable)
  {
   const float D=FVector::DistSquared(Character->GetActorLocation(),Resource->Mesh->Bounds.GetBox().GetClosestPointTo(Character->GetActorLocation()));
   if(D>=Distance)continue;
@@ -250,7 +262,7 @@ AForestElementResource* UForestElementRegions::Nearest(const ACharacter* Charact
 FString UForestElementRegions::CollectionKey(const AForestElementResource* Resource) const{return FString::Printf(TEXT("%d:%s"),CurrentDay,*Resource->ResourceId);}
 bool UForestElementRegions::CanHarvestResource(const ACharacter* Character,bool Swimming,const AForestElementResource* Resource) const
 {
- if(!bInitialized || !HarvestSave || !Character || !IsValid(Resource) || Resource->bCollected || !Resources.Contains(Resource) || (Resource->bWaterShell && !Swimming))return false;
+ if(!bInitialized || !HarvestSave || !Character || !IsValid(Resource) || Resource->bCollected || !Resource->bZoneAvailable || !Resources.Contains(Resource) || (Resource->bWaterShell && !Swimming))return false;
  if(FVector::DistSquared(Character->GetActorLocation(),Resource->Mesh->Bounds.GetBox().GetClosestPointTo(Character->GetActorLocation()))>FMath::Square(230.f))return false;
  FCollisionQueryParams Query(SCENE_QUERY_STAT(RegionalHarvestTarget),false,Character);Query.AddIgnoredActor(Resource);
  for(const auto& Weak:WaterSurfaces)if(auto* Mesh=Weak.Get())Query.AddIgnoredComponent(Mesh);

@@ -1,0 +1,9 @@
+{
+  "SchemaVersion": 1,
+  "HomeCenter": {"X":44820,"Y":13210,"Z":-8950},
+  "HomeProtectionRadius": 900,
+  "EntryHalfAngleDegrees": 60,
+  "ProtectedResourcesPerProductionRegion": 1,
+  "PolygonOverrides": [],
+  "Controls": []
+}

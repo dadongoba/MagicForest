@@ -296,7 +296,7 @@ void UForestIsometricPlayer::UpdateActions(float DT,bool Blocked)
  }
  if(bGathering)
  {
-  if(Blocked || bSwimming!=bGatherInWater || !GatheringResource.IsValid() || (!bSwimming && !Move->IsMovingOnGround())){FinishGather(false);return;}
+  if(Blocked || bSwimming!=bGatherInWater || !GatheringResource.IsValid() || !GatheringResource->bZoneAvailable || (!bSwimming && !Move->IsMovingOnGround())){FinishGather(false);return;}
   C->ConsumeMovementInputVector();Move->StopMovementImmediately();ActionAge+=DT;
   if(ActionAge>=0 && !bGatherAnimationStarted)
   {
