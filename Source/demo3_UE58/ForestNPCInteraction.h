@@ -7,6 +7,7 @@
 #include "ForestNPCInteraction.generated.h"
 class SButton;class SEditableTextBox;class SScrollBox;class STextBlock;class SWidgetSwitcher;class SBox;class SWrapBox;
 class AAIController;class ACharacter;class APlayerController;class AForestRoadAIController;class AForestNPCInteraction;class UForestNPCDialogueSubsystem;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FForestNPCItemPresented,ACharacter*,Npc,const FString&,ItemKey);
 UCLASS()
 class DEMO3_UE58_API UForestNPCInteractionWidget : public UUserWidget
 {
@@ -18,6 +19,7 @@ public:
  void ShowFinderSelection();
  void ShowFinderConfirmation(const FString& CharacterName,const TArray<FString>& Items);
  void ShowSelectedFee(const FString& FeeItem);
+ void ShowItemPresentation(const FString& CharacterName,const TArray<FString>& Items);
  void ShowTravel(const FString& CharacterName,const FString& FeeItem,const FString& Story);
  bool IsFinderVisible() const{return bFinderVisible;}
  void FocusInput();
@@ -48,6 +50,7 @@ private:
  FString SelectedFee;
  FString LastTravelTarget,LastTravelFee,LastTravelStory;
  bool bFinderVisible=false;
+ bool bPresentingItem=false;
  UFUNCTION() void SendClicked();
  UFUNCTION() void CloseClicked();
  UFUNCTION() void FindNovelistClicked();
@@ -77,6 +80,11 @@ public:
  void ConfirmNpcFinding();
  void SelectFeeItem(const FString& Item);
  void RefreshHarvestItemViews();
+ UFUNCTION(BlueprintCallable,Category="NPC Interaction") void OpenItemPresentation();
+ void ConfirmItemPresentation();
+ void CancelItemPresentation();
+ bool IsItemPresentationOpen() const{return bItemPresentationOpen;}
+ UPROPERTY(BlueprintAssignable,Category="NPC Interaction") FForestNPCItemPresented OnItemPresented;
 protected:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 private:
@@ -91,6 +99,8 @@ private:
  EFinderStage FinderStage=EFinderStage::Closed;
  FName PendingFinderPersona;
  FString PendingFeeItem,SpentFeeItem,FinderNotice;
+ bool bItemPresentationOpen=false;
+ float IgnoreDialogueEscapeUntil=0;
  FString EmergentTravelItemName,TravelNarrativeText;
  TWeakObjectPtr<ACharacter> FinderTarget;
  bool bFinderPreviousMouse=false;

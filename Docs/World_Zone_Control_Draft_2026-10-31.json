@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "status": "design_draft_not_runtime_config",
+  "runtime_enabled": false,
+  "note": "区块边界、条件与效果均未定，不被游戏加载；需要确认后实现读取和状态应用。",
+  "score_source": {
+    "receipt": "FForestBrewRecord.ReceiptId",
+    "source_day": "FForestBrewRecord.Day",
+    "target_day": "source_day + 1",
+    "fields": [
+      "Result.Target",
+      "Result.Actual",
+      "Result.Projection",
+      "Result.PerpendicularCost",
+      "Result.Cosine",
+      "Result.DoseRatio",
+      "Result.SumAbsolute",
+      "Result.VerdictCode"
+    ]
+  },
+  "zones": [
+    {
+      "id": "home_safe",
+      "name": "小屋及回程通路",
+      "production_region": null,
+      "protected": true,
+      "polygon": null
+    },
+    {
+      "id": "fire_entry_safe",
+      "name": "火产区·入口与保底通路",
+      "production_region": "fire",
+      "protected": true,
+      "polygon": null
+    },
+    {
+      "id": "fire_gather_a",
+      "name": "火产区·主要采集地 A",
+      "production_region": "fire",
+      "protected": false,
+      "polygon": null
+    },
+    {
+      "id": "fire_gather_b",
+      "name": "火产区·主要采集地 B",
+      "production_region": "fire",
+      "protected": false,
+      "polygon": null
+    },
+    {
+      "id": "wind_entry_safe",
+      "name": "风产区·入口与保底通路",
+      "production_region": "wind",
+      "protected": true,
+      "polygon": null
+    },
+    {
+      "id": "wind_gather_a",
+      "name": "风产区·主要采集地 A",
+      "production_region": "wind",
+      "protected": false,
+      "polygon": null
+    },
+    {
+      "id": "wind_gather_b",
+      "name": "风产区·主要采集地 B",
+      "production_region": "wind",
+      "protected": false,
+      "polygon": null
+    },
+    {
+      "id": "water_entry_safe",
+      "name": "水产区·上岸点与保底通路",
+      "production_region": "water",
+      "protected": true,
+      "polygon": null
+    },
+    {
+      "id": "water_gather_a",
+      "name": "水产区·水面采集地 A",
+      "production_region": "water",
+      "protected": false,
+      "polygon": null
+    },
+    {
+      "id": "water_gather_b",
+      "name": "水产区·水面采集地 B",
+      "production_region": "water",
+      "protected": false,
+      "polygon": null
+    }
+  ],
+  "zone_state_fields": {
+    "resource_count_scale": null,
+    "minimum_available_count": null,
+    "resource_active": null,
+    "resource_visual_state": null,
+    "map_visual_preset": null,
+    "local_route_state": null,
+    "npc_presence_preset": null,
+    "npc_interaction_animation_preset": null
+  },
+  "rules": [
+    {
+      "id": "accurate",
+      "enabled": false,
+      "conditions": null,
+      "target_zone_ids": [],
+      "state_effects": null
+    },
+    {
+      "id": "excess",
+      "enabled": false,
+      "conditions": null,
+      "target_zone_ids": [],
+      "state_effects": null
+    },
+    {
+      "id": "insufficient",
+      "enabled": false,
+      "conditions": null,
+      "target_zone_ids": [],
+      "state_effects": null
+    },
+    {
+      "id": "wrong_direction",
+      "enabled": false,
+      "conditions": null,
+      "target_zone_ids": [],
+      "state_effects": null
+    }
+  ]
+}

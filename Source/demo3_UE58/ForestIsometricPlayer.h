@@ -74,6 +74,8 @@ private:
  float ActionAge=0,MantleAge=0;
  float ClimbRequestRemaining=0,ClimbReattachCooldown=0,ClimbLostSurfaceAge=0,ClimbProbeAge=0;
  bool bGatherInWater=false,bMantling=false;
+ bool bGatherAnimationStarted=false;
+ UPROPERTY(EditAnywhere,Category="Actions",meta=(ClampMin="0.05",ClampMax="0.5")) float GatherHighlightDuration=.18f;
  bool bSavedControllerYaw=false,bSavedOrientToMovement=false;
  void InitializeActions();
  void UpdateActions(float DeltaTime,bool bBlocked);
@@ -134,6 +136,7 @@ private:
  void ZoomIn();
  void ZoomOut();
  void InteractNearby();
+ void ClickHarvestTarget();
  void ToggleMap();
  void ApplyGameplayInputMode();
  void ApplyTemplateView();

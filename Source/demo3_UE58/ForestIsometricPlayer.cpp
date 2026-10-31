@@ -147,6 +147,7 @@ void UForestIsometricPlayer::BeginPlay()
  Controls->BindKey(EKeys::MouseScrollUp,IE_Pressed,this,&UForestIsometricPlayer::ZoomIn);
  Controls->BindKey(EKeys::MouseScrollDown,IE_Pressed,this,&UForestIsometricPlayer::ZoomOut);
  Controls->BindKey(EKeys::E,IE_Pressed,this,&UForestIsometricPlayer::InteractNearby).bConsumeInput=true;
+ Controls->BindKey(EKeys::LeftMouseButton,IE_Pressed,this,&UForestIsometricPlayer::ClickHarvestTarget).bConsumeInput=false;
  Controls->BindKey(EKeys::M,IE_Pressed,this,&UForestIsometricPlayer::ToggleMap).bConsumeInput=true;
  Controls->BindKey(EKeys::V,IE_Pressed,this,&UForestIsometricPlayer::CycleViewMode).bConsumeInput=true;
  Controls->BindKey(EKeys::F,IE_Pressed,this,&UForestIsometricPlayer::ToggleClimbing).bConsumeInput=true;
@@ -301,6 +302,21 @@ void UForestIsometricPlayer::StopObserving()
   }
  }
  bHadMousePosition=false;
+}
+void UForestIsometricPlayer::ClickHarvestTarget()
+{
+ auto* PC=Player.Get();auto* C=Character.Get();if(!PC || !C || MenuOpen() || ActionBusy())return;
+ auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();if(!Regions || !Regions->IsRegionalWorld())return;
+ FHitResult Hit;
+ if(PC->bShowMouseCursor)PC->GetHitResultUnderCursor(ECC_Visibility,true,Hit);
+ else
+ {
+  FVector Eye;FRotator View;PC->GetPlayerViewPoint(Eye,View);
+  FCollisionQueryParams Query(SCENE_QUERY_STAT(ClickHarvest),true,C);
+  GetWorld()->LineTraceSingleByChannel(Hit,Eye,Eye+View.Vector()*10000.f,ECC_Visibility,Query);
+ }
+ auto* Resource=Cast<AForestElementResource>(Hit.GetActor());
+ if(Regions->CanHarvestResource(C,bSwimming,Resource))BeginGather(Resource);
 }
 void UForestIsometricPlayer::InteractNearby()
 {

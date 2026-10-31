@@ -10,6 +10,8 @@
 class ACharacter;
 class UStaticMesh;
 class UStaticMeshComponent;
+class UMaterialInterface;
+class UMaterialInstanceDynamic;
 
 USTRUCT(BlueprintType)
 struct FForestElementRegion
@@ -28,6 +30,7 @@ class DEMO3_UE58_API AForestElementResource : public AActor
  GENERATED_BODY()
 public:
  AForestElementResource();
+ void SetHarvestHighlighted(bool bHighlighted);
  virtual void Tick(float DeltaTime) override;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UStaticMeshComponent> Mesh;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) EAlchemyElement Element=EAlchemyElement::Fire;
@@ -36,6 +39,12 @@ public:
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FString ResourceId;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FVector RestLocation=FVector::ZeroVector;
  float FloatPhase=0;
+private:
+ UPROPERTY() TObjectPtr<UMaterialInterface> HighlightBase;
+ UPROPERTY(Transient) TObjectPtr<UMaterialInterface> SavedOverlay;
+ UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> HighlightOverlay;
+ bool bHarvestHighlighted=false;
+
 };
 
 UCLASS()
@@ -65,6 +74,7 @@ public:
  UPROPERTY(Config,EditAnywhere,Category="Resources",meta=(ClampMin="1",ClampMax="9")) int32 MaterialPipValue=3;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Regions") TArray<FForestElementRegion> Regions;
  bool IsRegionalWorld() const;
+ bool CanHarvestResource(const ACharacter* Character,bool bSwimming,const AForestElementResource* Resource) const;
  bool TryHarvest(ACharacter* Character,bool bSwimming);
  bool CollectResource(ACharacter* Character,bool bSwimming,AForestElementResource* Resource);
  FString GetHarvestHint(const ACharacter* Character,bool bSwimming) const;

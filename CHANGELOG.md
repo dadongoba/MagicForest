@@ -4,6 +4,17 @@
 
 
 
+
+## 2026-10-31-03：NPC展示背包物品、采集前高光及区块调查草案
+
+- **目的 / 基线**：基于 `85e9e5b`，增加与当前NPC交谈时展示背包小物的入口；资源先高光再采集。保留批次02的共享AI涌现修复。
+- **源码 / 修改**：Source/demo3_UE58/ForestNPCInteraction.cpp/.h、ForestElementRegions.cpp/.h、ForestIsometricPlayer.cpp/.h、ForestPlayerActions.cpp、ForestHarvestMagic.cpp。展示选择→数据快照→原NPC对话接口，不消耗物品；提供OnItemPresented事件。鼠标/E采集先短暂高光，使用同一目标进行距离/视线/游泳校验，取消及结束恢复材质；操作提示更新。
+- **文档 / 新增**：Docs/Item_Presentation_and_Highlight_2026-10-31.md；Docs/World_Zones_and_NPC_Actions_2026-10-31.md；Docs/World_Zone_Control_Draft_2026-10-31.json。后两者是调查与待确认设计，JSON不由游戏读取，不计作次日状态控制已实装。
+- **依赖 / 应用**：需既有产区、NPC、元素图标、采集动画与共享AI；新增引擎EmissiveMeshMaterial硬引用，无自制材质或后处理依赖。按原路径更新源码并重新编译；没有改地图、平衡配置或动画资产，不上传编译产物。
+- **验证**：macOS UE5.8编译链接通过（动作/展示49.81秒，展示事件29.36秒，最终HUD改动10.30秒）。核对展示路径不扣料、会话入口及收集前后校验；差异、JSON与凭据扫描通过。未打开UE、未运行PIE、未真实请求AI，实际点击/高光观感、NPC展示、Windows打包仍未验收。
+- **未实施 / 待确认**：区块真实边界、从评分匹配规则与读取状态控制器、NPC新手势/表情动画绑定及地图环境状态。具体阈值和惩罚未设置。当前贝壳已有采集代码，但Corals2模型未收录本增量库且本机未找到，不能确认实际生成数量。详见[调查与草案](Docs/World_Zones_and_NPC_Actions_2026-10-31.md)。
+- **上传状态**：本地检查完成，待推送核对远端SHA；最终结果以会话交付为准。
+
 ## 2026-10-31-02：恢复产区采集涌现，补全物品显示链路
 
 - **目的 / 基线**：基于 `e7b9ae9`，修复新产区绕过AI命名/描述；火、风蘑菇与水贝壳调用既有共享AI，元素与数值仍由游戏决定。

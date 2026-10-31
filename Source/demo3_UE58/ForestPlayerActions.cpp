@@ -71,20 +71,18 @@ bool UForestIsometricPlayer::BeginGather(AForestElementResource* Resource)
  if(!bSwimming && !C->GetCharacterMovement()->IsMovingOnGround())return false;
  const int32 Offset=bSwimming?3:0;
  for(int32 Index=0;Index<3;++Index)if(!GatherAnimations.IsValidIndex(Offset+Index) || !GatherAnimations[Offset+Index])return false;
- GatheringResource=Resource;bGathering=true;bGatherInWater=bSwimming;ActionAge=0;
+ auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();if(!Regions || !Regions->CanHarvestResource(C,bSwimming,Resource))return false;
+ GatheringResource=Resource;bGathering=true;bGatherInWater=bSwimming;bGatherAnimationStarted=false;ActionAge=-FMath::Clamp(GatherHighlightDuration,.05f,.5f);
+ Resource->SetHarvestHighlighted(true);
  C->GetCharacterMovement()->StopMovementImmediately();C->ConsumeMovementInputVector();
  // Keep the existing camera/controller direction. Only the visible body reaches toward the target.
  const FVector Direction=(Resource->GetActorLocation()-C->GetActorLocation()).GetSafeNormal2D();
  if(!Direction.IsNearlyZero())C->GetMesh()->SetWorldRotation(FRotator(0,Direction.Rotation().Yaw-90.f,0));
- // The unsuffixed clip is already a complete pickup. Start/End are overlapping
- // excerpts, so concatenating all three made the reaching motion repeat.
- PlayAction(GatherAnimations[Offset+1],false);
- if(auto* Instance=C->GetMesh()->GetSingleNodeInstance())Instance->SetPlayRate(GatherAnimations[Offset+1]->GetPlayLength()/FMath::Max(.2f,GatherDuration));
  return true;
 }
 void UForestIsometricPlayer::FinishGather(bool Commit)
 {
- auto* Resource=GatheringResource.Get();GatheringResource.Reset();bGathering=false;
+ auto* Resource=GatheringResource.Get();if(Resource)Resource->SetHarvestHighlighted(false);GatheringResource.Reset();bGathering=false;bGatherAnimationStarted=false;
  RestoreLocomotion();
  if(auto* C=Character.Get())
  {
@@ -300,6 +298,12 @@ void UForestIsometricPlayer::UpdateActions(float DT,bool Blocked)
  {
   if(Blocked || bSwimming!=bGatherInWater || !GatheringResource.IsValid() || (!bSwimming && !Move->IsMovingOnGround())){FinishGather(false);return;}
   C->ConsumeMovementInputVector();Move->StopMovementImmediately();ActionAge+=DT;
+  if(ActionAge>=0 && !bGatherAnimationStarted)
+  {
+   bGatherAnimationStarted=true;GatheringResource->SetHarvestHighlighted(false);
+   const int32 Offset=bGatherInWater?3:0;PlayAction(GatherAnimations[Offset+1],false);
+   if(auto* Instance=C->GetMesh()->GetSingleNodeInstance())Instance->SetPlayRate(GatherAnimations[Offset+1]->GetPlayLength()/FMath::Max(.2f,GatherDuration));
+  }
   if(ActionAge>=FMath::Max(.2f,GatherDuration))FinishGather(true);
   return;
  }

@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -43,6 +44,23 @@ AForestElementResource::AForestElementResource()
  Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Mesh->SetCollisionObjectType(ECC_WorldDynamic);
  Mesh->SetCollisionResponseToAllChannels(ECR_Ignore);Mesh->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
  Tags.Add(TEXT("ForestRegionalResource"));
+ static ConstructorHelpers::FObjectFinder<UMaterialInterface> Highlight(TEXT("/Engine/EngineMaterials/EmissiveMeshMaterial.EmissiveMeshMaterial"));
+ HighlightBase=Highlight.Object;
+}
+void AForestElementResource::SetHarvestHighlighted(bool Highlighted)
+{
+ if(!Mesh || Highlighted==bHarvestHighlighted)return;
+ if(Highlighted)
+ {
+  if(!HighlightBase)return;
+  SavedOverlay=Mesh->GetOverlayMaterial();
+  if(!HighlightOverlay)HighlightOverlay=UMaterialInstanceDynamic::Create(HighlightBase,this);
+  const FLinearColor Color=Element==EAlchemyElement::Fire?FLinearColor(4,1.2f,.25f):Element==EAlchemyElement::Wind?FLinearColor(1.2f,4,1.5f):FLinearColor(.5f,2.5f,4);
+  HighlightOverlay->SetVectorParameterValue(TEXT("Color"),Color);HighlightOverlay->SetVectorParameterValue(TEXT("EmissiveColor"),Color);
+  Mesh->SetOverlayMaterial(HighlightOverlay);
+ }
+ else{Mesh->SetOverlayMaterial(SavedOverlay);SavedOverlay=nullptr;}
+ bHarvestHighlighted=Highlighted;
 }
 void AForestElementResource::Tick(float DT)
 {
@@ -230,6 +248,14 @@ AForestElementResource* UForestElementRegions::Nearest(const ACharacter* Charact
  return Best;
 }
 FString UForestElementRegions::CollectionKey(const AForestElementResource* Resource) const{return FString::Printf(TEXT("%d:%s"),CurrentDay,*Resource->ResourceId);}
+bool UForestElementRegions::CanHarvestResource(const ACharacter* Character,bool Swimming,const AForestElementResource* Resource) const
+{
+ if(!bInitialized || !HarvestSave || !Character || !IsValid(Resource) || Resource->bCollected || !Resources.Contains(Resource) || (Resource->bWaterShell && !Swimming))return false;
+ if(FVector::DistSquared(Character->GetActorLocation(),Resource->Mesh->Bounds.GetBox().GetClosestPointTo(Character->GetActorLocation()))>FMath::Square(230.f))return false;
+ FCollisionQueryParams Query(SCENE_QUERY_STAT(RegionalHarvestTarget),false,Character);Query.AddIgnoredActor(Resource);
+ for(const auto& Weak:WaterSurfaces)if(auto* Mesh=Weak.Get())Query.AddIgnoredComponent(Mesh);
+ FHitResult Hit;return !GetWorld()->LineTraceSingleByChannel(Hit,Character->GetActorLocation()+FVector(0,0,50),Resource->Mesh->Bounds.Origin,ECC_Visibility,Query);
+}
 bool UForestElementRegions::TryHarvest(ACharacter* Character,bool Swimming)
 {
  auto* Resource=Nearest(Character,230.f);
@@ -240,7 +266,7 @@ bool UForestElementRegions::TryHarvest(ACharacter* Character,bool Swimming)
 bool UForestElementRegions::CollectResource(ACharacter* Character,bool Swimming,AForestElementResource* Resource)
 {
  // Commit the original target only, after its animation. A moved/respawned target cancels.
- if(!IsValid(Resource) || Resource!=Nearest(Character,230.f))return false;
+ if(!CanHarvestResource(Character,Swimming,Resource))return false;
  if(!bInitialized || !HarvestSave || !Resource || (Resource->bWaterShell && !Swimming))return false;
  const FString Key=CollectionKey(Resource);
  if(HarvestSave->Collected.Contains(Key))return false;
