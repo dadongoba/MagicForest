@@ -48,6 +48,8 @@ AForestElementResource::AForestElementResource()
  Tags.Add(TEXT("ForestRegionalResource"));
  static ConstructorHelpers::FObjectFinder<UMaterialInterface> Highlight(TEXT("/Engine/EngineMaterials/EmissiveMeshMaterial.EmissiveMeshMaterial"));
  HighlightBase=Highlight.Object;
+ static ConstructorHelpers::FObjectFinder<UMaterialInterface> Inactive(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+ InactiveBase=Inactive.Object;
 }
 void AForestElementResource::SetHarvestHighlighted(bool Highlighted)
 {
@@ -72,6 +74,43 @@ void AForestElementResource::ApplyZoneAvailability(bool Available,bool HideUnava
  if(!Available)SetHarvestHighlighted(false);
  const auto P=ForestZonePolicy::ResourcePresentation(bCollected,Available,HideUnavailable,bWaterShell);
  SetActorHiddenInGame(P.Hidden);SetActorEnableCollision(P.Collision);SetActorTickEnabled(P.Tick);
+}
+void AForestElementResource::ApplyZoneAppearance(const FForestZoneVisualPreset* Preset)
+{
+ if(!Mesh)return;
+ const bool Inactive=!bZoneAvailable;
+ if(Preset && AppliedZoneAppearance==Preset->Id && bAppearanceInactive==Inactive)return;
+ if(!Preset && AppliedZoneAppearance.IsNone())return;
+ const bool WasHighlighted=bHarvestHighlighted;if(WasHighlighted)SetHarvestHighlighted(false);
+ if(AppliedZoneAppearance.IsNone())
+ {
+  OriginalZoneMaterials.Reset();for(int32 I=0;I<Mesh->GetNumMaterials();++I)OriginalZoneMaterials.Add(Mesh->GetMaterial(I));
+  OriginalZoneScale=GetActorScale3D();OriginalZoneOverlay=Mesh->GetOverlayMaterial();
+ }
+ // First restore so transitions never compound scale or retain the previous state's gray material.
+ for(int32 I=0;I<OriginalZoneMaterials.Num();++I)Mesh->SetMaterial(I,OriginalZoneMaterials[I]);
+ Mesh->SetOverlayMaterial(OriginalZoneOverlay);SetActorScale3D(OriginalZoneScale);
+ ZoneMaterial=nullptr;ZoneOverlay=nullptr;
+ if(!Preset)
+ {AppliedZoneAppearance=NAME_None;OriginalZoneMaterials.Reset();OriginalZoneOverlay=nullptr;}
+ else
+ {
+  AppliedZoneAppearance=Preset->Id;bAppearanceInactive=Inactive;
+  SetActorScale3D(OriginalZoneScale*(Inactive?.85f:Preset->ResourceScale));
+  if(Inactive && InactiveBase)
+  {
+   ZoneMaterial=UMaterialInstanceDynamic::Create(InactiveBase,this);
+   ZoneMaterial->SetVectorParameterValue(TEXT("Color"),FLinearColor(.19f,.18f,.16f));
+   for(int32 I=0;I<Mesh->GetNumMaterials();++I)Mesh->SetMaterial(I,ZoneMaterial);
+  }
+  else if(HighlightBase)
+  {
+   ZoneOverlay=UMaterialInstanceDynamic::Create(HighlightBase,this);
+   ZoneOverlay->SetVectorParameterValue(TEXT("Color"),Preset->ResourceColor*FMath::Max(.12f,Preset->Glow));
+   Mesh->SetOverlayMaterial(ZoneOverlay);
+  }
+ }
+ if(WasHighlighted && bZoneAvailable)SetHarvestHighlighted(true);
 }
 void AForestElementResource::Tick(float DT)
 {

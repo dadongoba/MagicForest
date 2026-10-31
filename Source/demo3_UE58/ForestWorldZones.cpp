@@ -12,6 +12,7 @@
 #include "Misc/Paths.h"
 #include "JsonObjectConverter.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 namespace
 {
@@ -68,6 +69,8 @@ bool UForestWorldZones::ReloadLayout()
    for(auto P:Override.Points)if(P.ContainsNaN())return false;
   }
  }
+ for(const auto& Preset:NewLayout.VisualPresets)if(!Preset.IsValid())return false;
+ ClearVisuals();
  NewLayout.ProtectedResourcesPerProductionRegion=FMath::Max(1,NewLayout.ProtectedResourcesPerProductionRegion);
  Layout=MoveTemp(NewLayout);
  if(!Save){Save=Cast<UForestWorldZoneSave>(UGameplayStatics::LoadGameFromSlot(ZoneSlot,0));if(!Save)Save=NewObject<UForestWorldZoneSave>(this);}
@@ -175,7 +178,13 @@ void UForestWorldZones::ApplyResource(AForestElementResource* R)
  if(!IsValid(R) || ResourceDay!=CurrentDay())return;
  const auto* Z=Zones.FindByPredicate([&](const auto& X){return X.ZoneId==R->ZoneId;});const auto State=GetZoneState(R->ZoneId);
  const bool Available=ForestZonePolicy::Available(R->bZoneReserve || (Z && Z->bProtected),State.bHarvestEnabled,State.ResourceAvailabilityScale,FCrc::StrCrc32(*R->ResourceId),R->ZoneOrdinal,State.MaxAvailableResources);
- R->ApplyZoneAvailability(Available,State.bHideUnavailableResources);
+ FForestZoneVisualPreset Preset;
+ const FName VisualId=State.MapStateId.IsNone()?State.StateId:State.MapStateId;
+ const bool HasVisual=Z && !Z->bProtected && !R->bZoneReserve && FForestZoneVisualPreset::Find(VisualId,Layout.VisualPresets,Preset);
+ Preset.ResolveRegionColor(R->ZoneId);
+ // A disabled resource remains visibly spent in the visual states, but never regains collision/harvest.
+ R->ApplyZoneAvailability(Available,HasVisual && Preset.bShowInactiveResources?false:State.bHideUnavailableResources);
+ R->ApplyZoneAppearance(HasVisual?&Preset:nullptr);
 }
 bool UForestWorldZones::HasActorControls() const
 {
@@ -189,6 +198,7 @@ void UForestWorldZones::RestoreActors()
 void UForestWorldZones::ApplyControls()
 {
  Resources.RemoveAll([](const auto& R){return !R.IsValid();});for(const auto& R:Resources)ApplyResource(R.Get());
+ ApplyVisuals();
  // No tagged actor scan or setter calls on the neutral path.
  if(!HasActorControls()){if(!ActorOriginals.IsEmpty())RestoreActors();return;}
  TSet<TWeakObjectPtr<AActor>> Active;
@@ -221,6 +231,68 @@ void UForestWorldZones::Tick(float DT)
  ScanTime-=DT;if(ScanTime>0)return;ScanTime=2.f;
  if(Zones.Num()<10){const int32 Before=Zones.Num();if(DiscoverZones() && Zones.Num()!=Before){ReassignResources();ApplyControls();}}
  else if(HasActorControls())ApplyControls();
+ else ApplyVisuals();
 }
-void UForestWorldZones::Deinitialize(){RestoreActors();Resources.Reset();Super::Deinitialize();}
+void UForestWorldZones::Deinitialize(){ClearVisuals();RestoreActors();Resources.Reset();Super::Deinitialize();}
 TStatId UForestWorldZones::GetStatId() const{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestWorldZones,STATGROUP_Tickables);}
+
+void UForestWorldZones::ClearVisuals()
+{
+ for(auto& Pair:VisualActors)if(IsValid(Pair.Value))Pair.Value->Destroy();
+ VisualActors.Reset();AppliedVisualIds.Reset();
+}
+void UForestWorldZones::ApplyVisuals()
+{
+ auto* RegionSystem=GetWorld()->GetSubsystem<UForestElementRegions>();
+ if(!RegionSystem)return;
+ for(const auto& Zone:Zones)
+ {
+  const auto State=GetZoneState(Zone.ZoneId);const FName Id=State.MapStateId.IsNone()?State.StateId:State.MapStateId;
+  FForestZoneVisualPreset Preset;
+  const bool Enabled=!Zone.bProtected && FForestZoneVisualPreset::Find(Id,Layout.VisualPresets,Preset);
+  Preset.ResolveRegionColor(Zone.ZoneId);
+  if(!Enabled)
+  {
+   if(auto* Existing=VisualActors.Find(Zone.ZoneId)){if(IsValid(*Existing))(*Existing)->Destroy();VisualActors.Remove(Zone.ZoneId);}
+   AppliedVisualIds.Remove(Zone.ZoneId);continue;
+  }
+  if(AppliedVisualIds.FindRef(Zone.ZoneId)==Id && IsValid(VisualActors.FindRef(Zone.ZoneId)))continue;
+  if(auto* Existing=VisualActors.Find(Zone.ZoneId)){if(IsValid(*Existing))(*Existing)->Destroy();VisualActors.Remove(Zone.ZoneId);}
+  const FString ZoneName=Zone.ZoneId.ToString();
+  const float Radius=ZoneName.StartsWith(TEXT("water"))?RegionSystem->WaterRadius:ZoneName.StartsWith(TEXT("fire"))?RegionSystem->FireRadius:RegionSystem->WindRadius;
+  TArray<FVector> Samples;
+  // A bounded grid over the original production circle. No resource RNG or actor placement is modified.
+  const float Step=Preset.FogRadius*1.6f;
+  for(float X=-Radius;X<=Radius;X+=Step)for(float Y=-Radius;Y<=Radius;Y+=Step)
+  {
+   FVector P=Zone.Center+FVector(X,Y,0);if(FVector2D(X,Y).Size()+Preset.FogRadius>Radius)continue;
+   bool Inside=true;
+   for(int32 I=0;I<8;++I)
+   {
+    const float Angle=I*PI/4;const FVector Edge=P+FVector(FMath::Cos(Angle),FMath::Sin(Angle),0)*Preset.FogRadius;
+    if(Locate(Edge)!=Zone.ZoneId){Inside=false;break;}
+   }
+   if(!Inside || Locate(P)!=Zone.ZoneId)continue;
+   TArray<FHitResult> Hits;FCollisionObjectQueryParams Objects;Objects.AddObjectTypesToQuery(ECC_WorldStatic);Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+   GetWorld()->LineTraceMultiByObjectType(Hits,P+FVector(0,0,20000),P-FVector(0,0,20000),Objects,FCollisionQueryParams(SCENE_QUERY_STAT(ZoneVisualSurface),true));
+   Hits.Sort([](const auto& A,const auto& B){return A.ImpactPoint.Z>B.ImpactPoint.Z;});
+   for(const auto& Hit:Hits)
+   {
+    auto* Actor=Hit.GetActor();auto* Mesh=Cast<UStaticMeshComponent>(Hit.GetComponent());
+    if(!Actor || Actor->IsA<APawn>() || Actor->IsA<AForestElementResource>() || Hit.ImpactNormal.Z<.65f)continue;
+    const bool Water=Mesh && (Mesh->ComponentHasTag(TEXT("ForestSwimSurface")) || Actor->ActorHasTag(TEXT("ForestSwimWater")));
+    const FString Name=Mesh && Mesh->GetStaticMesh()?Mesh->GetStaticMesh()->GetName():FString();
+    const bool Ground=Actor->GetClass()->GetName().Contains(TEXT("Landscape")) || (Mesh && Mesh->ComponentHasTag(TEXT("ForestResourceGround"))) ||
+      Name.Contains(TEXT("Ground")) || Name.Contains(TEXT("Terrain")) || Name.Contains(TEXT("Cliff")) || Name.Contains(TEXT("Rock"));
+    if(!Water && !Ground)continue;
+    Samples.Add(Hit.ImpactPoint);break;
+   }
+  }
+  // Stable spatial sampling spreads up to six patches instead of taking one edge of the grid.
+  Samples.Sort([](const FVector& A,const FVector& B){return GetTypeHash(FIntPoint(FMath::RoundToInt(A.X),FMath::RoundToInt(A.Y)))<GetTypeHash(FIntPoint(FMath::RoundToInt(B.X),FMath::RoundToInt(B.Y)));});
+  if(Samples.Num()>6)Samples.SetNum(6);
+  if(Samples.IsEmpty())continue; // Retry after streamed terrain becomes available.
+  auto* Visual=GetWorld()->SpawnActor<AForestZoneVisuals>();
+  if(Visual){Visual->Configure(Samples,Preset);VisualActors.Add(Zone.ZoneId,Visual);AppliedVisualIds.Add(Zone.ZoneId,Id);}
+ }
+}

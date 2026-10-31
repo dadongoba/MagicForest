@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "GameFramework/SaveGame.h"
+#include "ForestZoneVisuals.h"
 #include "ForestWorldZones.generated.h"
 class AForestElementResource;
 
@@ -17,7 +18,7 @@ struct DEMO3_UE58_API FForestZoneState
  UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bHideUnavailableResources=true;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bHideTaggedActors=false;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bDisableTaggedActorCollision=false;
- // Reserved preset keys for existing/future NPC and environment consumers.
+ // NPC key is reserved; MapStateId selects a VisualPresets row (otherwise StateId).
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FName NpcStateId;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FName MapStateId;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FString SourceReceiptId;
@@ -49,6 +50,7 @@ struct FForestZoneLayout
  UPROPERTY() int32 ProtectedResourcesPerProductionRegion=1;
  UPROPERTY() TArray<FForestZonePolygon> PolygonOverrides;
  UPROPERTY() TArray<FForestZoneControlRow> Controls;
+ UPROPERTY() TArray<FForestZoneVisualPreset> VisualPresets;
 };
 USTRUCT(BlueprintType)
 struct DEMO3_UE58_API FForestWorldZone
@@ -111,5 +113,9 @@ private:
  void ReassignResources();
  void ApplyControls();
  void RestoreActors();
+ void ApplyVisuals();
+ void ClearVisuals();
+ UPROPERTY(Transient) TMap<FName,TObjectPtr<AForestZoneVisuals>> VisualActors;
+ TMap<FName,FName> AppliedVisualIds;
  bool HasActorControls() const;
 };

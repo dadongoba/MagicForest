@@ -7,6 +7,7 @@
 #include "AlchemyGameplayTypes.h"
 #include "ForestElementRegions.generated.h"
 
+struct FForestZoneVisualPreset;
 class ACharacter;
 class UStaticMesh;
 class UStaticMeshComponent;
@@ -32,6 +33,7 @@ public:
  AForestElementResource();
  void SetHarvestHighlighted(bool bHighlighted);
  void ApplyZoneAvailability(bool bAvailable,bool bHideUnavailable);
+ void ApplyZoneAppearance(const FForestZoneVisualPreset* Preset);
  virtual void Tick(float DeltaTime) override;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UStaticMeshComponent> Mesh;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) EAlchemyElement Element=EAlchemyElement::Fire;
@@ -49,6 +51,14 @@ private:
  UPROPERTY() TObjectPtr<UMaterialInterface> HighlightBase;
  UPROPERTY(Transient) TObjectPtr<UMaterialInterface> SavedOverlay;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> HighlightOverlay;
+ UPROPERTY() TObjectPtr<UMaterialInterface> InactiveBase;
+ UPROPERTY(Transient) TArray<TObjectPtr<UMaterialInterface>> OriginalZoneMaterials;
+ UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> ZoneMaterial;
+ UPROPERTY(Transient) TObjectPtr<UMaterialInterface> OriginalZoneOverlay;
+ UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> ZoneOverlay;
+ FVector OriginalZoneScale=FVector::OneVector;
+ FName AppliedZoneAppearance;
+ bool bAppearanceInactive=false;
  bool bHarvestHighlighted=false;
  bool bZoneHidden=false;
 
