@@ -1,4 +1,5 @@
 #include "ForestHarvestMagic.h"
+#include "ForestItemIdentity.h"
 #include "ForestIsometricPlayer.h"
 #include "ForestElementRegions.h"
 #include "ForestNPCInteraction.h"
@@ -378,7 +379,7 @@ void UForestHarvestMagic::PrepareItem(FForestMagicItem& I)
   static const TCHAR* Descriptions[3][3]={{TEXT("黄铜边缘始终温热，中央的小火苗偶尔探出头，仿佛还在等一件合身的外套。"),TEXT("胡桃壳缝中漏出暖光，贴近耳边，能听见里面细小的柴火声。"),TEXT("蜡烛只有指节长，每当火苗垂下头，烛芯便悄悄把它扶起来。")},{TEXT("苍白的细线会自行松开一小截，随后传来一声不知属于谁的叹息。"),TEXT("铃内空空如也，风经过时，却会响起三声清楚的铃音。"),TEXT("木梳的齿间总有细风穿过，握在手里，发梢便朝森林深处轻轻偏去。")},{TEXT("透明扣子里封着一扇小窗，窗外总在下雨，窗内却没有人。"),TEXT("软木塞下飘着一片小云，瓶壁上不时滑过一滴刚落下的雨。"),TEXT("表盘没有指针，只有一片缓慢涨落的海，浪花会轻轻碰响银色刻度。")}};
   const int E=I.Element==EAlchemyElement::Wind?1:I.Element==EAlchemyElement::Water?2:0;I.Name=Names[E][Variant];I.Description=Descriptions[E][Variant];I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);
   // Do not merge different descriptions or generation requests under the same legacy key.
-  int Serial=1;const FString BaseName=I.Name;while(Ledger->Items.ContainsByPredicate([&](const auto& Existing){return Existing.InventoryKey==I.InventoryKey;})){I.Name=FString::Printf(TEXT("%s（%d）"),*BaseName,++Serial);I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);}
+  int Serial=1;const FString BaseName=I.Name;while(ForestItemIdentity::ConflictsWithOtherItem(I,Ledger->Items)){I.Name=FString::Printf(TEXT("%s（%d）"),*BaseName,++Serial);I.InventoryKey=FString::Printf(TEXT("%s · %s%d"),*I.Name,*ElementText(I.Element),I.PipValue);}
 }
 void UForestHarvestMagic::RequestItemName(const FString& ItemId)
 {
