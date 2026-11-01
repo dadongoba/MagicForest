@@ -3,6 +3,7 @@
 #include "DialogueMemoryTableSubsystem.h"
 #include "AlchemyGameplaySubsystem.h"
 #include "DailyMushroomSubsystem.h"
+#include "AlchemyCampaignPolicy.h"
 #include "Kismet/GameplayStatics.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
@@ -66,6 +67,7 @@ bool UForestNPCDialogueSubsystem::Persist()
 bool UForestNPCDialogueSubsystem::BeginConversation(FName Id)
 {
  if(!bPersistenceReady || !ActiveNpc.IsNone())return false;
+ if(const auto* D=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();D && D->IsCampaignCompleted())return false;
  FDialoguePersonaProfile Profile;if(!GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>()->GetPersonaProfile(Id,Profile))return false;
  auto* Memory=GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>();auto* Day=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();const int32 WorldDay=Day?Day->GetCurrentDay():1;int32 Level=1;int64 Flags=0,Last=0;
  for(const auto& S:Memory->GetLedgerSnapshot().NpcStates)if(S.NpcId==Id){Level=S.Familiarity;Flags=S.KnownSecretFlags;Last=S.LastSessionId;}
@@ -113,6 +115,7 @@ FString UForestNPCDialogueSubsystem::GetCompactMemoryJson(FName Id) const
 }
 bool UForestNPCDialogueSubsystem::SendPlayerMessage(const FString& Raw)
 {
+ if(const auto* D=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();D && D->IsCampaignCompleted())return false;
  const FString Text=Raw.TrimStartAndEnd();if(ActiveNpc.IsNone() || bWaiting || Text.IsEmpty() || Text.Len()>500)return false;
  auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
  if(!bOfflineTest && !AI->HasApiKey()){Status=TEXT("未配置 FOREST_DIALOGUE_API_KEY。设置后重新启动 UE；或在场景管理器启用离线联调。");OnConversationUpdated.Broadcast();return false;}
@@ -130,8 +133,7 @@ bool UForestNPCDialogueSubsystem::SendPlayerMessage(const FString& Raw)
  int32 Level=1;for(const auto& S:GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->GetLedgerSnapshot().NpcStates)if(S.NpcId==ActiveNpc)Level=S.Familiarity;
  const FName CommissionPersona=ActiveNpc==TEXT("natta")?TEXT("blacksmith"):ActiveNpc==TEXT("fawnia")?TEXT("operator"):ActiveNpc==TEXT("forest_witch")?TEXT("novelist"):ActiveNpc;
  const int32 PersonaOffset=CommissionPersona==TEXT("operator")?3:CommissionPersona==TEXT("novelist")?6:CommissionPersona==TEXT("blacksmith")?0:-1;
- const int32 DaySlot=((FMath::Max(1,WorldDay)-1)%3)+1;
- const int32 CommissionOrderIndex=PersonaOffset>=0?PersonaOffset+DaySlot:0;
+ const int32 CommissionOrderIndex=AlchemyCampaign::CommissionId(PersonaOffset,WorldDay);
  auto* Context=NewObject<UForestDialogueRequestContext>(this);Context->Owner=this;Context->NpcId=ActiveNpc;Context->Generation=Generation;Requests.Add(Context);
  FDialogueAICompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::Completed);
  AI->RequestNpcDialogue(ActiveNpc,Level,CommissionOrderIndex,GetCompactMemoryJson(ActiveNpc),R.History,Callback);return true;

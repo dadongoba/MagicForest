@@ -114,6 +114,8 @@ public:
  UFUNCTION(BlueprintCallable,Category="Alchemy|Daily") bool TakeBottle(AActor* Bottle);
  UFUNCTION(BlueprintCallable,Category="Alchemy|Night") void OpenWorkbench();
  UFUNCTION(BlueprintCallable,Category="Alchemy|Night") void CloseWorkbench();
+ UFUNCTION(BlueprintPure,Category="Alchemy|Daily") bool IsCampaignCompleted() const;
+ void ExitJourney();
  bool IsWorkbenchOpen() const;
  TArray<FForestBrewChoice> Choices() const;
  TArray<FAlchemyCommissionDefinition> Commissions() const;

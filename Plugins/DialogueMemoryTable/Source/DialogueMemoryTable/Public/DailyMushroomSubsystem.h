@@ -107,6 +107,9 @@ public:
     int32 LastConfirmedSynthesisDay = 0;
 
     UPROPERTY()
+    bool bCampaignCompleted = false;
+
+    UPROPERTY()
     TArray<FDailyElementModifierRow> ElementModifiers;
 };
 
@@ -127,6 +130,12 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "World|Day")
     bool ConfirmDryPotSynthesis();
+
+    UFUNCTION(BlueprintPure, Category = "World|Day")
+    bool IsCampaignCompleted() const { return Save && Save->bCampaignCompleted; }
+
+    UFUNCTION(BlueprintCallable, Category = "World|Day")
+    bool ConfirmSynthesisForDay(int32 ReceiptDay);
 
     UFUNCTION(BlueprintCallable, Category = "World|Day")
     bool SetCurrentDay(int32 NewDay);

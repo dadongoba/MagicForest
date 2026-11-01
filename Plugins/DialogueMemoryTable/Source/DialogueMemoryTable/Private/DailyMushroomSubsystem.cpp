@@ -1,4 +1,5 @@
 #include "DailyMushroomSubsystem.h"
+#include "AlchemyCampaignPolicy.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -32,8 +33,11 @@ bool UDailyMushroomSubsystem::ConfigureSaveSlot(const FString& InSlotName, const
     CurrentDay = Save ? FMath::Max(1, Save->CurrentDay) : 1;
     if (Save)
     {
-        Save->CurrentDay = CurrentDay;
-        Persist();
+        const auto S = AlchemyCampaign::Normalize({CurrentDay, Save->LastConfirmedSynthesisDay, Save->bCampaignCompleted});
+        CurrentDay = S.Day;
+        Save->LastConfirmedSynthesisDay = S.Confirmed;
+        Save->bCampaignCompleted = S.Completed;
+        return Persist();
     }
     return Save != nullptr;
 }
@@ -50,37 +54,43 @@ bool UDailyMushroomSubsystem::Persist()
 
 int32 UDailyMushroomSubsystem::AdvanceDay()
 {
-    CurrentDay = FMath::Max(1, CurrentDay + 1);
-    Persist();
+    if (!IsCampaignCompleted() && CurrentDay < AlchemyCampaign::LastDay)
+        SetCurrentDay(CurrentDay + 1);
     return CurrentDay;
 }
 
 bool UDailyMushroomSubsystem::ConfirmDryPotSynthesis()
 {
-    if (!Save)
-    {
-        return false;
-    }
+    return ConfirmSynthesisForDay(CurrentDay);
+}
 
-    const int32 PreviousDay = CurrentDay;
-    const int32 PreviousConfirmed = Save->LastConfirmedSynthesisDay;
-    Save->LastConfirmedSynthesisDay = CurrentDay;
-    CurrentDay = FMath::Max(1, CurrentDay + 1);
+bool UDailyMushroomSubsystem::ConfirmSynthesisForDay(const int32 ReceiptDay)
+{
+    if (!Save) return false;
+    const AlchemyCampaign::State Before{CurrentDay, Save->LastConfirmedSynthesisDay, Save->bCampaignCompleted};
+    auto After = Before;
+    if (!AlchemyCampaign::Confirm(After, ReceiptDay)) return false;
+    CurrentDay = After.Day;
+    Save->LastConfirmedSynthesisDay = After.Confirmed;
+    Save->bCampaignCompleted = After.Completed;
     if (Persist()) return true;
-    CurrentDay = PreviousDay;
-    Save->CurrentDay = PreviousDay;
-    Save->LastConfirmedSynthesisDay = PreviousConfirmed;
+    CurrentDay = Before.Day;
+    Save->CurrentDay = Before.Day;
+    Save->LastConfirmedSynthesisDay = Before.Confirmed;
+    Save->bCampaignCompleted = Before.Completed;
     return false;
 }
 
 bool UDailyMushroomSubsystem::SetCurrentDay(const int32 NewDay)
 {
-    if (NewDay < 1)
-    {
+    if (!Save || IsCampaignCompleted() || NewDay < 1 || NewDay > AlchemyCampaign::LastDay || NewDay <= Save->LastConfirmedSynthesisDay)
         return false;
-    }
+    const int32 Before = CurrentDay;
     CurrentDay = NewDay;
-    return Persist();
+    if (Persist()) return true;
+    CurrentDay = Before;
+    Save->CurrentDay = Before;
+    return false;
 }
 
 const TArray<FName>& UDailyMushroomSubsystem::MushroomCatalog()
@@ -267,6 +277,7 @@ bool UDailyMushroomSubsystem::ClearElementModifiersForDay(const int32 TargetDay)
 
 FString UDailyMushroomSubsystem::GetDayStatusText() const
 {
+    if (IsCampaignCompleted()) return TEXT("三日旅程已结束");
     int32 AvailableCount = 0;
     for (const FDailyMushroomCardRow& Definition : GetDailyMushrooms())
     {

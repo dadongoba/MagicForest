@@ -46,7 +46,7 @@ void UForestBrewWidget::Refresh()
  if(const auto* R=A->PendingResult())
  {
   const auto& E=R->Result;
-  Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("次日破晓 · 第 %d 天的合成结果"),R->Day),23)];
+  Body->AddSlot().AutoHeight()[BrewUI::Text(R->Day==3?FString(TEXT("第三夜 · 最终合成结果")):FString::Printf(TEXT("次日破晓 · 第 %d 天的合成结果"),R->Day),23)];
   Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(R->Customer+TEXT(" · 结局与世界余波"),13)];
   auto Scores=SNew(SVerticalBox);
   Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("偏离与药性"),18)];
@@ -62,7 +62,23 @@ void UForestBrewWidget::Refresh()
    +SHorizontalBox::Slot().FillWidth(.66f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
   Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
   Body->AddSlot().AutoHeight()[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
-   [BrewUI::Button(TEXT("承接新局 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+   [BrewUI::Button(R->Day==3?TEXT("完成三日旅程 · 查看结局"):TEXT("承接新局 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+  return;
+ }
+ if(A->IsCampaignCompleted())
+ {
+  Body->AddSlot().AutoHeight()[BrewUI::Text(TEXT("三日旅程 · 结局回顾"),23)];
+  auto Records=SNew(SVerticalBox);const auto Brews=A->GetBrewRecords();
+  for(int32 Day=1;Day<=3;++Day)
+  {
+   const FForestBrewRecord* Found=nullptr;for(const auto& R:Brews)if(R.Day==Day)Found=&R;
+   Records->AddSlot().AutoHeight().Padding(0,18,0,8)[BrewUI::Text(FString::Printf(TEXT("第 %d 天"),Day),18)];
+   if(!Found){Records->AddSlot().AutoHeight()[BrewUI::Text(TEXT("旧存档中没有这一天的交付记录。"))];continue;}
+   Records->AddSlot().AutoHeight()[BrewUI::Text(Found->Customer+TEXT(" · ")+Found->Result.Verdict,16)];
+   Records->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(Found->Narrative.IsEmpty()?TEXT("此记录没有保存推演文本。"):Found->Narrative,16)];
+  }
+  Body->AddSlot().FillHeight(1).Padding(0,12)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)+SScrollBox::Slot()[Records]];
+  Body->AddSlot().AutoHeight()[BrewUI::Button(TEXT("结束旅程 · 退出游戏"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ExitJourney();return FReply::Handled();}),true)];
   return;
  }
  auto Draft=SNew(SVerticalBox);

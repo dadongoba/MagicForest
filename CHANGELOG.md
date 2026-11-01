@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+
+## 2026-11-01-01：三日旅程结束流程与九份委托待审核稿
+
+- **目的 / 基线 / 前置**：基于913d2c1、批次2026-10-31-08。第三夜交付后结束三日旅程，阻止第四天任务循环；新委托文案先审核，不接运行时。
+- **新增**：Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyCampaignPolicy.h；Tools/Tests/AlchemyCampaignPolicyTests.cpp；Docs/Three_Day_Campaign_2026-11-01.md；Docs/Commission_Narrative_Review_2026-11-01.md（仅审核资料）。
+- **修改**：同插件Public/DailyMushroomSubsystem.h、Private/DailyMushroomSubsystem.cpp；Source/demo3_UE58/ForestAlchemy.h/.cpp、ForestAlchemyUI.cpp、ForestNPCDialogueSubsystem.cpp；CHANGELOG.md。
+- **行为**：世界日期上限3，第三次交付写完成状态并进入实际三日交付回顾，重载仍回顾；按收据日期幂等推进，保存失败回滚并保留待处理标记。旧第4天以上存档归一为第3天已完成，保留历史收据，过期待推进不再阻塞。NPC不再循环第一日，合成台不再无限兜底第三日；终夜请求/本地失败文本停止叙述第四天。
+- **审核边界**：九份任务底本、初次开场、追问线索、数值揭示只在Markdown中；“一缕”计量及铁匠第三日退炉热均待用户审核。未改现有委托数据、提示词线索机制、合成前ElementRequest显示或评分；“全投”原计数问题已在稿中标明，不计已修。
+- **应用 / 依赖**：合并上述源码与新头文件并重编译。沿用原纸张与完整工程资源，不含新资产、地图、配置、缓存、二进制或密钥。新增完成标志兼容旧存档；旧超期日期迁移后不再恢复无限天，应用前备份存档。详见[流程说明](Docs/Three_Day_Campaign_2026-11-01.md)。
+- **本次验证 / 未验证**：纯C++日历/幂等/迁移/任务路由回归通过；完整项目Mac UE5.8离线编译通过（首次43.51秒，旧超期收据恢复补丁最终编译6.33秒）。未打开UE，未运行PIE、保存故障注入、LLM、Windows或打包验收。
+- **上传状态**：待提交推送并核对远端SHA；上一批913d2c1已核对远端一致。
+
 ## 2026-10-31-08：下载完整地图后的区块外观运行验收
 
 - **目的 / 基线 / 前置**：基于6c6ef63、批次07，在用户提供的完整资源包地图上验证地表覆盖和资源控制；仅记录验收，不修改功能代码或地图。
