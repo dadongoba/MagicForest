@@ -1,4 +1,5 @@
 #include "ForestIsometricPlayer.h"
+#include "ForestElementCodex.h"
 #include "ForestNPCInteraction.h"
 #include "ForestHarvestMagic.h"
 #include "ForestElementRegions.h"
@@ -162,6 +163,7 @@ void UForestIsometricPlayer::BeginPlay()
 }
 bool UForestIsometricPlayer::MenuOpen() const
 {
+ if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return true;
  if(auto* H=GetWorld()->GetSubsystem<UForestHarvestMagic>();H && H->IsInventoryOpen())return true;
  if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();A && A->IsWorkbenchOpen())return true;
  auto* M=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));

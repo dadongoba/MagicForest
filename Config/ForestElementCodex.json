@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "introduction": "这里记录的是合成后药性的效果档位。材料上的元素点数用于投料，书中的档位用于理解成品会有什么性质和作用。具体物品的名字、外形与来历不属于这份目录。",
+  "notes": "两件各含3点火元素的物品，在没有其他变换时，可以合成火效果6。材料可以不同，效果由最终留下的元素与数值决定。本册列出1—10档作为参照，更高的合成结果不受本册页数限制。零表示不额外给予或取走，负值表示主动取走。",
+  "entries": [
+    {
+      "element": "fire",
+      "strength": 1,
+      "title": "微弱暖意",
+      "description": "只带来很轻的升温，热的感觉并不明显。",
+      "reference": "适合只需略微回暖、不宜受热的用途。"
+    },
+    {
+      "element": "fire",
+      "strength": 2,
+      "title": "轻度回暖",
+      "description": "能够驱散轻微的凉意，整体仍然温和。",
+      "reference": "适合缓慢回暖，尚不足以完成明显的加热。"
+    },
+    {
+      "element": "fire",
+      "strength": 3,
+      "title": "温和加热",
+      "description": "热量已经能够发挥作用，但加热程度较轻。",
+      "reference": "适合对热敏感、只需温和处理的用途。"
+    },
+    {
+      "element": "fire",
+      "strength": 4,
+      "title": "明显升温",
+      "description": "能够明显提高温度，暖意逐渐变为可感知的热。",
+      "reference": "适合需要较明确热量、又不宜过热的用途。"
+    },
+    {
+      "element": "fire",
+      "strength": 5,
+      "title": "较强加热",
+      "description": "热量比温和加热更充分，但对需要彻底热透的用途仍可能不足。",
+      "reference": "适合较强加热；是否足够，要看需求是否还要求内部充分受热。"
+    },
+    {
+      "element": "fire",
+      "strength": 6,
+      "title": "充分加热",
+      "description": "热量足以支持充分加热，让受热不只停留在表面。",
+      "reference": "适合需要热透、烘干的用途；仍需避免额外叠加不需要的热量。"
+    },
+    {
+      "element": "fire",
+      "strength": 7,
+      "title": "强烈加热",
+      "description": "升温程度较强，热的作用明显，过热的风险开始突出。",
+      "reference": "适合需要强热的用途，对怕热的材料应谨慎。"
+    },
+    {
+      "element": "fire",
+      "strength": 8,
+      "title": "高强加热",
+      "description": "能够提供很强的热量，明显超出普通温和处理所需。",
+      "reference": "适合要求高热的加工，容易损伤只能承受轻热的材料。"
+    },
+    {
+      "element": "fire",
+      "strength": 9,
+      "title": "灼热作用",
+      "description": "热量逼近强烈灼烧的程度，受热破坏的风险很高。",
+      "reference": "适合明确需要灼热的用途，不宜用于只求干燥或回暖的需求。"
+    },
+    {
+      "element": "fire",
+      "strength": 10,
+      "title": "猛烈灼烧",
+      "description": "火的作用非常强烈，倾向于烧灼和破坏，而非温和处理。",
+      "reference": "只适合明确需要如此强烈热效应的用途；过量并不意味着更贴合需求。"
+    },
+    {
+      "element": "wind",
+      "strength": 1,
+      "title": "微弱流动",
+      "description": "只引起轻微的流动，推动作用很弱。",
+      "reference": "适合只需一点通风或气流的用途。"
+    },
+    {
+      "element": "wind",
+      "strength": 2,
+      "title": "轻缓通风",
+      "description": "流动轻缓，能够带走局部停滞的空气。",
+      "reference": "适合需要轻风、又容易受扰动的用途。"
+    },
+    {
+      "element": "wind",
+      "strength": 3,
+      "title": "稳定送风",
+      "description": "推动作用温和而明确，能让气流送向需要的位置。",
+      "reference": "适合送风、引导和轻度推动，不追求强烈冲击。"
+    },
+    {
+      "element": "wind",
+      "strength": 4,
+      "title": "明显推动",
+      "description": "气流具有明显的推动作用，不再只是轻轻通风。",
+      "reference": "适合需要主动带动或推动的用途。"
+    },
+    {
+      "element": "wind",
+      "strength": 5,
+      "title": "轻度托举",
+      "description": "气流能够产生较明显的承托感，抵消一部分下坠趋势。",
+      "reference": "适合较轻的承托需求，遇到明显阻力时仍可能不足。"
+    },
+    {
+      "element": "wind",
+      "strength": 6,
+      "title": "较强推动",
+      "description": "推动与流动的作用更强，能够应对更明显的阻力。",
+      "reference": "适合对推动力有较高要求的用途。"
+    },
+    {
+      "element": "wind",
+      "strength": 7,
+      "title": "充分承托",
+      "description": "气流的支撑作用充分，能够维持较稳固的承托。",
+      "reference": "适合需要持续维持包覆空间或承托状态的用途。"
+    },
+    {
+      "element": "wind",
+      "strength": 8,
+      "title": "强力推动",
+      "description": "推动力很强，可能使原本只需轻微移动的东西失控。",
+      "reference": "适合强推或克服较大阻力，不宜代替轻缓通风。"
+    },
+    {
+      "element": "wind",
+      "strength": 9,
+      "title": "猛烈气流",
+      "description": "气流作用猛烈，强烈扰动伴随着明显推动。",
+      "reference": "适合明确需要强风的用途，容易破坏脆弱或松散的结构。"
+    },
+    {
+      "element": "wind",
+      "strength": 10,
+      "title": "强风冲击",
+      "description": "气流具有非常强的冲击作用，难以维持细微、轻柔的处理。",
+      "reference": "适合强烈推动或冲击的用途，仍需判断是否过量。"
+    },
+    {
+      "element": "water",
+      "strength": 1,
+      "title": "微量润湿",
+      "description": "只带来很轻的湿意，不会形成充分浸润。",
+      "reference": "适合仅需轻微润湿的用途。"
+    },
+    {
+      "element": "water",
+      "strength": 2,
+      "title": "薄层封护",
+      "description": "水分能够铺成轻薄、连续的覆盖，润湿程度仍较低。",
+      "reference": "适合薄层包覆和封护，避免形成过多积水。"
+    },
+    {
+      "element": "water",
+      "strength": 3,
+      "title": "温和润湿",
+      "description": "润湿的作用明确，能够逐渐缓解表面的干燥。",
+      "reference": "适合温和润湿，不要求深入浸透的用途。"
+    },
+    {
+      "element": "water",
+      "strength": 4,
+      "title": "逐渐浸润",
+      "description": "水分开始从表面向内部渗入，作用不只停留在外层。",
+      "reference": "适合需要内部逐渐吸收水分的用途。"
+    },
+    {
+      "element": "water",
+      "strength": 5,
+      "title": "明显柔化",
+      "description": "水分较为充足，能够使干硬状态明显缓和。",
+      "reference": "适合需要润湿并柔化的用途，怕潮的材料可能受损。"
+    },
+    {
+      "element": "water",
+      "strength": 6,
+      "title": "充分浸润",
+      "description": "水分能够深入内部，使润湿与柔化更充分。",
+      "reference": "适合需要充分润泽、柔化或结合的用途，不能替代只需薄层封护的处理。"
+    },
+    {
+      "element": "water",
+      "strength": 7,
+      "title": "深度浸透",
+      "description": "内部已经受到明显的水分影响，干燥状态被大幅改变。",
+      "reference": "适合明确需要浸透的用途，对只需轻微润湿的需求通常过量。"
+    },
+    {
+      "element": "water",
+      "strength": 8,
+      "title": "饱和湿润",
+      "description": "水分接近充分饱和，额外的水分难以继续被留住。",
+      "reference": "适合需要高度湿润的用途，容易出现渗出或积水。"
+    },
+    {
+      "element": "water",
+      "strength": 9,
+      "title": "过量水势",
+      "description": "水分非常充足，浸润之外还会产生明显的冲刷和外溢倾向。",
+      "reference": "适合明确需要大量水分的用途，易破坏需要保持干燥或稳定的结构。"
+    },
+    {
+      "element": "water",
+      "strength": 10,
+      "title": "强烈水势",
+      "description": "水的作用强烈，足以彻底改变原有的干湿与柔硬状态。",
+      "reference": "适合明确要求强烈水作用的用途，强度过高同样可能偏离需求。"
+    }
+  ]
+}

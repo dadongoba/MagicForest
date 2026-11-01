@@ -1,4 +1,5 @@
 #include "ForestNPCInteraction.h"
+#include "ForestElementCodex.h"
 #include "ForestIsometricPlayer.h"
 #include "ForestUITheme.h"
 #include "ForestNPCDialogueSubsystem.h"
@@ -270,6 +271,7 @@ bool AForestNPCInteraction::TryInteractWith(ACharacter* C)
 {return OpenInteraction(C,Dialogue && C && PersonaId(C)==TEXT("fawnia") && Dialogue->IsFirstDayMessengerTutorialPending());}
 void AForestNPCInteraction::OpenNpcFinder()
 {
+ if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return;
  auto* PC=Player.Get();if(!PC || !PC->GetPawn() || Active.IsValid() || FinderStage==EFinderStage::Travelling || !Widget)return;
  if(auto* Messenger=TutorialMessenger.Get())if(auto* AI=Cast<AForestRoadAIController>(Messenger->GetController()))AI->CancelPlayerApproach();
  TutorialMessenger.Reset();bTutorialSearchIssued=false;FinderStage=EFinderStage::Selecting;PendingFinderPersona=NAME_None;PendingFeeItem.Reset();
@@ -394,6 +396,7 @@ void AForestNPCInteraction::UpdateNpcFinder()
 }
 bool AForestNPCInteraction::OpenInteraction(ACharacter* C,const bool bFirstDayTutorial)
 {
+ if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return false;
  auto* PC=Player.Get();auto* AI=C?Cast<AAIController>(C->GetController()):nullptr;auto* RoadAI=Cast<AForestRoadAIController>(AI);
  if(!PC || Active.IsValid() || !AI || !Dialogue || PersonaId(C).IsNone() || !CanReach(C))return false;
  if(RoadAI){if(!RoadAI->BeginInteraction(PC->GetPawn()))return false;}else AI->StopMovement();

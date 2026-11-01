@@ -1,4 +1,5 @@
 #include "ForestHarvestMagic.h"
+#include "ForestElementCodex.h"
 #include "ForestItemIdentity.h"
 #include "ForestIsometricPlayer.h"
 #include "ForestElementRegions.h"
@@ -136,7 +137,7 @@ void UForestHarvestMagic::RefreshFieldUI()
  }
  if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
  {
-  Action=TEXT("WASD 移动 · E 交互/采集 · 左键 选中采集\nF 攀爬/松手 · B 背包 · C 找人 · V 视角 · M 地图");
+  Action=TEXT("WASD 移动 · E 交互/采集 · 左键 选中采集\nF 攀爬/松手 · B 背包 · J 魔法书 · C 找人 · V 视角 · M 地图");
   if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
   {
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
@@ -219,8 +220,11 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
         +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("物品记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
         +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,0,42,35))
-     [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(FLinearColor::White).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
-      [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(12,true)).Justification(ETextJustify::Center).ColorAndOpacity(HarvestMagic::Ink)]]
+     [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(12,8))
+      +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
+       [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]
+      +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>())Book->Open();return FReply::Handled();})
+       [SNew(STextBlock).Text(FText::FromString(TEXT("翻开魔法书 · 元素图鉴"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
     ]]]]];
 }
 void UForestMagicInventoryWidget::Refresh()
@@ -276,7 +280,10 @@ void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
 {
- Selected=Key;FForestMagicItem Item;if(Owner.IsValid() && Owner->FindItem(Key,Item))Detail->SetText(FText::FromString(FString::Printf(TEXT("%s\n\n%s元素 · %d 点\n采集于第 %d 天\n\n%s"),*Item.Name,*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue,Item.HarvestDay,*Item.Description)));else Detail->SetText(FText::FromString(Key+TEXT("\n\n这件物品尚未留下魔法书的详细记录。")));
+ Selected=Key;FForestMagicItem Item;
+ if(!Owner.IsValid() || !Owner->FindItem(Key,Item))
+ {Detail->SetText(FText::FromString(Key+TEXT("\n\n这件物品尚未留下魔法书的详细记录。")));return;}
+ Detail->SetText(FText::FromString(FString::Printf(TEXT("%s\n\n%s元素 · %d 点\n采集于第 %d 天\n\n%s"),*Item.Name,*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue,Item.HarvestDay,*Item.Description)));
 }
 void UForestMagicInventoryWidget::Close(){if(Owner.IsValid())Owner->ToggleInventory();}
 FReply UForestMagicInventoryWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape || E.GetKey()==EKeys::B){Close();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
@@ -364,6 +371,7 @@ bool UForestHarvestMagic::TryDismissNoticeWithEscape()
 }
 void UForestHarvestMagic::ToggleInventory()
 {
+ if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return;
  auto* PC=Player.Get();if(!PC)return;if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();A && A->IsWorkbenchOpen())return;if(Inventory && Inventory->IsInViewport()){Inventory->RemoveFromParent();PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bOldCursor;return;}
  if(auto* Manager=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));Manager && (Manager->IsDialogueOpen() || Manager->IsFinderMenuOpen()))return;
  if(!Inventory){Inventory=CreateWidget<UForestMagicInventoryWidget>(PC);Inventory->Owner=this;}bOldCursor=PC->bShowMouseCursor;Inventory->AddToViewport(100);Inventory->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Inventory->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;

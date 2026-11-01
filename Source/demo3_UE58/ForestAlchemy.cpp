@@ -1,4 +1,5 @@
 #include "ForestAlchemy.h"
+#include "ForestElementCodex.h"
 #include "ForestHarvestMagic.h"
 #include "ForestNPCDialogueSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
@@ -110,6 +111,7 @@ void UForestAlchemy::StartInCabin()
 }
 bool UForestAlchemy::OtherMenuOpen() const
 {
+ if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return true;
  if(auto* H=GetWorld()->GetSubsystem<UForestHarvestMagic>();H && H->IsInventoryOpen())return true;
  if(auto* M=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));M && (M->IsDialogueOpen() || M->IsFinderMenuOpen()))return true;
  return false;
