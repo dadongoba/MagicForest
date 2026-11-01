@@ -38,3 +38,12 @@ Docs/Element_Codex_Preview.html仅用于预览，不参与运行。需从工程�
 
 - /Users/escaper/Documents/Codex/2026-10-07/zhu/artifacts/element-codex/book-wide.jpg
 - /Users/escaper/Documents/Codex/2026-10-07/zhu/artifacts/element-codex/book-narrow.jpg
+
+
+## 2026-11-01：安装用户审核通过的火元素正文与用途
+
+本次将火1—10改为用户最终确认的“微温、温养、烘燥、软化、煨熟、烘透、焦化、锻烧、熔融、焚解”。每页description完整使用已审核的独立性质说明，不依赖相邻页的“更强/上一档”比较；reference使用同轮表格中的适合用途，每档4条、共40条，按“常见用途”标题及独立项目逐行排出。材料对象只是用途例子，不将效果档位绑定为一种物品或独占能力。
+
+本次直接更新运行时读取的Config/ForestElementCodex.json，沿用description/reference字段，没有新增数据结构或读取器。Slate原文本块支持实际换行；HTML预览仅对用途段加white-space:pre-line以保留换行。封皮、书脊、双页/单页、字号、目录、页码与操作键均不变。风与水的20条内容保持逐字段一致；NPC任务底稿、提示词、世界数值与物品涌现均未修改。
+
+本次验证：检查30条结构、火1—10标题/次序、10篇独立正文与40条用途、风水和引言不变、运行时源码不变。完整工程Mac离线构建检查通过（Target up to date，0项编译动作，2.24秒）；不是重新编译或运行JSON的证明。未打开UE、未做PIE/真实翻页或新长文滚动验收，也未更新之前保存的版式预览截图。当前本地预览服务读取同一份新JSON；需刷新页面取得最新文字。
