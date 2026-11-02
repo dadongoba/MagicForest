@@ -117,7 +117,7 @@ TSharedRef<SWidget> UForestFieldHUDWidget::RebuildWidget()
    [SAssignNew(Context,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(HarvestMagic::Ink)]]
  // Only the full shortcut legend moves: no border, paper or background brush.
  +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(FMargin(28,24))
- [SAssignNew(KeyFrame,SBox).WidthOverride(460)
+ [SAssignNew(KeyFrame,SBox).WidthOverride(300)
   .Visibility_Lambda([this](){return Action.IsValid() && !Action->GetText().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})
   [SAssignNew(Action,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(FLinearColor(.98f,.96f,.88f))
    .ShadowOffset(FVector2D(1,1)).ShadowColorAndOpacity(FLinearColor(0,0,0,.85f)).Justification(ETextJustify::Right).AutoWrapText(true)]];
@@ -127,7 +127,7 @@ void UForestFieldHUDWidget::NativeTick(const FGeometry& Geometry,float DeltaTime
  Super::NativeTick(Geometry,DeltaTime);const float Width=static_cast<float>(Geometry.GetLocalSize().X);
  if(Width<=0)return;const float Available=FMath::Max(1.f,Width-56.f);
  if(TaskFrame)TaskFrame->SetWidthOverride(FMath::Min(400.f,Available));
- if(KeyFrame)KeyFrame->SetWidthOverride(FMath::Min(460.f,Available));
+ if(KeyFrame)KeyFrame->SetWidthOverride(FMath::Min(300.f,Available));
 }
 void UForestHarvestMagic::RefreshFieldUI()
 {
@@ -158,7 +158,7 @@ void UForestHarvestMagic::RefreshFieldUI()
  if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
  {
   Context.Reset();
-  Action=TEXT("WASD 移动 · E 交互/采集 · 左键 选中采集\nF 攀爬/松手 · B 背包 · J 魔法书 · C 找人 · V 视角 · M 地图");
+  Action=TEXT("WASD 移动\n左键 选中采集 · E 交互/采集\nF 攀爬/松手\nB 背包 · J 魔法书\nC 找人 · V 视角 · M 地图");
   if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
   {
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
