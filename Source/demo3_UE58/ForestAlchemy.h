@@ -77,6 +77,10 @@ private:
  TSharedPtr<SBox> Frame;
  TSharedPtr<SBorder> Paper;
  bool bCompact=false;
+ bool bGuideExpanded=true;
+ int32 GuidePage=0;
+ int32 GuideCommission=0;
+ bool bGuideSawMaterial=false,bGuideWasConfirming=false;
 };
 UCLASS()
 class DEMO3_UE58_API UForestArcanaNotice : public UUserWidget
@@ -117,6 +121,10 @@ public:
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") bool IsCampaignCompleted() const;
  void ExitJourney();
  bool IsWorkbenchOpen() const;
+ void OpenMajorGuide();
+ void ResumeWorkbenchGuide();
+ bool IsWorkbenchGuideSuspended() const{return bGuideSuspended;}
+ bool PreviewDraft(FAlchemyVector& Out,int32& Cost) const;
  TArray<FForestBrewChoice> Choices() const;
  TArray<FAlchemyCommissionDefinition> Commissions() const;
  bool CurrentCommission(FAlchemyCommissionDefinition& Out) const;
@@ -147,6 +155,7 @@ private:
  TArray<TWeakObjectPtr<AActor>> Cauldrons;
  TWeakObjectPtr<AActor> Focus;
  bool bReady=false,bNeedsCabinSpawn=true,bOldCursor=false;
+ bool bGuideSuspended=false;
  int32 CommissionId=0;
  float ScanTime=1,SpawnTime=0,ToastUntil=0;
  FString Toast;

@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Blueprint/UserWidget.h"
+#include "AlchemyGameplayTypes.h"
 #include "ForestElementCodex.generated.h"
 
 class UForestElementCodex;class UInputComponent;class USkeletalMesh;class UAnimSequence;
@@ -42,6 +43,11 @@ public:
  UFUNCTION(BlueprintCallable,Category="Magic Book") void Open();
  UFUNCTION(BlueprintCallable,Category="Magic Book") void Close();
  UFUNCTION(BlueprintPure,Category="Magic Book") bool IsOpen() const;
+ void OpenTodayMajors();
+ void ShowDailyMajors(bool bDaily);
+ void SelectMajor(FName Id);
+ TArray<FAlchemyCardDefinition> DailyCards() const;
+ int32 DailyCount(FName Id) const;
  void Select(int32 Element,int32 Strength);
  void TurnPage(int32 Direction);
  const FForestCodexEntry* CurrentEntry() const;
@@ -49,6 +55,8 @@ public:
  TArray<FForestCodexEntry> Entries;
  FString Introduction,Notes,LoadError;
  int32 SelectedElement=0,SelectedStrength=1;
+ bool bDailyMajors=false;
+ FName SelectedMajor=NAME_None;
 private:
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  UPROPERTY() TObjectPtr<UForestElementCodexWidget> Widget;
@@ -58,6 +66,7 @@ private:
  TWeakObjectPtr<APlayerController> Player;
  TWeakObjectPtr<AActor> BookVisual;
  bool bReady=false,bOldCursor=false;
+ bool bReturnToWorkbench=false;
  float OpeningTime=0;
  void Setup();
  void LoadEntries();

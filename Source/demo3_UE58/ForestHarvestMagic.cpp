@@ -223,8 +223,8 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
      [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(12,8))
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
        [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]
-      +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>())Book->Open();return FReply::Handled();})
-       [SNew(STextBlock).Text(FText::FromString(TEXT("翻开魔法书 · 元素图鉴"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
+      +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){const bool Daily=bMajorsTab;Close();if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>()){if(Daily)Book->OpenTodayMajors();else {Book->ShowDailyMajors(false);Book->Open();}}return FReply::Handled();})
+       [SNew(STextBlock).Text_Lambda([this](){return FText::FromString(bMajorsTab?TEXT("翻开魔法书 · 今日大牌"):TEXT("翻开魔法书 · 元素图鉴"));}).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
     ]]]]];
 }
 void UForestMagicInventoryWidget::Refresh()

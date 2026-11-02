@@ -662,22 +662,9 @@ void UAlchemyGameplaySubsystem::AddVectors(FAlchemyVector& Target, const FAlchem
     Target.Water += Source.Water * Factor;
 }
 
-bool UAlchemyGameplaySubsystem::EvaluateAlchemySequence(
-    const int32 OrderIndex,
-    const TArray<FAlchemyCardSequenceItem>& Sequence,
-    FAlchemyEvaluationResult& OutResult) const
+void UAlchemyGameplaySubsystem::ComputeAlchemySequence(
+    const TArray<FAlchemyCardSequenceItem>& Sequence, FAlchemyVector& OutVector, int32& OutCost, TSet<FName>& OutPipIds)
 {
-    OutResult = FAlchemyEvaluationResult();
-
-    FAlchemyCommissionDefinition Commission;
-    if (!GetCommission(OrderIndex, Commission))
-    {
-        OutResult.VerdictCode = TEXT("invalid_commission");
-        OutResult.Verdict = TEXT("无效委托");
-        OutResult.Reason = TEXT("找不到对应的委托序号。");
-        return false;
-    }
-
     struct FSubPot
     {
         bool bActive = false;
@@ -981,6 +968,40 @@ bool UAlchemyGameplaySubsystem::EvaluateAlchemySequence(
     {
         AddVectors(Vector, SubPot.Vector, SubPot.bNegative ? -1 : 1);
     }
+
+    OutVector = Vector;
+    OutCost = CostUsed;
+    OutPipIds = UsedPipIds;
+}
+
+bool UAlchemyGameplaySubsystem::PreviewAlchemySequence(
+    const TArray<FAlchemyCardSequenceItem>& Sequence, FAlchemyVector& OutVector, int32& OutCost) const
+{
+    TSet<FName> UsedPips;
+    ComputeAlchemySequence(Sequence, OutVector, OutCost, UsedPips);
+    return true;
+}
+
+bool UAlchemyGameplaySubsystem::EvaluateAlchemySequence(
+    const int32 OrderIndex,
+    const TArray<FAlchemyCardSequenceItem>& Sequence,
+    FAlchemyEvaluationResult& OutResult) const
+{
+    OutResult = FAlchemyEvaluationResult();
+
+    FAlchemyCommissionDefinition Commission;
+    if (!GetCommission(OrderIndex, Commission))
+    {
+        OutResult.VerdictCode = TEXT("invalid_commission");
+        OutResult.Verdict = TEXT("无效委托");
+        OutResult.Reason = TEXT("找不到对应的委托序号。");
+        return false;
+    }
+
+    FAlchemyVector Vector;
+    int32 CostUsed = 0;
+    TSet<FName> UsedPipIds;
+    ComputeAlchemySequence(Sequence, Vector, CostUsed, UsedPipIds);
 
     OutResult.Target = Commission.Target;
     OutResult.Actual = Vector;

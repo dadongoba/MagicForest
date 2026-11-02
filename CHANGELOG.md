@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-02-02：合成四步指引与今日大牌手札
+
+- **目的 / 基线 / 前置**：基于5148158、批次01，在实际夜间合成流程加入可重看指引，书本增加当天大牌说明页。
+- **新增**：Config/ForestMajorGuide.json；Source/demo3_UE58/ForestAlchemyGuide.h/.cpp；Tools/Tests/run_alchemy_guide_tests.py；Docs/Alchemy_Onboarding_2026-11-02.md。
+- **修改**：Source/demo3_UE58/ForestAlchemy.h/.cpp、ForestAlchemyUI.cpp、ForestElementCodex.h/.cpp、ForestHarvestMagic.cpp、demo3_UE58.Build.cs；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyGameplaySubsystem.h及Private/AlchemyGameplaySubsystem.cpp；Docs/Element_Codex_2026-11-01.md；CHANGELOG.md。
+- **行为**：四步说明随选择委托/首次投素材/封瓶确认推进，可翻看或收起。实时试配仅显示玩家配方，不读委托目标；合成前直接标准值行移除，结算仍揭示。书本新增元素效果/今日大牌分栏，按当天实际持有种类/张数显示用法、现算示例、恶魔行为、提醒。覆盖22张牌；合成台直达书页并恢复原配方和UI焦点，背包大牌栏目直达。详见[流程与边界](Docs/Alchemy_Onboarding_2026-11-02.md)。
+- **运算边界**：原运算主体逐字提取为共享ComputeAlchemySequence，新增无委托的只读预览接口，正式交付仍用同一运算再原评分。原评分、委托、人物、三元素30页文案、抽牌、扣料和存档不改。副锅嵌套、封蜡后无效物品扣料等既有局限保留并在说明中标明。
+- **应用 / 依赖**：同时合并主模块、插件头/源、JSON并重编译；新增JSON NonUFS分发。沿用原书动画、纸张及图标；没有地图、二进制资产、完整工程、缓存或密钥上传。没有存档迁移。
+- **本次验证**：完整工程Mac UE5.8离线编译链接通过，首次42.08秒、最终19.53秒。生产运算提取测试35组药性案例、22例额度与配置覆盖通过；与基线逐字核对原运算/评分/委托/人物不变，三元素JSON不变、试配不读取目标检查通过。增量一致性、差异和文本凭据扫描通过。
+- **未验证**：未打开UE/PIE；游戏内教程操作、抽牌目录刷新、书页返回焦点、字体/自适应、动画、Windows和打包未验。未改或重验旧HTML元素预览，不将旧截图作为新增界面的验收。
+- **上传状态**：待提交推送与远端核对；前批5148158已确认远端一致。
+
 ## 2026-11-02-01：安装风元素图鉴正式文案
 
 - **目的 / 基线 / 前置**：基于7020f4a、批次2026-11-01-04，按用户确认稿替换风1—10占位文字，与已有火水图鉴配齐。

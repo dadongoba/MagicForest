@@ -203,6 +203,23 @@ void UForestAlchemy::MoveSlot(int32 Direction){int32 Other=SelectedSlot+Directio
 void UForestAlchemy::ClearSequence(){Sequence.Reset();SelectedSlot=INDEX_NONE;bConfirming=false;RefreshUI();}
 bool UForestAlchemy::Evaluate(FAlchemyEvaluationResult& Out) const{if(CommissionId<=0)return false;TArray<FAlchemyCardSequenceItem> Items;for(const auto& C:Sequence)Items.Add(C.Card);return GetWorld()->GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>()->EvaluateAlchemySequence(CommissionId,Items,Out);}
 bool UForestAlchemy::IsWorkbenchOpen() const{return Workbench && Workbench->IsInViewport();}
+bool UForestAlchemy::PreviewDraft(FAlchemyVector& Out,int32& Cost) const
+{
+ auto* GI=GetWorld()?GetWorld()->GetGameInstance():nullptr;auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;if(!G)return false;
+ TArray<FAlchemyCardSequenceItem> Items;for(const auto& C:Sequence)Items.Add(C.Card);return G->PreviewAlchemySequence(Items,Out,Cost);
+}
+void UForestAlchemy::OpenMajorGuide()
+{
+ if(!IsWorkbenchOpen() || PendingResult() || IsCampaignCompleted() || bGuideSuspended)return;
+ auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();if(!Book)return;
+ bGuideSuspended=true;Workbench->SetVisibility(ESlateVisibility::Hidden);Book->OpenTodayMajors();
+ if(!Book->IsOpen())ResumeWorkbenchGuide();
+}
+void UForestAlchemy::ResumeWorkbenchGuide()
+{
+ bGuideSuspended=false;if(!IsWorkbenchOpen())return;Workbench->SetVisibility(ESlateVisibility::Visible);Workbench->Refresh();
+ if(auto* PC=Player.Get()){FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Workbench->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;}
+}
 void UForestAlchemy::OpenWorkbench()
 {
  if(OtherMenuOpen() || IsWorkbenchOpen() || !Save)return;
@@ -222,7 +239,7 @@ void UForestAlchemy::OpenWorkbench()
  }
  if(!Workbench){Workbench=CreateWidget<UForestBrewWidget>(Player.Get());if(!Workbench)return;Workbench->Owner=this;}ClearSequence();CommissionId=0;Status=TEXT("请先选择今晚的委托。选料不扣费，封瓶交付需要再次确认。");bOldCursor=Player->bShowMouseCursor;Workbench->AddToViewport(110);Workbench->Refresh();FInputModeUIOnly Mode;Mode.SetWidgetToFocus(Workbench->TakeWidget());Player->SetInputMode(Mode);Player->bShowMouseCursor=true;
 }
-void UForestAlchemy::CloseWorkbench(){if(IsCampaignCompleted() && !PendingResult())return;if(PendingResult()){FinishResult();return;}if(Workbench)Workbench->RemoveFromParent();Sequence.Reset();SelectedSlot=INDEX_NONE;bConfirming=false;if(Player.IsValid()){Player->SetInputMode(FInputModeGameOnly());Player->bShowMouseCursor=bOldCursor;}}
+void UForestAlchemy::CloseWorkbench(){if(bGuideSuspended){if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())Book->Close();bGuideSuspended=false;}if(IsCampaignCompleted() && !PendingResult())return;if(PendingResult()){FinishResult();return;}if(Workbench)Workbench->RemoveFromParent();Sequence.Reset();SelectedSlot=INDEX_NONE;bConfirming=false;if(Player.IsValid()){Player->SetInputMode(FInputModeGameOnly());Player->bShowMouseCursor=bOldCursor;}}
 void UForestAlchemy::RefreshUI(){if(IsWorkbenchOpen())Workbench->Refresh();}
 void UForestAlchemy::ConfirmBrew()
 {

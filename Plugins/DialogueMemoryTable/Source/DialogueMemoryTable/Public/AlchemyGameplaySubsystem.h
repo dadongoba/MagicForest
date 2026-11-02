@@ -58,6 +58,10 @@ public:
     UFUNCTION(BlueprintPure, Category = "Alchemy|Commissions")
     bool GetCommission(int32 OrderIndex, FAlchemyCommissionDefinition& OutCommission) const;
 
+    /** Read-only operation preview. Does not read a commission or reveal its target/score. */
+    UFUNCTION(BlueprintPure, Category = "Alchemy|Cards")
+    bool PreviewAlchemySequence(const TArray<FAlchemyCardSequenceItem>& Sequence, FAlchemyVector& OutVector, int32& OutCost) const;
+
     UFUNCTION(BlueprintCallable, Category = "Alchemy|Commissions")
     bool EvaluateAlchemySequence(
         int32 OrderIndex,
@@ -74,6 +78,7 @@ public:
         const FString& CompactMemoryJson) const;
 
 private:
+    static void ComputeAlchemySequence(const TArray<FAlchemyCardSequenceItem>& Sequence, FAlchemyVector& OutVector, int32& OutCost, TSet<FName>& OutPipIds);
     UPROPERTY(Transient) TMap<FName, FDialoguePersonaProfile> CustomPersonas;
     static FDialoguePersonaProfile MakeBlacksmithProfile();
     static FDialoguePersonaProfile MakeOperatorProfile();

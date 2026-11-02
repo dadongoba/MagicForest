@@ -1,6 +1,7 @@
 #include "ForestAlchemy.h"
 #include "Widgets/Images/SImage.h"
 #include "ForestUITheme.h"
+#include "ForestAlchemyGuide.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
@@ -83,8 +84,33 @@ void UForestBrewWidget::Refresh()
  }
  auto Draft=SNew(SVerticalBox);
  FAlchemyCommissionDefinition Comm;const bool HasCommission=A->CurrentCommission(Comm);
+ if(HasCommission && GuideCommission!=Comm.OrderIndex){GuideCommission=Comm.OrderIndex;GuidePage=1;bGuideSawMaterial=false;}
+ else if(!HasCommission && GuideCommission!=0){GuideCommission=0;GuidePage=0;bGuideSawMaterial=false;}
+ if(!bGuideSawMaterial && A->Sequence.ContainsByPredicate([](const auto& C){return C.Card.Type==EAlchemyCardType::Pip;})){bGuideSawMaterial=true;GuidePage=2;}
+ if(A->bConfirming && !bGuideWasConfirming)GuidePage=3;
+ bGuideWasConfirming=A->bConfirming;
  Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("夜间合成台 · 第 %d 天                 今晚额度 %d / 5"),A->GetDay(),5-Cost),bCompact?16:21)];
- Draft->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(TEXT("元素小物相加 · 大牌按顺序变换药性 · 副锅独立调配 · 点击槽位可移除或调整顺序"),10)];
+ // Help lives inside the scrolling draft; the action footer remains outside it.
+ auto Guide=SNew(SVerticalBox);
+ Guide->AddSlot().AutoHeight()[BrewUI::Button(bGuideExpanded?TEXT("调配指引 · 收起"):TEXT("调配指引 · 重新查看"),FOnClicked::CreateLambda([this](){bGuideExpanded=!bGuideExpanded;Refresh();return FReply::Handled();}))];
+ if(bGuideExpanded)
+ {
+  const FString Titles[]={TEXT("1 / 4 · 先想清楚为谁调药"),TEXT("2 / 4 · 用元素小物凑出药性"),TEXT("3 / 4 · 大牌改变调配的方式"),TEXT("4 / 4 · 检查后，再封瓶交付")};
+  const FString Copy[]={
+   TEXT("先选今晚的委托对象。回想白天对话里提到的用途：需要热量、气流还是水分？需要多强？元素图鉴说明各个档位能做到什么，委托的标准值要等交付后才揭示。切换委托会清空本次选料。"),
+   TEXT("点击背包中的元素小物，依次放入槽位。物品名字不同，也可以贡献相同的点数：两件火3，在没有其他变换时会合成火6。火、风、水分别相加；不是把所有数字加成同一种元素。下方「当前试配」显示这套排列实际留下的药性。选料、移除都不会扣物品。"),
+   TEXT("大牌通常作用于排在它前面、已经入锅的药性；恶魔影响后续投料，副锅则把后面一段单独调配。比如火3 → 皇帝 → 火1得到火7；火3 → 火1 → 皇帝得到火8。选中槽位后，可前移、后移或移除。每个项目占1槽，元素小物不花额度，大牌与通用修饰合计最多5点。大牌并非必用，查「今日大牌」可看当天各张的用法。"),
+   TEXT("查看当前试配，判断它是否符合客人描述的用途。正数表示给予，负数表示取走；0表示不额外改变这一种性质。三种元素的绝对值合计超过24会使药剂报废。第一次点「封瓶交付」只弹出确认提示，第二次确认才消耗槽内物品与大牌。之后揭示标准、成品和偏离，并显示推演；前两夜确认结算后换天，第三夜进入结局。")};
+  GuidePage=FMath::Clamp(GuidePage,0,3);
+  Guide->AddSlot().AutoHeight().Padding(0,12,0,8)[BrewUI::Text(Titles[GuidePage],15)];
+  Guide->AddSlot().AutoHeight().Padding(0,0,0,10)[BrewUI::Text(Copy[GuidePage],14)];
+  auto Steps=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(6,5));
+  if(GuidePage>0)Steps->AddSlot()[BrewUI::Button(TEXT("上一步"),FOnClicked::CreateLambda([this](){--GuidePage;Refresh();return FReply::Handled();}))];
+  if(GuidePage<3)Steps->AddSlot()[BrewUI::Button(TEXT("下一步"),FOnClicked::CreateLambda([this](){++GuidePage;Refresh();return FReply::Handled();}))];
+  Steps->AddSlot()[BrewUI::Button(TEXT("查阅今日大牌"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->OpenMajorGuide();return FReply::Handled();}))];
+  Guide->AddSlot().AutoHeight()[Steps];
+ }
+ Draft->AddSlot().AutoHeight().Padding(0,12)[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(ForestTheme::InsetPaper).Padding(16)[Guide]];
  auto Customers=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,6));
  for(const auto& C:A->Commissions())
  {
@@ -110,6 +136,7 @@ void UForestBrewWidget::Refresh()
  auto Materials=SNew(SVerticalBox);auto Majors=SNew(SVerticalBox);auto Result=SNew(SVerticalBox);
  Materials->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("元素小物 · 来自背包"),16)];
  Majors->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("今日大牌 · 来自药瓶"),16)];
+ Majors->AddSlot().AutoHeight().Padding(0,0,0,10)[BrewUI::Button(TEXT("翻书 · 查看今日大牌用法"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->OpenMajorGuide();return FReply::Handled();}))];
  const auto Choices=A->Choices();bool HasPips=false,HasMajors=false;
  for(const auto& C:Choices)
  {
@@ -126,8 +153,17 @@ void UForestBrewWidget::Refresh()
  Majors->AddSlot().AutoHeight().Padding(0,14,0,8)[BrewUI::Text(TEXT("通用修饰"),14)];
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];
- if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+TEXT("\n\n")+Comm.ElementRequest+FString::Printf(TEXT("\n槽位 %d · %s"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
+ if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+FString::Printf(TEXT("\n\n槽位 %d · %s\n委托标准在交付后揭示，请根据对话与图鉴判断。"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
  else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("请先选择今晚的委托对象。"))];
+ FAlchemyVector Preview;int32 PreviewCost=0;
+ Result->AddSlot().AutoHeight().Padding(0,18,0,8)[BrewUI::Text(TEXT("当前试配 · 尚未交付"),16)];
+ if(A->PreviewDraft(Preview,PreviewCost))
+ {
+  Result->AddSlot().AutoHeight()[BrewUI::Text(ForestAlchemyGuide::VectorText(Preview.Fire,Preview.Wind,Preview.Water),16)];
+  const int64 Total=FMath::Abs(static_cast<int64>(Preview.Fire))+FMath::Abs(static_cast<int64>(Preview.Wind))+FMath::Abs(static_cast<int64>(Preview.Water));
+  Result->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(FString::Printf(TEXT("槽位 %d / %d · 额度 %d / 5\n药性总量 %lld / 24\n%s"),A->Sequence.Num(),HasCommission?Comm.SlotCount:0,Cost,Total,Total>24?TEXT("总量超过24，封瓶会得到报废药剂，请调整。"):TEXT("这是你的配方结果，不代表客人的标准或评分。")),11)];
+ }
+ else Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("暂时无法读取试配结果。"))];
  if(bCompact)
  {
   Draft->AddSlot().AutoHeight().Padding(0,14)[Result];
