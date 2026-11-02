@@ -72,8 +72,12 @@ class DEMO3_UE58_API UForestFieldHUDWidget : public UUserWidget
 public:
  TSharedPtr<STextBlock> Counts;
  TSharedPtr<STextBlock> Action;
+ TSharedPtr<STextBlock> Task,Context;
 protected:
  virtual TSharedRef<SWidget> RebuildWidget() override;
+ virtual void NativeTick(const FGeometry&,float) override;
+private:
+ TSharedPtr<SBox> TaskFrame,KeyFrame;
 };
 UCLASS()
 class DEMO3_UE58_API UForestMagicInventoryWidget : public UUserWidget

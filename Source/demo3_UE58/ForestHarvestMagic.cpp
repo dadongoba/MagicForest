@@ -102,19 +102,39 @@ TSharedRef<SWidget> UForestFieldHUDWidget::RebuildWidget()
 {
  return SNew(SOverlay)
  +SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(FMargin(28,24))
- [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(16,10))
-  [SNew(SVerticalBox)
-   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("森林手札 · 采集记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)[SAssignNew(Counts,STextBlock).Font(HarvestMagic::Font(15,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
+ [SAssignNew(TaskFrame,SBox).WidthOverride(400)
+  [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(16,10))
+   [SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("森林手札 · 采集记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)[SAssignNew(Counts,STextBlock).Font(HarvestMagic::Font(15,true)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,10,0,0)
+     [SAssignNew(Task,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)
+      .Visibility_Lambda([this](){return Task.IsValid() && !Task->GetText().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})]]]]
+ // Contextual interaction prompts keep their original bottom-centre paper.
  +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(FMargin(0,0,0,115))
- [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(18,9)).Visibility_Lambda([this](){return Action.IsValid() && !Action->GetText().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})[SAssignNew(Action,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(HarvestMagic::Ink)]];
+ [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(18,9))
+   .Visibility_Lambda([this](){return Context.IsValid() && !Context->GetText().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})
+   [SAssignNew(Context,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(HarvestMagic::Ink)]]
+ // Only the full shortcut legend moves: no border, paper or background brush.
+ +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(FMargin(28,24))
+ [SAssignNew(KeyFrame,SBox).WidthOverride(460)
+  .Visibility_Lambda([this](){return Action.IsValid() && !Action->GetText().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})
+  [SAssignNew(Action,STextBlock).Font(HarvestMagic::Font(14)).ColorAndOpacity(FLinearColor(.98f,.96f,.88f))
+   .ShadowOffset(FVector2D(1,1)).ShadowColorAndOpacity(FLinearColor(0,0,0,.85f)).Justification(ETextJustify::Right).AutoWrapText(true)]];
+}
+void UForestFieldHUDWidget::NativeTick(const FGeometry& Geometry,float DeltaTime)
+{
+ Super::NativeTick(Geometry,DeltaTime);const float Width=static_cast<float>(Geometry.GetLocalSize().X);
+ if(Width<=0)return;const float Available=FMath::Max(1.f,Width-56.f);
+ if(TaskFrame)TaskFrame->SetWidthOverride(FMath::Min(400.f,Available));
+ if(KeyFrame)KeyFrame->SetWidthOverride(FMath::Min(460.f,Available));
 }
 void UForestHarvestMagic::RefreshFieldUI()
 {
- if(!FieldHUD || !FieldHUD->Counts.IsValid())return;
+ if(!FieldHUD || !FieldHUD->Counts.IsValid() || !FieldHUD->Task.IsValid() || !FieldHUD->Context.IsValid() || !FieldHUD->Action.IsValid())return;
  int32 Total=0,Kinds=0;for(const auto& Pair:ReadBag())if(Pair.Value>0){Total+=Pair.Value;++Kinds;}
  FieldHUD->Counts->SetText(FText::FromString(FString::Printf(TEXT("背包  %d 件  ·  %d 种"),Total,Kinds)));
- FString Action;
+ FString Action,Task,Context;
  TArray<UUserWidget*> Widgets;UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(),Widgets,UUserWidget::StaticClass(),false);
  for(auto* Widget:Widgets)
  {
@@ -125,7 +145,7 @@ void UForestHarvestMagic::RefreshFieldUI()
    {
     const FString Value=Text->GetText().ToString();
     if(Value.Contains(TEXT("已采蘑菇"))){Text->SetVisibility(ESlateVisibility::Collapsed);return;}
-    if(Value.Contains(TEXT("对准蘑菇"))){if(Text->GetVisibility()!=ESlateVisibility::Hidden)Action=Value.Replace(TEXT("\\n"),TEXT(" · "));Text->SetRenderOpacity(0.f);return;}
+    if(Value.Contains(TEXT("对准蘑菇"))){if(Text->GetVisibility()!=ESlateVisibility::Hidden)Context=Value.Replace(TEXT("\\n"),TEXT(" · "));Text->SetRenderOpacity(0.f);return;}
     if(Widget->GetClass()->GetName().Contains(TEXT("Cauldron"))){Text->SetColorAndOpacity(HarvestMagic::Ink);auto Font=Text->GetFont();Font.Size=16;Text->SetFont(Font);}
    }
    if(Widget->GetClass()->GetName().Contains(TEXT("Cauldron")))
@@ -137,16 +157,20 @@ void UForestHarvestMagic::RefreshFieldUI()
  }
  if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
  {
+  Context.Reset();
   Action=TEXT("WASD 移动 · E 交互/采集 · 左键 选中采集\nF 攀爬/松手 · B 背包 · J 魔法书 · C 找人 · V 视角 · M 地图");
   if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
   {
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();
-   if(View->bClimbing){FieldHUD->Action->SetText(FText::FromString(TEXT("攀爬中 · W 上爬 / S 下爬 / A D 横移 · F 松手 · 到达边缘自动登顶")));return;}
-   if(View->bGathering){FieldHUD->Action->SetText(FText::FromString(TEXT("正在采集…")));return;}
-   if(View->bCanClimb)Action=TEXT("靠近可攀爬面 · 按 F 抓附（可提前按）\n")+Action;
-   Action=Regions->GetHarvestHint(Cast<ACharacter>(Pawn),View && View->bSwimming)+TEXT("\n")+Action;
+   const FString Hint=Regions->GetHarvestHint(Cast<ACharacter>(Pawn),View && View->bSwimming);
+   if(Hint.StartsWith(TEXT("E ")) || Hint.Contains(TEXT("按 E")))Context=Hint;else Task=Hint;
+   if(View->bCanClimb)Context=TEXT("靠近可攀爬面 · 按 F 抓附（可提前按）\n")+Context;
+   if(View->bClimbing){Context=TEXT("攀爬中 · W 上爬 / S 下爬 / A D 横移 · F 松手 · 到达边缘自动登顶");Action.Reset();}
+   if(View->bGathering){Context=TEXT("正在采集…");Action.Reset();}
   }
  }
+ FieldHUD->Task->SetText(FText::FromString(Task));
+ FieldHUD->Context->SetText(FText::FromString(Context));
  FieldHUD->Action->SetText(FText::FromString(Action));
 }
 TSharedRef<SWidget> UForestHarvestNoticeWidget::RebuildWidget()
