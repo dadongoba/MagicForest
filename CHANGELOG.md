@@ -2,6 +2,17 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-03-01：接取委托、魔法书任务手札与三份结算后换天
+
+- **目的 / 基线 / 前置**：基于c258acd、批次2026-11-02-04，在用户当前Air完整工程修改任务流程。完整工程路径见本批说明，不合并其无关HUD/采集差异。
+- **修改**：Source/demo3_UE58/ForestAlchemy.h/.cpp、ForestAlchemyUI.cpp、ForestNPCInteraction.h/.cpp、ForestNPCDialogueSubsystem.cpp、ForestElementCodex.h/.cpp；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DailyMushroomSubsystem.h、AlchemyCampaignPolicy.h及Private/DailyMushroomSubsystem.cpp、AlchemyGameplaySubsystem.cpp；Tools/Tests/AlchemyCampaignPolicyTests.cpp；CHANGELOG.md。**新增**：Docs/Accepted_Commission_Flow_2026-11-03.md、Docs/Commission_Knowledge_Review_2026-11-03.md。
+- **行为**：明确点击接取并保存后才登记任务；J魔法书新增委托手札，只列已接任务，合成台仅选择当天已接未结算委托。对话和手札说明回小屋合成台调配封瓶，展示物品只交流不交付。每份仍各自评分及推演，三位今日委托均结算后才换天；第三天三份后结局，回顾显示全部收据。原生许可同时限制旧换天入口；保留存档失败回滚、待换天恢复与幂等。低分也结算，不要求满分；原评分/目标未改。对话按钮自动换行。详见[流程说明](Docs/Accepted_Commission_Flow_2026-11-03.md)。
+- **审核边界**：九份内部需求底稿只在[审核稿](Docs/Commission_Knowledge_Review_2026-11-03.md)，未接入运行。明确标出负值/风20/火11超出现有图鉴，以及高火保存纸稿的冲突。NPC知识统一、按语义逐步披露、数字泄露防护仍待审核和实现，不能将本批标为Agent完成。保留当前NPC目标字段，未做在线对话验收。
+- **应用 / 依赖**：同步上述主模块与插件源码并重编译；无新资产/地图/JSON/美术/快捷键/外部服务。新增接取数组字段，旧收据可识别为已接已结算；不回退旧日历或结局，不更改用户现有存档。应用前备份SaveGames。保留Air原有PageNavigation局部重命名。文档不参与运行。
+- **本次验证**：Air完整工程Mac UE5.8 arm64源码编译链接通过34.87秒；收据/入口收紧后7.96秒；窄屏按钮自动换行最终构建8.80秒。便携C++覆盖每日8种三人完成组合、无效日期、三日九次提交、既有幂等和旧日期规范化，全部通过。白名单同步逐字核对、差异及新增文本凭据扫描通过。
+- **未验证**：没有重新打开/重启UE或PIE、在线模型、运行时保存失败注入、实际UI布局、Windows和打包。当前已运行编辑器不会自动装入新模块，实机仍需正常重启后验收。既有背包/收据跨槽突发退出原子性未在本批解决。
+- **上传状态**：待提交推送及远端SHA核对；前批c258acd已核对远端一致。
+
 ## 2026-11-02-04：右下整组快捷键改为短列
 
 - **目的 / 基线 / 前置**：基于709e968、批次03，按用户澄清只收窄②整组快捷键，③当前操作提示不动。

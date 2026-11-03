@@ -24,6 +24,10 @@ inline bool Confirm(State& S, int ReceiptDay)
     else ++S.Day;
     return true;
 }
+inline bool AllDailyCommissionsResolved(int Day, bool Blacksmith, bool Operator, bool Novelist)
+{
+    return Day >= 1 && Day <= LastDay && Blacksmith && Operator && Novelist;
+}
 inline int CommissionId(int Offset, int Day)
 {
     return Offset >= 0 && Day >= 1 && Day <= LastDay ? Offset + Day : 0;

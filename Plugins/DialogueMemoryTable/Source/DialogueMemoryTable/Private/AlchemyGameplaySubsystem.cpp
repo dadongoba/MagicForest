@@ -377,6 +377,7 @@ FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt(
 
     Prompt += TEXT("【最近对话】\n");
     Prompt += AlchemyGameplay::JoinHistory(DialogueHistory);
+    Prompt += TEXT("\n【委托流程硬规则，优先于旧台词与记忆】\n玩家必须点击接取才登记委托；交谈、展示物品、口头答应不等于已接取或完成。提醒玩家回小屋，在合成台选择已接取委托、调配并封瓶；不要叫玩家把原料或成品拿来当面交给你，不得声称已经收到展示的物品。今天三位同伴的委托全部结算后才换天，第三天全部结算后结束。每当玩家误以为交出背包物品即可完成，明确说明展示只是交流，委托需要回小屋合成。\n");
     return Prompt;
 }
 

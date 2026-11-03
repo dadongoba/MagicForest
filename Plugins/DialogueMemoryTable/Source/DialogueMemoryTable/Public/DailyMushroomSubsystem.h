@@ -94,6 +94,8 @@ struct DIALOGUEMEMORYTABLE_API FDailyElementModifierRow
     FString Tags;
 };
 
+DECLARE_DELEGATE_RetVal_OneParam(bool, FAlchemyDayCompletionGate, int32);
+
 UCLASS()
 class DIALOGUEMEMORYTABLE_API UDailyMushroomSaveGame : public USaveGame
 {
@@ -136,6 +138,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "World|Day")
     bool ConfirmSynthesisForDay(int32 ReceiptDay);
+
+    // Native authority supplied by the receipt owner; absent authority cannot advance time.
+    FAlchemyDayCompletionGate DayCompletionGate;
 
     UFUNCTION(BlueprintCallable, Category = "World|Day")
     bool SetCurrentDay(int32 NewDay);

@@ -1,4 +1,5 @@
 #include "ForestNPCDialogueSubsystem.h"
+#include "ForestAlchemy.h"
 #include "DialogueAIServiceSubsystem.h"
 #include "DialogueMemoryTableSubsystem.h"
 #include "AlchemyGameplaySubsystem.h"
@@ -86,7 +87,7 @@ bool UForestNPCDialogueSubsystem::IsFirstDayMessengerTutorialPending() const
 bool UForestNPCDialogueSubsystem::BeginFirstDayMessengerTutorial()
 {
  if(!IsFirstDayMessengerTutorialPending() || !BeginConversation(TEXT("fawnia")))return false;
- const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；干锅里确认成品，这一天才算过完。路和人我熟，下一步找不着就来问我。");
+ const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；接到的委托会记在魔法书的委托手札里。收齐材料后回小屋，在合成台选好委托、调配并封瓶，不用把原料拿给我们。我们三人的今日委托都结算完，才会迎来下一天。路和人我熟，下一步找不着就来问我。");
  auto& R=Row(TEXT("fawnia"));const auto Message=ForestDialogue::Message(TEXT("assistant"),Opening);
  R.History.Add(Message);SessionTranscript.Add(Message);while(R.History.Num()>16)R.History.RemoveAt(0);
  Save->bFirstDayMessengerTutorialDelivered=true;Status=TEXT("Fawnia 找到了你。可以继续问她，或按 Esc 结束交谈。");
@@ -136,7 +137,11 @@ bool UForestNPCDialogueSubsystem::SendPlayerMessage(const FString& Raw)
  const int32 CommissionOrderIndex=AlchemyCampaign::CommissionId(PersonaOffset,WorldDay);
  auto* Context=NewObject<UForestDialogueRequestContext>(this);Context->Owner=this;Context->NpcId=ActiveNpc;Context->Generation=Generation;Requests.Add(Context);
  FDialogueAICompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::Completed);
- AI->RequestNpcDialogue(ActiveNpc,Level,CommissionOrderIndex,GetCompactMemoryJson(ActiveNpc),R.History,Callback);return true;
+ FString Prompt=Gameplay->BuildPersonaSystemPrompt(ActiveNpc,Level,CommissionOrderIndex,GetCompactMemoryJson(ActiveNpc),{});
+ if(auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>())Prompt+=TEXT("\n【程序确认的委托状态】\n")+Alchemy->TaskStatusForNpc(ActiveNpc);
+ TArray<FDialogueMessage> Messages;Messages.Add(ForestDialogue::Message(TEXT("system"),Prompt));
+ for(int32 I=FMath::Max(0,R.History.Num()-8);I<R.History.Num();++I)Messages.Add(R.History[I]);
+ AI->RequestChatCompletion(Messages,.7f,400,Callback);return true;
 }
 FString UForestNPCDialogueSubsystem::OfflineReply(const FString& Text) const
 {

@@ -45,6 +45,7 @@ public:
  UFUNCTION(BlueprintPure,Category="Magic Book") bool IsOpen() const;
  void OpenTodayMajors();
  void ShowDailyMajors(bool bDaily);
+ void ShowTaskJournal();
  void SelectMajor(FName Id);
  TArray<FAlchemyCardDefinition> DailyCards() const;
  int32 DailyCount(FName Id) const;
@@ -55,7 +56,7 @@ public:
  TArray<FForestCodexEntry> Entries;
  FString Introduction,Notes,LoadError;
  int32 SelectedElement=0,SelectedStrength=1;
- bool bDailyMajors=false;
+ bool bDailyMajors=false,bTaskJournal=false;
  FName SelectedMajor=NAME_None;
 private:
  UPROPERTY() TObjectPtr<UInputComponent> Input;

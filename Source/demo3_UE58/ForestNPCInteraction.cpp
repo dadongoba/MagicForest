@@ -1,4 +1,5 @@
 #include "ForestNPCInteraction.h"
+#include "ForestAlchemy.h"
 #include "ForestElementCodex.h"
 #include "ForestIsometricPlayer.h"
 #include "ForestUITheme.h"
@@ -154,12 +155,13 @@ TSharedRef<SWidget> UForestNPCInteractionWidget::RebuildWidget()
    [SAssignNew(Input,SEditableTextBox).Style(&ForestTheme::InputStyle()).HintText(FText::FromString(TEXT("写下想说的话……"))).Font(ForestUI::Font(14))
     .OnTextCommitted_Lambda([this](const FText&,ETextCommit::Type Method){if(Method==ETextCommit::OnEnter)SendClicked();})]
   +SVerticalBox::Slot().AutoHeight()
-   [SNew(SHorizontalBox)
-    +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)
+   [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,6))
+    +SWrapBox::Slot()
      [SAssignNew(Send,SButton).ButtonStyle(&ForestTheme::PrimaryButton()).ContentPadding(FMargin(20,9)).OnClicked_Lambda([this](){SendClicked();return FReply::Handled();})
       [SNew(STextBlock).Text(FText::FromString(TEXT("发送　Enter"))).Font(ForestUI::Font(12)).ColorAndOpacity(ForestTheme::OnMoss)]]
-    +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(14,9)).IsEnabled_Lambda([this](){return Send.IsValid() && Send->IsEnabled();}).OnClicked_Lambda([this](){if(Manager.IsValid())Manager->OpenItemPresentation();return FReply::Handled();})[Text(TEXT("展示背包物品"),12)]]
-    +SHorizontalBox::Slot().AutoWidth()[Secondary(TEXT("结束交谈　Esc"),FOnClicked::CreateLambda([this](){CloseClicked();return FReply::Handled();}))]];
+    +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(14,9)).IsEnabled_Lambda([this](){return Send.IsValid() && Send->IsEnabled();}).OnClicked_Lambda([this](){if(Manager.IsValid())Manager->OpenItemPresentation();return FReply::Handled();})[Text(TEXT("展示交流 · 不交付"),12)]]
+    +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(14,9)).IsEnabled_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();auto* D=GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();return A && D && !D->IsWaiting() && !A->IsCommissionAccepted(A->CommissionForNpc(D->GetActiveNpcId()));}).OnClicked_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();auto* D=GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();if(A && D){const bool Ok=A->AcceptCommission(D->GetActiveNpcId());if(Manager.IsValid())Manager->RefreshTaskAcceptance(Ok);}return FReply::Handled();})[Text(TEXT("接取今日委托"),12)]]
+    +SWrapBox::Slot()[Secondary(TEXT("结束交谈　Esc"),FOnClicked::CreateLambda([this](){CloseClicked();return FReply::Handled();}))]];
  TSharedRef<SOverlay> Built=SNew(SOverlay)
   +SOverlay::Slot().Padding(FMargin(24))
    [SAssignNew(AdaptivePanel,SBox).HAlign(HAlign_Center).VAlign(VAlign_Bottom)
@@ -195,7 +197,7 @@ void UForestNPCInteractionWidget::ShowMessage(const FString& Name,const FString&
 void UForestNPCInteractionWidget::ShowConversation(const FString& Name,const FString& Body,const FString& Status,bool Waiting)
 {
  if(!Title.IsValid())return;bPresentingItem=false;SetPanel(EPanel::Conversation);
- Title->SetText(FText::FromString(Name));Message->SetText(FText::FromString(Body.IsEmpty()?TEXT("你叫住了对方。可以开始交谈。"):Body));Prompt->SetText(FText::FromString(Status));Input->SetEnabled(!Waiting);Send->SetEnabled(!Waiting);Scroll->ScrollToEnd();
+ Title->SetText(FText::FromString(Name));Message->SetText(FText::FromString(Body.IsEmpty()?TEXT("你叫住了对方。可以开始交谈。"):Body));FString TaskHint;if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())if(auto* D=GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>())TaskHint=A->TaskStatusForNpc(D->GetActiveNpcId());Prompt->SetText(FText::FromString(TaskHint+TEXT("\n")+Status));Input->SetEnabled(!Waiting);Send->SetEnabled(!Waiting);Scroll->ScrollToEnd();
 }
 void UForestNPCInteractionWidget::ShowFinderSelection()
 {
@@ -418,6 +420,7 @@ void AForestNPCInteraction::UpdateFirstDayTutorial()
 }
 bool AForestNPCInteraction::SubmitDialogueText(const FString& Text){return Active.IsValid() && Dialogue && Dialogue->SendPlayerMessage(Text);}
 FString AForestNPCInteraction::GetDialogueStatus() const{return Dialogue?Dialogue->GetStatus():TEXT("对话系统尚未初始化");}
+void AForestNPCInteraction::RefreshTaskAcceptance(bool bSuccess){RefreshConversation();if(!bSuccess && Widget)Widget->ShowConversation(TEXT("委托登记"),Dialogue?Dialogue->GetTranscript():TEXT(""),TEXT("接取尚未成功，请稍后重试。"),false);}
 void AForestNPCInteraction::RefreshConversation(){if(Widget && Dialogue && Active.IsValid()){Widget->ShowConversation(CharacterName(Cast<ACharacter>(Active->GetPawn())),Dialogue->GetTranscript(),Dialogue->GetStatus(),Dialogue->IsWaiting());if(Dialogue->IsWaiting())Widget->SetKeyboardFocus();else Widget->FocusInput();}}
 void AForestNPCInteraction::InteractNearby(){if(!bSuppressInteractUntilRelease && Nearby.IsValid() && !Active.IsValid())TryInteractWith(Nearby.Get());}
 void AForestNPCInteraction::FinishInteraction()

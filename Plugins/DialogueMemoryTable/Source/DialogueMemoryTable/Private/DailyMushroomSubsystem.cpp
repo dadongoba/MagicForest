@@ -67,6 +67,7 @@ bool UDailyMushroomSubsystem::ConfirmDryPotSynthesis()
 bool UDailyMushroomSubsystem::ConfirmSynthesisForDay(const int32 ReceiptDay)
 {
     if (!Save) return false;
+    if (ReceiptDay > Save->LastConfirmedSynthesisDay && (!DayCompletionGate.IsBound() || !DayCompletionGate.Execute(ReceiptDay))) return false;
     const AlchemyCampaign::State Before{CurrentDay, Save->LastConfirmedSynthesisDay, Save->bCampaignCompleted};
     auto After = Before;
     if (!AlchemyCampaign::Confirm(After, ReceiptDay)) return false;
@@ -85,6 +86,7 @@ bool UDailyMushroomSubsystem::SetCurrentDay(const int32 NewDay)
 {
     if (!Save || IsCampaignCompleted() || NewDay < 1 || NewDay > AlchemyCampaign::LastDay || NewDay <= Save->LastConfirmedSynthesisDay)
         return false;
+    if (NewDay != CurrentDay && (NewDay != CurrentDay + 1 || !DayCompletionGate.IsBound() || !DayCompletionGate.Execute(CurrentDay))) return false;
     const int32 Before = CurrentDay;
     CurrentDay = NewDay;
     if (Persist()) return true;

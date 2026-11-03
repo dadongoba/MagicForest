@@ -63,7 +63,7 @@ void UForestBrewWidget::Refresh()
    +SHorizontalBox::Slot().FillWidth(.66f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
   Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
   Body->AddSlot().AutoHeight()[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
-   [BrewUI::Button(R->Day==3?TEXT("完成三日旅程 · 查看结局"):TEXT("承接新局 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+   [BrewUI::Button(!A->IsDayResolved(R->Day)?TEXT("记下结果 · 继续今日委托"):R->Day==3?TEXT("完成今日委托 · 查看结局"):TEXT("今日委托已结算 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
   return;
  }
  if(A->IsCampaignCompleted())
@@ -72,11 +72,10 @@ void UForestBrewWidget::Refresh()
   auto Records=SNew(SVerticalBox);const auto Brews=A->GetBrewRecords();
   for(int32 Day=1;Day<=3;++Day)
   {
-   const FForestBrewRecord* Found=nullptr;for(const auto& R:Brews)if(R.Day==Day)Found=&R;
    Records->AddSlot().AutoHeight().Padding(0,18,0,8)[BrewUI::Text(FString::Printf(TEXT("第 %d 天"),Day),18)];
-   if(!Found){Records->AddSlot().AutoHeight()[BrewUI::Text(TEXT("旧存档中没有这一天的交付记录。"))];continue;}
-   Records->AddSlot().AutoHeight()[BrewUI::Text(Found->Customer+TEXT(" · ")+Found->Result.Verdict,16)];
-   Records->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(Found->Narrative.IsEmpty()?TEXT("此记录没有保存推演文本。"):Found->Narrative,16)];
+   bool Found=false;for(const auto& R:Brews)if(R.Day==Day)
+   {Found=true;Records->AddSlot().AutoHeight()[BrewUI::Text(R.Customer+TEXT(" · ")+R.Result.Verdict,16)];Records->AddSlot().AutoHeight().Padding(0,8)[BrewUI::Text(R.Narrative.IsEmpty()?TEXT("此记录没有保存推演文本。"):R.Narrative,16)];}
+   if(!Found)Records->AddSlot().AutoHeight()[BrewUI::Text(TEXT("旧存档中没有这一天的交付记录。"))];
   }
   Body->AddSlot().FillHeight(1).Padding(0,12)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)+SScrollBox::Slot()[Records]];
   Body->AddSlot().AutoHeight()[BrewUI::Button(TEXT("结束旅程 · 退出游戏"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ExitJourney();return FReply::Handled();}),true)];
@@ -97,7 +96,7 @@ void UForestBrewWidget::Refresh()
  {
   const FString Titles[]={TEXT("1 / 4 · 先想清楚为谁调药"),TEXT("2 / 4 · 用元素小物凑出药性"),TEXT("3 / 4 · 大牌改变调配的方式"),TEXT("4 / 4 · 检查后，再封瓶交付")};
   const FString Copy[]={
-   TEXT("先选今晚的委托对象。回想白天对话里提到的用途：需要热量、气流还是水分？需要多强？元素图鉴说明各个档位能做到什么，委托的标准值要等交付后才揭示。切换委托会清空本次选料。"),
+   TEXT("先选已接取的委托对象。回想白天对话里提到的用途：需要热量、气流还是水分？需要多强？元素图鉴说明各个档位能做到什么，委托的标准值要等交付后才揭示。切换委托会清空本次选料。"),
    TEXT("点击背包中的元素小物，依次放入槽位。物品名字不同，也可以贡献相同的点数：两件火3，在没有其他变换时会合成火6。火、风、水分别相加；不是把所有数字加成同一种元素。下方「当前试配」显示这套排列实际留下的药性。选料、移除都不会扣物品。"),
    TEXT("大牌通常作用于排在它前面、已经入锅的药性；恶魔影响后续投料，副锅则把后面一段单独调配。比如火3 → 皇帝 → 火1得到火7；火3 → 火1 → 皇帝得到火8。选中槽位后，可前移、后移或移除。每个项目占1槽，元素小物不花额度，大牌与通用修饰合计最多5点。大牌并非必用，查「今日大牌」可看当天各张的用法。"),
    TEXT("查看当前试配，判断它是否符合客人描述的用途。正数表示给予，负数表示取走；0表示不额外改变这一种性质。三种元素的绝对值合计超过24会使药剂报废。第一次点「封瓶交付」只弹出确认提示，第二次确认才消耗槽内物品与大牌。之后揭示标准、成品和偏离，并显示推演；前两夜确认结算后换天，第三夜进入结局。")};
@@ -154,7 +153,7 @@ void UForestBrewWidget::Refresh()
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];
  if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+FString::Printf(TEXT("\n\n槽位 %d · %s\n委托标准在交付后揭示，请根据对话与图鉴判断。"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
- else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("请先选择今晚的委托对象。"))];
+ else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("只有已接取且尚未结算的委托会列在这里。与 NPC 交谈后点击「接取今日委托」，再回小屋的合成台调配。"))];
  FAlchemyVector Preview;int32 PreviewCost=0;
  Result->AddSlot().AutoHeight().Padding(0,18,0,8)[BrewUI::Text(TEXT("当前试配 · 尚未交付"),16)];
  if(A->PreviewDraft(Preview,PreviewCost))

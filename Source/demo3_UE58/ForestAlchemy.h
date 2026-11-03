@@ -53,6 +53,7 @@ public:
  UPROPERTY() TArray<FString> ClaimedBottles;
  UPROPERTY() TArray<FForestDailyMajor> Majors;
  UPROPERTY() TArray<FForestBrewRecord> Brews;
+ UPROPERTY() TArray<int32> AcceptedCommissions;
  UPROPERTY() int32 PendingAdvanceFromDay=0;
  UPROPERTY() FString PendingResultId;
 };
@@ -128,6 +129,13 @@ public:
  TArray<FForestBrewChoice> Choices() const;
  TArray<FAlchemyCommissionDefinition> Commissions() const;
  bool CurrentCommission(FAlchemyCommissionDefinition& Out) const;
+ bool AcceptCommission(FName NpcId);
+ int32 CommissionForNpc(FName NpcId) const;
+ bool IsCommissionAccepted(int32 Id) const;
+ bool IsCommissionResolved(int32 Id) const;
+ bool IsDayResolved(int32 Day) const;
+ FString TaskJournal() const;
+ FString TaskStatusForNpc(FName NpcId) const;
  void ChooseCommission(int32 Id);
  void AddChoice(const FForestBrewChoice& Choice);
  void RemoveSlot();void MoveSlot(int32 Direction);void ClearSequence();
