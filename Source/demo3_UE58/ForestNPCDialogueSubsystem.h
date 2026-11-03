@@ -11,6 +11,10 @@ struct FForestConversationRow
  GENERATED_BODY()
  UPROPERTY() FName NpcId;
  UPROPERTY() TArray<FDialogueMessage> History;
+ UPROPERTY() int32 HistoryDay=0;
+ UPROPERTY() int32 OfferDay=0;
+ UPROPERTY() int32 OfferCommissionId=0;
+ UPROPERTY() FString OfferText;
  UPROPERTY() int64 NextSession=1;
  UPROPERTY() int64 PendingSession=0;
  UPROPERTY() TArray<FDialogueMessage> PendingTranscript;
@@ -33,7 +37,10 @@ public:
  FName NpcId;
  int64 Session=0;
  int32 Generation=0;
- bool bSummary=false;
+ bool bSummary=false,bAcceptanceCheck=false;
+ int32 Day=0,Familiarity=1,CommissionId=0;
+ TArray<FDialogueMessage> Evidence;
+ FString AcceptanceNotice;
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };
 /** Per-NPC conversations; delegates keep network responses scoped to a session. */
@@ -60,6 +67,7 @@ public:
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool ConfigurePersistence(const FString& ConversationSlot,const FString& MemorySlot);
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") void RetryPendingSummaries();
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") int32 GetPendingSummaryCount() const;
+ bool SendPresentedItem(const FString& Text);
  void HandleResponse(UForestDialogueRequestContext* Context,bool Success,const FString& Text);
 private:
  UPROPERTY() TObjectPtr<UForestConversationSave> Save;
@@ -73,6 +81,9 @@ private:
  bool Persist();
  void RegisterForestPersonas();
  void RequestSummary(FForestConversationRow& Record);
+ bool SendPlayerMessageInternal(const FString& Text,bool bPresentation);
+ void RequestAcceptanceCheck(UForestDialogueRequestContext* Context);
+ void RequestNpcReply(UForestDialogueRequestContext* Context);
  FString OfflineReply(const FString& Text) const;
  FString OfflinePatch(const FForestConversationRow& Record) const;
 };

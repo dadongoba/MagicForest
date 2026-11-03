@@ -2,6 +2,17 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-03-02：按对话语义识别接取，撤除误加按钮
+
+- **目的 / 基线 / 前置**：基于1361dae、批次01，纠正“接到了才有任务”被误解为手动按钮。用户明确要求系统识别；此前1361dae已上传并核对远端。
+- **修改**：Source/demo3_UE58/ForestAlchemy.h/.cpp、ForestAlchemyUI.cpp、ForestNPCInteraction.h/.cpp、ForestNPCDialogueSubsystem.h/.cpp；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyGameplaySubsystem.cpp；Docs/Commission_Knowledge_Review_2026-11-03.md；CHANGELOG.md。**新增**：Source/demo3_UE58/ForestCommissionAcceptance.h、Tools/Tests/ForestCommissionAcceptanceTests.cpp、Docs/Conversation_Acceptance_2026-11-03.md。
+- **行为**：删除接取按钮和专用点击回调；尚未接取时，使用现有AI接口先识别真实对话中当前NPC已提出委托、最新玩家消息明确承担，再验证角色/顺序/编号/原文证据/会话/日期并保存，成功后即时提示、写入手札。展示物品独立路径跳过识别；已接委托不重复请求。保存本日真实提出原文，支持多轮追问后的承担；换天不复用昨天承诺，旧短期记录缺少日期时保守清空，既有长期记忆和任务进度保留。详见[说明](Docs/Conversation_Acceptance_2026-11-03.md)。
+- **依赖 / 应用**：沿用现有DeepSeek/OpenAI兼容接口，无新模型服务、配置、快捷键、地图或美术。尚未接取时普通对话增加一次语义请求；识别或保存失败不登记；离线模拟不做语义接取。合并源码重编译，存档新增历史日期及委托提出证据，建议先备份SaveGames。
+- **用户审核方向**：保留原用途，重新审核对应数值；此前审核稿的用途替换建议不再作为实施方案，本批不修改目标数值、原用途、图鉴或数字披露机制。
+- **本次验证**：Air完整工程Mac UE5.8 arm64源码编译链接通过；12组原生证据验证及三日任务推进回归通过。源文件白名单一致性、差异和凭据扫描检查通过。
+- **未验证**：未重启/打开UE、运行PIE、调用在线模型或验证自然语言识别准确率；原生测试不等于线上语义评测。Windows和打包未验；既有NPC知识统一和数字泄露问题不在本批宣称解决。
+- **上传状态**：待提交推送及远端SHA核对。
+
 ## 2026-11-03-01：接取委托、魔法书任务手札与三份结算后换天
 
 - **目的 / 基线 / 前置**：基于c258acd、批次2026-11-02-04，在用户当前Air完整工程修改任务流程。完整工程路径见本批说明，不合并其无关HUD/采集差异。

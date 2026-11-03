@@ -80,7 +80,6 @@ public:
  void ConfirmNpcFinding();
  void SelectFeeItem(const FString& Item);
  void RefreshHarvestItemViews();
- void RefreshTaskAcceptance(bool bSuccess);
  UFUNCTION(BlueprintCallable,Category="NPC Interaction") void OpenItemPresentation();
  void ConfirmItemPresentation();
  void CancelItemPresentation();

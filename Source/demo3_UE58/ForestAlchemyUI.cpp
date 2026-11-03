@@ -153,7 +153,7 @@ void UForestBrewWidget::Refresh()
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];
  if(HasCommission)Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Comm.Wish+FString::Printf(TEXT("\n\n槽位 %d · %s\n委托标准在交付后揭示，请根据对话与图鉴判断。"),Comm.SlotCount,Comm.bMustUseAll?TEXT("指定用料需全部使用"):TEXT("可自行选料")),12)];
- else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("只有已接取且尚未结算的委托会列在这里。与 NPC 交谈后点击「接取今日委托」，再回小屋的合成台调配。"))];
+ else Result->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(TEXT("只有已接取且尚未结算的委托会列在这里。与 NPC 交谈并答应承担委托，系统自动登记后，再回小屋的合成台调配。"))];
  FAlchemyVector Preview;int32 PreviewCost=0;
  Result->AddSlot().AutoHeight().Padding(0,18,0,8)[BrewUI::Text(TEXT("当前试配 · 尚未交付"),16)];
  if(A->PreviewDraft(Preview,PreviewCost))

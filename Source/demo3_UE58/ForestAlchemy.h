@@ -129,7 +129,7 @@ public:
  TArray<FForestBrewChoice> Choices() const;
  TArray<FAlchemyCommissionDefinition> Commissions() const;
  bool CurrentCommission(FAlchemyCommissionDefinition& Out) const;
- bool AcceptCommission(FName NpcId);
+ bool RecordConversationAcceptance(FName NpcId,int32 ExpectedDay);
  int32 CommissionForNpc(FName NpcId) const;
  bool IsCommissionAccepted(int32 Id) const;
  bool IsCommissionResolved(int32 Id) const;

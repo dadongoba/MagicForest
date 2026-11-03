@@ -198,10 +198,10 @@ bool UForestAlchemy::IsDayResolved(int32 Day) const
 {
  return AlchemyCampaign::AllDailyCommissionsResolved(Day,IsCommissionResolved(Day),IsCommissionResolved(Day+3),IsCommissionResolved(Day+6));
 }
-bool UForestAlchemy::AcceptCommission(FName NpcId)
+bool UForestAlchemy::RecordConversationAcceptance(FName NpcId,int32 ExpectedDay)
 {
  const int32 Id=CommissionForNpc(NpcId);auto* Dialogue=GetWorld()->GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();
- if(!Save || IsCampaignCompleted() || PendingResult() || Id<=0 || !Dialogue || Dialogue->IsWaiting() || Dialogue->GetActiveNpcId()!=NpcId)return false;
+ if(!Save || IsCampaignCompleted() || PendingResult() || Id<=0 || GetDay()!=ExpectedDay || !Dialogue || !Dialogue->IsWaiting() || Dialogue->GetActiveNpcId()!=NpcId)return false;
  if(IsCommissionAccepted(Id))return true;
  Save->AcceptedCommissions.Add(Id);if(!Persist()){Save->AcceptedCommissions.Remove(Id);Status=TEXT("接取保存失败，尚未登记，请重试。");return false;}
  Tell(TEXT("委托已接取 · 已记入魔法书「委托手札」\n收集材料后回小屋，在合成台调配并封瓶。展示物品不能交付委托。"));return true;
@@ -211,7 +211,7 @@ FString UForestAlchemy::TaskStatusForNpc(FName NpcId) const
  const int32 Id=CommissionForNpc(NpcId);
  if(IsCommissionResolved(Id))return TEXT("今日委托已结算 · 可在魔法书「委托手札」回看。展示物品仅用于交流。");
  return IsCommissionAccepted(Id)?TEXT("已接取 · 回小屋，在合成台调配并封瓶；无需把背包物品交给对方。J 魔法书 → 委托手札。"):
- TEXT("可以先询问今天需要什么，再点击「接取今日委托」。接取后才会登记；物品展示不算交付。");
+ TEXT("对话中了解需求并答应承担后，系统会自动登记并提示；只是询问或展示物品不会接取。");
 }
 FString UForestAlchemy::TaskJournal() const
 {
@@ -222,7 +222,7 @@ FString UForestAlchemy::TaskJournal() const
  {
   Any=true;Out+=FString::Printf(TEXT("第 %d 天 · %s · %s\n%s\n%s\n\n"),C.CustomerOrderIndex,*C.Customer,IsCommissionResolved(C.OrderIndex)?TEXT("已结算"):TEXT("待合成"),*C.Wish,IsCommissionResolved(C.OrderIndex)?TEXT("结果已记录。"):TEXT("下一步：收集材料 → 回小屋合成台 → 选择此委托 → 调配并确认封瓶。"));
  }
- if(!Any)Out+=TEXT("还没有接取委托。与森林里的同伴交谈，了解需求后再决定接取。\n\n");
+ if(!Any)Out+=TEXT("还没有接取委托。与森林里的同伴交谈，了解需求并答应承担后，委托会自动记在这里。\n\n");
  Out+=TEXT("每天三位同伴各有一份委托。三份均在合成台结算后，才结束当天；第三天全部结算后进入结局。");return Out;
 }
 TArray<FAlchemyCommissionDefinition> UForestAlchemy::Commissions() const
