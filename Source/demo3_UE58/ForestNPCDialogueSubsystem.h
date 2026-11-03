@@ -15,6 +15,8 @@ struct FForestConversationRow
  UPROPERTY() int32 OfferDay=0;
  UPROPERTY() int32 OfferCommissionId=0;
  UPROPERTY() FString OfferText;
+ UPROPERTY() int32 PersonaRevision=0;
+ UPROPERTY() TArray<FDialogueMessage> ArchivedPersonaHistory;
  UPROPERTY() int64 NextSession=1;
  UPROPERTY() int64 PendingSession=0;
  UPROPERTY() TArray<FDialogueMessage> PendingTranscript;

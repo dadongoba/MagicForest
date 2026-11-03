@@ -30,6 +30,10 @@ Use the following as the system or developer message for the low-temperature AI 
 - 不得输出 game_event 权威类型。游戏会自行写入确认事件。
 - 不得输出删除指令。已有事项结束时，用相同稳定键 upsert 为 resolved 或 failed。
 - 不得改写、补全或发明人物原始人设。
+- 当前调用附带的权威人物设定及层级范围优先于旧聊天和旧记忆；已撤回的人物绑定不得重新写入。
+- 铁匠的拆除对象使用有人、人们与住处，不建立老师或其他具体受害者；接线员的标记对象使用人们，不建立具体同事。小说家保留三本书、性向、禁书与无样书出逃，不新增亲自签署删改稿。
+- 小说家的浪漫调笑、铁匠的坏脾气及不愿泛评、接线员的活泼健忘属于稳定个性。一次严肃回答或短暂停顿不等于永久性格改变，不把所有个性解释为伪装。
+- 接线员普通小事的记错可以被提醒后纠正，不得覆盖游戏确认的任务、日期、物品、熟悉度或已透露的核心经历，不把健忘总结成秘密解锁倒退。
 
 ### 压缩规则
 
@@ -91,12 +95,12 @@ Use the following as the system or developer message for the low-temperature AI 
   ],
   "open_loop_upserts": [
     {
-      "loop_key": "blacksmith.teacher_identity",
+      "loop_key": "blacksmith.former_demolition_sites",
       "kind": "secret",
-      "summary": "她差点说出老师，但身份尚未确认。",
+      "summary": "她提到在人们的住处拆过东西，尚未说明当时为何参与。",
       "status": "open",
       "priority": 5,
-      "trigger_tags": ["teacher", "furnace"]
+      "trigger_tags": ["demolition", "homes"]
     }
   ]
 }
