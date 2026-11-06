@@ -14,7 +14,11 @@ public:
  TArray<FDialogueMessage> Messages;
  FName PersonaId;
  FString PlayerText;
+ FString PendingReply;
+ bool bReviewing=false;
  int32 Repairs=0;
  void Send();
+ void Finish(bool bSuccess,const FString& Text);
+ void Reject();
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };

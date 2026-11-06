@@ -26,6 +26,8 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Dialogue AI|Gateway")
     bool HasApiKey() const { return !ApiKey.IsEmpty(); }
+    // NPC callers may provide an already assembled, state-bound prompt.
+    void RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback);
 
     UFUNCTION(BlueprintCallable, Category = "Dialogue AI|Chat")
     void RequestChatCompletion(

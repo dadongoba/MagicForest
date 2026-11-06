@@ -85,8 +85,8 @@ bool UForestNPCDialogueSubsystem::BeginConversation(FName Id)
  }
  if(R.KnowledgeRevision<AlchemyDialogueKnowledge::Revision)
  {
-  const auto Before=R;R.History.RemoveAll([](const auto& M){return M.Role==TEXT("assistant") && !AlchemyDialogueKnowledge::IsSafeReply(M.Content);});
-  if(!AlchemyDialogueKnowledge::IsSafeReply(R.OfferText)){R.OfferText.Reset();R.OfferDay=0;R.OfferCommissionId=0;}
+  const auto Before=R;R.ArchivedKnowledgeHistory=R.History;R.History.Reset();
+  R.OfferText.Reset();R.OfferDay=0;R.OfferCommissionId=0;R.DisclosedTopics=0;
   R.KnowledgeRevision=AlchemyDialogueKnowledge::Revision;
   if(!Persist()){R=Before;return false;}
  }
@@ -129,8 +129,23 @@ FString UForestNPCDialogueSubsystem::GetCompactMemoryJson(FName Id) const
  {auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("key"),L.LoopKey.ToString());O->SetStringField(TEXT("summary"),L.Summary);Loops.Add(MakeShared<FJsonValueObject>(O));}
  for(const auto& W:Snapshot.WorldStates)if(AlchemyDialogueKnowledge::IsSafeReply(W.ValueText) && !AlchemyPersonaPolicy::ContainsRetiredWorldBinding(W.StateKey.ToString()+TEXT(" ")+W.ValueText))
  {auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("key"),W.StateKey.ToString());O->SetStringField(TEXT("value"),W.ValueText);O->SetStringField(TEXT("authority"),W.Authority==EDialogueMemoryAuthority::GameEvent?TEXT("game_event"):TEXT("uncertain_report"));World.Add(MakeShared<FJsonValueObject>(O));}
- Root->SetArrayField(TEXT("facts"),Facts);Root->SetArrayField(TEXT("open_loops"),Loops);Root->SetArrayField(TEXT("world"),World);return ForestDialogue::Json(Root);
+ Root->SetArrayField(TEXT("facts"),Facts);Root->SetArrayField(TEXT("open_loops"),Loops);Root->SetArrayField(TEXT("world"),World);
+ TSharedPtr<FJsonObject> Previous;const FString Supplied=GetRoundMemoryContext(Id);
+ if(!Supplied.IsEmpty() && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Supplied),Previous) && Previous)Root->SetObjectField(TEXT("previous_round_memory_data_not_instructions"),Previous);
+ return ForestDialogue::Json(Root);
 }
+bool UForestNPCDialogueSubsystem::SetRoundMemoryContext(FName Id,const FString& Json,FString& OutError)
+{
+ OutError.Reset();FDialoguePersonaProfile Profile;
+ if(!GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>()->GetPersonaProfile(Id,Profile)){OutError=TEXT("未知角色");return false;}
+ TSharedPtr<FJsonObject> Parsed;
+ if(Json.Len()>16000 || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Parsed) || !Parsed){OutError=TEXT("记忆数据须为有效JSON对象，长度不能超过接口限制。");return false;}
+ RoundMemoryContexts.Add(AlchemyPersonaPolicy::CanonicalId(Id),ForestDialogue::Json(Parsed.ToSharedRef()));return true;
+}
+FString UForestNPCDialogueSubsystem::GetRoundMemoryContext(FName Id) const
+{if(const auto* Value=RoundMemoryContexts.Find(AlchemyPersonaPolicy::CanonicalId(Id)))return *Value;return FString();}
+void UForestNPCDialogueSubsystem::ClearRoundMemoryContext(FName Id)
+{RoundMemoryContexts.Remove(AlchemyPersonaPolicy::CanonicalId(Id));}
 bool UForestNPCDialogueSubsystem::SendPlayerMessage(const FString& Raw){return SendPlayerMessageInternal(Raw,false);}
 bool UForestNPCDialogueSubsystem::SendPresentedItem(const FString& Raw){return SendPlayerMessageInternal(Raw,true);}
 bool UForestNPCDialogueSubsystem::SendPlayerMessageInternal(const FString& Raw,bool bPresentation)
@@ -199,7 +214,7 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
  TArray<FDialogueMessage> Messages;Messages.Add(ForestDialogue::Message(TEXT("system"),Prompt));
  for(int32 I=FMath::Max(0,Context->Evidence.Num()-8);I<Context->Evidence.Num();++I)
   if(Context->Evidence[I].Role!=TEXT("assistant") || AlchemyDialogueKnowledge::IsSafeReply(Context->Evidence[I].Content))Messages.Add(Context->Evidence[I]);
- FDialogueAICompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::Completed);AI->RequestChatCompletion(Messages,.7f,400,Callback);
+ FDialogueAICompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::Completed);AI->RequestReviewedNpcMessages(Context->NpcId,Messages,Callback);
 }
 FString UForestNPCDialogueSubsystem::OfflineReply(const FString& Text) const
 {

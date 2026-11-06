@@ -119,8 +119,14 @@ void UDialogueAIServiceSubsystem::RequestNpcDialogue(
         if(DialogueHistory[Index].Role!=TEXT("assistant") || AlchemyDialogueKnowledge::IsSafeReply(DialogueHistory[Index].Content))Messages.Add(DialogueHistory[Index]);
     }
 
-    auto* Gate=NewObject<UAlchemyDialogueReplyGate>(this);Gate->Service=this;Gate->Result=Callback;Gate->Messages=MoveTemp(Messages);Gate->PersonaId=PersonaId;
-    for(int32 I=DialogueHistory.Num()-1;I>=0;--I)if(DialogueHistory[I].Role==TEXT("user")){Gate->PlayerText=DialogueHistory[I].Content;break;}
+    RequestReviewedNpcMessages(PersonaId,Messages,Callback);
+}
+
+void UDialogueAIServiceSubsystem::RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback)
+{
+    if(Messages.IsEmpty() || Messages[0].Role!=TEXT("system") || Messages[0].Content.IsEmpty()){Callback.ExecuteIfBound(false,TEXT("npc_prompt_missing"));return;}
+    auto* Gate=NewObject<UAlchemyDialogueReplyGate>(this);Gate->Service=this;Gate->Result=Callback;Gate->Messages=Messages;Gate->PersonaId=PersonaId;
+    for(int32 I=Messages.Num()-1;I>=0;--I)if(Messages[I].Role==TEXT("user")){Gate->PlayerText=Messages[I].Content;break;}
     NpcReplyGates.Add(Gate);Gate->Send();
 }
 

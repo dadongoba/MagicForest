@@ -46,7 +46,10 @@ int main(){
 }
 '''
 codex=json.loads((ROOT/'Config/ForestElementCodex.json').read_text())
-checks='\n'.join('assert(IsSafeReply(TEXT('+json.dumps(e['description'],ensure_ascii=True)+')));' for e in codex['entries'])
+config=json.loads((ROOT/'Config/ForestCommissionKnowledge.json').read_text())
+texts=[e['description'] for e in codex['entries']]
+for entry in config['entries']:texts+=[entry['purpose'],*entry['topics'].values()]
+checks='\n'.join('assert(IsSafeReply(TEXT('+json.dumps(t,ensure_ascii=True)+')));' for t in texts)
 cases=cases.replace(' std::cout<<',checks+'\n std::cout<<')
 source=shim+'\n'+ '\n'.join(function(n) for n in ['HasNumericDisclosure','IsSafeReply','IsSafeReplyForPlayer','TopicBit','LimitTopics'])+cases
 with tempfile.TemporaryDirectory(prefix='forest-knowledge-') as d:
@@ -54,9 +57,14 @@ with tempfile.TemporaryDirectory(prefix='forest-knowledge-') as d:
  subprocess.run(['c++','-std=c++17',str(p/'test.cpp'),'-o',str(p/'test')],check=True)
  subprocess.run([str(p/'test')],check=True)
 
-# Safety of the shipped state, not a test fixture pretending to be approved writing.
-config=json.loads((ROOT/'Config/ForestCommissionKnowledge.json').read_text())
-assert config=={'version':1,'entries':[]},'Unreviewed commissions must not be activated'
+assert len(config['entries'])==9
+assert {e['commission_id'] for e in config['entries']}==set(range(1,10))
+for e in config['entries']:
+ assert e['approved'] and e['review_id']=='user-approved-2026-11-06-agent-narrative'
+ assert len(e['target'])==3 and all(isinstance(v,int) and 0<=v<=10 for v in e['target'])
+ assert sum(e['target'])<=24 and e['settlement_reveal'] and e['private_brief']
+ assert set(e['topics'])=={'fire','wind','water','bounds','process'}
+ if e['commission_id'] in [3,6,9]:assert all(e['target'])
 gameplay=(BASE/'Private/AlchemyGameplaySubsystem.cpp').read_text()
 prompt=gameplay[gameplay.index('FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt'):gameplay.index('FAlchemyCardDefinition UAlchemyGameplaySubsystem::MakeCard')]
 assert 'Commission.ElementRequest' not in prompt and 'Commission.Target' not in prompt
@@ -68,4 +76,8 @@ forest=(ROOT/'Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp').read_text()
 assert 'Context->Generation!=Generation' in forest and 'Context->Day!=' in forest
 assert 'Context->ReplyRepairs++==0' in forest and 'if(!Context->bAllowAcceptance)' in forest
 assert 'R.DisclosedTopics=0' in forest and 'R.KnowledgeCommission!=CommissionOrderIndex' in forest
-print('Empty approval registry, speaker prompt boundary, both dialogue entries and stale response guards passed')
+assert 'SetRoundMemoryContext' in forest and 'previous_round_memory_data_not_instructions' in forest
+assert 'ApplyReviewedDefinitions(Result)' in gameplay
+gate=(BASE/'Private/AlchemyDialogueReplyGate.cpp').read_text()
+assert 'speaker_contract' in gate and 'TryGetBoolField(TEXT("allowed")' in gate and 'reply_review_invalid' in gate
+print('Nine approved definitions, codex-compatible cues, memory read interface, semantic gate and stale guards passed')

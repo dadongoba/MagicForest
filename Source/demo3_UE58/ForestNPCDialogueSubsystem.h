@@ -20,6 +20,7 @@ struct FForestConversationRow
  UPROPERTY() int32 KnowledgeDay=0;
  UPROPERTY() int32 KnowledgeCommission=0;
  UPROPERTY() int32 DisclosedTopics=0;
+ UPROPERTY() TArray<FDialogueMessage> ArchivedKnowledgeHistory;
  UPROPERTY() TArray<FDialogueMessage> ArchivedPersonaHistory;
  UPROPERTY() int64 NextSession=1;
  UPROPERTY() int64 PendingSession=0;
@@ -71,6 +72,9 @@ public:
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") FString GetStatus() const{return Status;}
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") FName GetActiveNpcId() const{return ActiveNpc;}
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") FString GetCompactMemoryJson(FName NpcId) const;
+ UFUNCTION(BlueprintCallable,Category="NPC Dialogue|Memory") bool SetRoundMemoryContext(FName NpcId,const FString& Json,FString& OutError);
+ UFUNCTION(BlueprintPure,Category="NPC Dialogue|Memory") FString GetRoundMemoryContext(FName NpcId) const;
+ UFUNCTION(BlueprintCallable,Category="NPC Dialogue|Memory") void ClearRoundMemoryContext(FName NpcId);
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") bool ConfigurePersistence(const FString& ConversationSlot,const FString& MemorySlot);
  UFUNCTION(BlueprintCallable,Category="NPC Dialogue") void RetryPendingSummaries();
  UFUNCTION(BlueprintPure,Category="NPC Dialogue") int32 GetPendingSummaryCount() const;
@@ -79,6 +83,7 @@ public:
 private:
  UPROPERTY() TObjectPtr<UForestConversationSave> Save;
  UPROPERTY() TArray<TObjectPtr<UForestDialogueRequestContext>> Requests;
+ UPROPERTY(Transient) TMap<FName,FString> RoundMemoryContexts;
  FName ActiveNpc;
  FString Slot=TEXT("ForestNPCConversations"),Status;
  TArray<FDialogueMessage> SessionTranscript;

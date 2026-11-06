@@ -6,7 +6,8 @@
 // Target values never leave this local boundary in a dialogue request.
 namespace AlchemyDialogueKnowledge
 {
- constexpr int32 Revision=1;
+ constexpr int32 Revision=2;
+ DIALOGUEMEMORYTABLE_API bool ApplyReviewedDefinitions(TArray<FAlchemyCommissionDefinition>& Commissions);
  DIALOGUEMEMORYTABLE_API bool HasNumericDisclosure(const FString& Text);
  DIALOGUEMEMORYTABLE_API bool IsSafeReply(const FString& Text);
  DIALOGUEMEMORYTABLE_API bool IsSafeReplyForPlayer(const FString& Text,const FString& PlayerText);

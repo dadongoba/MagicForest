@@ -2,6 +2,19 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-06-03：启用九份委托知识、回复语义复核及前回合记忆接口
+
+- **目的 / 基线 / 前置**：基于51aba50、批次02。用户重新选定《九份委托：agent内部叙事底稿》，明确授权接入、检查、推Git；取代前批“回原版”草案。前批51aba50已核对远端一致。
+- **配置 / 文档修改**：Config/ForestCommissionKnowledge.json从空注册表启用九份批准内容；Docs/Commission_Agent_Knowledge_Review_2026-11-06.md更新批准状态；Commission_Original_Revision_2026-11-06.md、NPC_Agent_Framework_2026-11-06.md、NPC_Commission_Revision_2026-11-06.md补历史状态说明；CHANGELOG.md。**新增说明**：[Docs/NPC_Knowledge_Integration_2026-11-06.md](Docs/NPC_Knowledge_Integration_2026-11-06.md)。
+- **源码修改**：Plugins/DialogueMemoryTable/Source/DialogueMemoryTable下Public/AlchemyDialogueKnowledge.h、AlchemyDialogueReplyGate.h、DialogueAIServiceSubsystem.h及对应Private三份.cpp，Private/AlchemyGameplaySubsystem.cpp；Source/demo3_UE58/ForestNPCDialogueSubsystem.h/.cpp。
+- **测试修改 / 新增**：修改Tools/Tests/run_dialogue_knowledge_tests.py、run_alchemy_guide_tests.py；新增dialogue_policy_bridge.py、run_npc_remote_dialogue_checks.py。不收录临时报告、凭据或编译产物。
+- **实际行为**：MakeCommissions原子校验九份批准定义并覆盖返回任务的目标、用途与参考用料；第三天均三元素，取消原负值/风20/火11。完整数字与内部底稿不传台词请求；已开放效果从玩家图鉴同源读取。两个NPC回复入口增加同接口语义复核，拒绝任务冲突、越层披露、猜数确认等，再重写一次；仍不合格用角色兜底，复核传输/格式失败不显示未经审查台词。同模型复核增加调用量与延迟，不构成所有语义安全的证明。
+- **记忆 / 进度**：新增蓝图Set/Get/ClearRoundMemoryContext读取外部前回合JSON；保留原紧凑账本，过滤数字后附为资料，不能覆盖当前任务/人物层级。暂不新增记忆触发、期限、自动存档规则。知识修订2归档旧短期对话、清除旧委托提出证据与披露主题；保留熟悉度、已接任务、收据及长期账本，保存失败回滚。旧收据不重算，目标不符时不附新揭示。
+- **应用 / 依赖**：同路径合并上述头源与知识JSON并重编译、正常重启；沿用前批图鉴JSON及NonUFS分发、同一网关/模型/密钥。无地图、美术、快捷键、完整工程或API配置上传；图鉴内容、人设、评分运算、采集随机与每日三份推进不改。建议更新前备份存档；开发没有改用户SaveGames。
+- **本次验证**：完整Air工程Mac UE5.8 arm64源码编译链接通过，最终7.03秒；生产数字/猜数/主题限制、九份批准定义及30页图鉴线索兼容检查通过；44组生产合成运算及22大牌示例、原人设/三层触发/不回退、12组接取证据与三日推进回归通过。便携生产提示/策略桥与远端脚本的离线请求构建检查通过，live_turn_count=0。测试宿主替代了部分JSON读取和会话持久化，不冒充引擎运行。
+- **未验证**：用户当前无法提供密钥（DeepSeek网页报错），线上多轮对话测试未运行。未打开UE/PIE，未验实际自然程度、真实存档迁移/异常取消、UI、Windows与打包。框架接入与离线通过不能作为线上始终合理或绝不越层的保证。
+- **上传状态**：待本批提交推送及远端SHA核对；交付时报告实际结果。
+
 ## 2026-11-06-02：委托待审稿回到原版愿望，撤回额外剧情
 
 - **目的 / 基线 / 前置**：基于005b21e、前批01，按用户“从最初版出发来调优”修订文档。前批功能提交005b21e已推送并核对远端一致。

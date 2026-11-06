@@ -116,6 +116,11 @@ public:
  static void ComputeAlchemySequence(const TArray<FAlchemyCardSequenceItem>&,FAlchemyVector&,int32&,TSet<FName>&);
 };
 '''
+knowledge=json.loads((ROOT/'Config/ForestCommissionKnowledge.json').read_text())
+for entry in knowledge['entries']:
+    tokens=[element+':'+str(value) for element,value in zip(['fire','wind','water'],entry['target']) if value]
+    assert len(tokens)<=({1:3,2:4,3:4,4:4,5:3,6:4,7:4,8:5,9:6}[entry['commission_id']])
+    cases.append(('reviewed commission '+str(entry['commission_id']),tokens,tuple(entry['target'])))
 cpp = shim + '\n'.join(method(name) for name in ['GetAxis', 'SetAxis', 'AbsMaxAxis', 'AbsMinNonZeroAxis', 'AddVectors', 'ComputeAlchemySequence'])
 cpp += '\nint main(){\n'
 for label, tokens, actual in cases:

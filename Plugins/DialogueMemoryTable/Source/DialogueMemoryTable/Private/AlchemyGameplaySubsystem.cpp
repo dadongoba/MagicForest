@@ -450,6 +450,7 @@ TArray<FAlchemyCommissionDefinition> UAlchemyGameplaySubsystem::MakeCommissions(
     C9.OpeningLine = TEXT("三样都要。火最多。这本书的字不能褪。……纸烂了字还在的那种。");
     C9.MustCards = { PipCard(TEXT("fire_5"), TEXT("权杖五"), EAlchemyElement::Fire, 5), PipCard(TEXT("fire_3"), TEXT("权杖三"), EAlchemyElement::Fire, 3), PipCard(TEXT("wind_3"), TEXT("宝剑三"), EAlchemyElement::Wind, 3), PipCard(TEXT("water_3"), TEXT("圣杯三"), EAlchemyElement::Water, 3) }; Result.Add(C9);
 
+    AlchemyDialogueKnowledge::ApplyReviewedDefinitions(Result);
     return Result;
 }
 
