@@ -16,6 +16,10 @@ struct FForestConversationRow
  UPROPERTY() int32 OfferCommissionId=0;
  UPROPERTY() FString OfferText;
  UPROPERTY() int32 PersonaRevision=0;
+ UPROPERTY() int32 KnowledgeRevision=0;
+ UPROPERTY() int32 KnowledgeDay=0;
+ UPROPERTY() int32 KnowledgeCommission=0;
+ UPROPERTY() int32 DisclosedTopics=0;
  UPROPERTY() TArray<FDialogueMessage> ArchivedPersonaHistory;
  UPROPERTY() int64 NextSession=1;
  UPROPERTY() int64 PendingSession=0;
@@ -39,7 +43,8 @@ public:
  FName NpcId;
  int64 Session=0;
  int32 Generation=0;
- bool bSummary=false,bAcceptanceCheck=false;
+ bool bSummary=false,bAcceptanceCheck=false,bAllowAcceptance=false;
+ int32 Topics=1,ReplyRepairs=0;
  int32 Day=0,Familiarity=1,CommissionId=0;
  TArray<FDialogueMessage> Evidence;
  FString AcceptanceNotice;

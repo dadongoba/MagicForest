@@ -1,4 +1,6 @@
 #include "ForestAlchemy.h"
+#include "AlchemyDialogueKnowledge.h"
+#include "AlchemyGameplaySubsystem.h"
 #include "Widgets/Images/SImage.h"
 #include "ForestUITheme.h"
 #include "ForestAlchemyGuide.h"
@@ -52,6 +54,13 @@ void UForestBrewWidget::Refresh()
   auto Scores=SNew(SVerticalBox);
   Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("偏离与药性"),18)];
   Scores->AddSlot().AutoHeight().Padding(0,16)[BrewUI::Text(FString::Printf(TEXT("目标　火 %d　风 %d　水 %d\n成品　火 %d　风 %d　水 %d\n\n总剂量　%.0f / 24\n灵验　%.2f\n偏离　%.2f\n方向吻合　%.1f%%\n剂量比　%.0f%%\n\n%s\n\n%s"),E.Target.Fire,E.Target.Wind,E.Target.Water,E.Actual.Fire,E.Actual.Wind,E.Actual.Water,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.Cosine*100,E.DoseRatio*100,*E.Verdict,*E.Reason),13)];
+  FAlchemyCommissionDefinition ResolvedCommission;
+  if(auto* GI=GetWorld()->GetGameInstance())if(auto* Gameplay=GI->GetSubsystem<UAlchemyGameplaySubsystem>();Gameplay && Gameplay->GetCommission(R->CommissionId,ResolvedCommission))
+  {
+   const bool SameTarget=E.Target.Fire==ResolvedCommission.Target.Fire && E.Target.Wind==ResolvedCommission.Target.Wind && E.Target.Water==ResolvedCommission.Target.Water;
+   const FString Need=SameTarget?AlchemyDialogueKnowledge::Reveal(ResolvedCommission):FString();
+   if(!Need.IsEmpty())Scores->AddSlot().AutoHeight().Padding(0,20)[BrewUI::Text(TEXT("这份委托原本需要什么\n\n")+Need,16)];
+  }
   auto Story=SNew(SVerticalBox);
   Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 使用现场与森林余波"),18)];
   Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(A->bNarrativePending?TEXT("正在依据本次成品推演……"):R->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];

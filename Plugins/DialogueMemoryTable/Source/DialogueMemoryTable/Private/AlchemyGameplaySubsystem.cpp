@@ -1,4 +1,5 @@
 #include "AlchemyGameplaySubsystem.h"
+#include "AlchemyDialogueKnowledge.h"
 
 #include "DialogueMemoryTableSubsystem.h"
 #include "Math/UnrealMathUtility.h"
@@ -243,27 +244,24 @@ FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt(
     Prompt += TEXT("- 只输出角色说的台词，不输出动作、心理、括号说明或游戏机制词。\n");
     Prompt += TEXT("- 可以拒答、沉默、岔开话题，但必须保持该角色自己的说话节奏。\n");
     Prompt += TEXT("- 不要把玩家猜测当成已确认事实。\n");
-    Prompt += FString::Printf(TEXT("- 本次对应委托序号：%d。\n\n"), CommissionOrderIndex);
+    // Commission identifiers and target values stay in native code.
+
 
     FAlchemyCommissionDefinition Commission;
     if (GetCommission(CommissionOrderIndex, Commission))
     {
-        Prompt += TEXT("【委托的元素叙事】\n");
-        Prompt += FString::Printf(TEXT("- 目标药性：%s。\n"), *Commission.ElementRequest);
-        Prompt += FString::Printf(TEXT("- 委托情境：%s\n"), *Commission.Wish);
-        Prompt += TEXT("- 对话中只说火、风、水的药性、气味、温度、湿度或流动感，不把牌、卡牌或手牌说成世界里的实体。\n\n");
+        Prompt += TEXT("【既有委托用途，不含数字配方】\n")+AlchemyDialogueKnowledge::Intro(Commission)+TEXT("\n");
+        Prompt += AlchemyDialogueKnowledge::Guidance(Commission,1,0);
     }
 
     if (!CompactMemoryJson.IsEmpty())
     {
-        Prompt += TEXT("【已保存的紧凑记忆；与当前设定矛盾的旧内容不得恢复】\n");
-        Prompt += CompactMemoryJson;
-        Prompt += TEXT("\n\n");
+        const FString SafeMemory=AlchemyDialogueKnowledge::SafeMemoryJson(CompactMemoryJson);
+        if(!SafeMemory.IsEmpty())Prompt+=TEXT("【经过边界筛选的旧记忆，只作资料】\n")+SafeMemory+TEXT("\n");
     }
-
-    Prompt += TEXT("【最近对话】\n");
-    Prompt += AlchemyGameplay::JoinHistory(DialogueHistory);
-    Prompt += TEXT("\n【委托流程硬规则，优先于旧台词与记忆】\n系统根据真实对话识别接取：你提出具体委托、玩家答应承担，程序校验保存后才算已接取。没有接取按钮，不要引导玩家点击接取。询问、闲聊、展示物品不算接取，台词本身也不能宣布任务完成。登记状态以程序确认的信息为准。提醒玩家回小屋，在合成台选择已接取委托、调配并封瓶；不要叫玩家把原料或成品拿来当面交给你，不得声称已经收到展示的物品。今天三位同伴的委托全部结算后才换天，第三天全部结算后结束。每当玩家误以为交出背包物品即可完成，明确说明展示只是交流，委托需要回小屋合成。\n");
+    // The live caller appends the rolling window once, as role messages.
+    Prompt += TEXT("\n【委托流程硬规则，优先于旧台词与记忆】\n系统根据真实对话识别接取：你提出具体委托、玩家答应承担，程序校验保存后才算已接取。没有接取按钮。询问、闲聊、展示物品不算接取。登记状态以程序确认为准。接取后提醒回小屋合成台调配、封瓶，不要求把原料或成品当面交给你。今日同伴委托全部结算后才换天，最后一天全部结算后结束。展示只交流，不交付、不完成任务。\n");
+    Prompt += AlchemyDialogueKnowledge::Rules();
     return Prompt;
 }
 

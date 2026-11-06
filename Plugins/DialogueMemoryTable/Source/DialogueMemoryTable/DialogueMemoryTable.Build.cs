@@ -6,6 +6,8 @@ public class DialogueMemoryTable : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         RuntimeDependencies.Add("$(PluginDir)/Resources/DialogueMemorySummarizerPrompt.md", StagedFileType.UFS);
+        RuntimeDependencies.Add("$(ProjectDir)/Config/ForestCommissionKnowledge.json", StagedFileType.NonUFS);
+        RuntimeDependencies.Add("$(ProjectDir)/Config/ForestElementCodex.json", StagedFileType.NonUFS);
 
         PublicDependencyModuleNames.AddRange(
             new string[]

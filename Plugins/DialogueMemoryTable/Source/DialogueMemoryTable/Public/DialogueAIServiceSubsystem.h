@@ -51,6 +51,9 @@ public:
         FDialogueAICompletion Callback);
 
 private:
+    friend class UAlchemyDialogueReplyGate;
+    UPROPERTY(Transient) TArray<TObjectPtr<class UAlchemyDialogueReplyGate>> NpcReplyGates;
+    void ReleaseNpcReplyGate(class UAlchemyDialogueReplyGate* Gate);
     UPROPERTY(Transient)
     FString GatewayBaseUrl;
 

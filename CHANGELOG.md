@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-06-01：NPC数值边界与按追问披露框架（新委托未启用）
+
+- **目的 / 基线 / 前置**：基于3d60fa9、2026-11-03-04，在用户当前Air完整工程继续NPC agent优化。用户明确选择“框架继续，委托文案先不接”，并要求底稿改成清晰的内部叙事和可逐层使用的条目。原九份任务数据与用途均保持不变；前批3d60fa9远端已核对。
+- **新增**：插件Private/AlchemyDialogueKnowledge.cpp、AlchemyDialogueReplyGate.cpp与Public/AlchemyDialogueKnowledge.h、AlchemyDialogueReplyGate.h；Config/ForestCommissionKnowledge.json；Tools/Tests/run_dialogue_knowledge_tests.py；Docs/NPC_Agent_Framework_2026-11-06.md、NPC_Commission_Revision_2026-11-06.md、Commission_Agent_Knowledge_Review_2026-11-06.md。
+- **修改**：Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/DialogueMemoryTable.Build.cs、Private/AlchemyGameplaySubsystem.cpp、Private/DialogueAIServiceSubsystem.cpp、Public/DialogueAIServiceSubsystem.h；Source/demo3_UE58/ForestNPCDialogueSubsystem.h/.cpp、ForestAlchemyUI.cpp；CHANGELOG.md。
+- **行为**：说话提示不再注入目标药性数值或委托编号；筛选数字旧记忆/旧台词。主场景和插件NPC入口均在显示前做数字及常见猜数确认校验，重写一次后仍失败使用角色兜底，传输失败仍报错。主场景语义判定可选择最多两个需求主题，已开放主题按人物/日期/任务保存；审核知识读取与图鉴同源描述。结算揭示入口只读对应已批准底稿且核对收据目标。详见[框架说明](Docs/NPC_Agent_Framework_2026-11-06.md)。
+- **审核边界**：正式知识JSON为空，未把任何新九份底稿、正向目标或第三天三元素方案装入游戏；它们只在[重写后的内部叙事稿](Docs/Commission_Agent_Knowledge_Review_2026-11-06.md)待审。旧负值、风20/火11及用途冲突仍待文案批准后一起修改，不能宣称完整推断体验已完成。主题开放不是按轮数自动解锁，也不提升人物秘密层级。
+- **应用 / 依赖**：同时合并新头源、插件Build.cs、主模块修改和空JSON，重编译并正常重启；知识及现有图鉴JSON加入插件NonUFS分发。沿用同一API、模型与密钥，无地图、美术、按键或用户配置更换，不修改SaveGames。新增存档字段保留人物熟悉度和任务进度；建议应用前备份存档。主场景负责主题状态，插件单独入口仅包装回复，不伪称其有主场景的规划持久化。
+- **本次验证**：Air Mac UE5.8 arm64源码编译链接通过（先后6.64秒、6.29秒、5.78秒，最终构建6.22秒）；生产数字/主题策略便携C++测试、全部30条图鉴description兼容检查、原人物策略回归及12组接取证据检查通过。MakeCommissions与基线逐字相同，图鉴文本相同（两工程原有换行编码不同）；白名单同步、差异及凭据检查。没有将完整工程或缓存编译产物收入增量仓库。
+- **未验证 / 限制**：未打开或重启UE，未PIE、在线模型、真实存档迁移、Windows或打包运行。数字词形和常见确认语句的校验不等于对所有隐喻编码的语义证明，可能导致正常数量表达重写；语义计划准确率仍需线上验收。配置空表下详细新知识与结算新正文均不会出现。
+- **上传状态**：待本批提交推送及远端SHA核对；交付时报告实际结果。
+
 ## 2026-11-03-04：三位NPC人设接入真实对话运行时
 
 - **目的 / 基线 / 前置**：基于57661e6、批次03，按用户明确“那你做”将人设卡落实到游戏实际请求，不再只交付文档。前批57661e6已上传核对远端。

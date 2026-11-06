@@ -1,4 +1,6 @@
 #include "DialogueAIServiceSubsystem.h"
+#include "AlchemyDialogueReplyGate.h"
+#include "AlchemyDialogueKnowledge.h"
 
 #include "AlchemyGameplaySubsystem.h"
 #include "Dom/JsonObject.h"
@@ -109,16 +111,20 @@ void UDialogueAIServiceSubsystem::RequestNpcDialogue(
         Familiarity,
         CommissionOrderIndex,
         CompactMemoryJson,
-        DialogueHistory);
+        {});
     Messages.Add(SystemMessage);
 
-    for (int32 Index=FMath::Max(0,DialogueHistory.Num()-16);Index<DialogueHistory.Num();++Index)
+    for (int32 Index=FMath::Max(0,DialogueHistory.Num()-8);Index<DialogueHistory.Num();++Index)
     {
-        Messages.Add(DialogueHistory[Index]);
+        if(DialogueHistory[Index].Role!=TEXT("assistant") || AlchemyDialogueKnowledge::IsSafeReply(DialogueHistory[Index].Content))Messages.Add(DialogueHistory[Index]);
     }
 
-    RequestChatCompletion(Messages, 0.85f, 400, Callback);
+    auto* Gate=NewObject<UAlchemyDialogueReplyGate>(this);Gate->Service=this;Gate->Result=Callback;Gate->Messages=MoveTemp(Messages);Gate->PersonaId=PersonaId;
+    for(int32 I=DialogueHistory.Num()-1;I>=0;--I)if(DialogueHistory[I].Role==TEXT("user")){Gate->PlayerText=DialogueHistory[I].Content;break;}
+    NpcReplyGates.Add(Gate);Gate->Send();
 }
+
+void UDialogueAIServiceSubsystem::ReleaseNpcReplyGate(UAlchemyDialogueReplyGate* Gate){NpcReplyGates.Remove(Gate);}
 
 void UDialogueAIServiceSubsystem::RequestWorldConsequence(
     const int32 CommissionOrderIndex,
