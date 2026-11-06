@@ -40,6 +40,9 @@ int main(){
  for(const auto* s:{TEXT("热要进到厚砖里面，把深处的潮气烘出来。"),TEXT("炉子已有通风，不额外助风。"),TEXT("先回小屋，在合成台调配。"),TEXT("她写过三本书，第二本书里有雨。"),TEXT("一本样书也没带出来。"),TEXT("一点风，把一阵闷气散开。"),TEXT("我想把这件事讲清楚。")})assert(IsSafeReply(s));
  for(const auto* s:{TEXT("对，就是这个数。"),TEXT("没错，你猜对了。"),TEXT("接近了，再多加点。"),TEXT("不对，太少了。")})assert(!IsSafeReplyForPlayer(s,TEXT("火6对吗")));
  assert(IsSafeReplyForPlayer(TEXT("先看炉壁里面是否干透，别只看表面。"),TEXT("火6对吗")));
+ for(const auto* s:{TEXT("潮气闷在里面，一开炉就容易裂。"),TEXT("一受热就卷边。"),TEXT("字迹一擦就花，一碰就掉。"),TEXT("纸页一吹就飞。")})assert(IsSafeReply(s));
+ assert(IsSafeReply(TEXT("一烘就坏。一吸就过头，一拎就破。这是两回事。")));
+ assert(IsSafeReply(TEXT("烟道清一清，你先看一看，再试一试。")));
  assert(TopicBit(TEXT("system"))==0 && TopicBit(TEXT("all"))==0 && TopicBit(TEXT("fire"))==2);
  for(int mask=-1;mask<128;++mask){int result=LimitTopics(mask);assert(result>0 && result<64);int n=0;for(int b=0;b<6;++b)n+=bool(result&(1<<b));assert(n<=2);}
  std::cout<<"Production numeric guard, numeric guess rejection and bounded disclosure topics passed\n";
@@ -80,4 +83,7 @@ assert 'SetRoundMemoryContext' in forest and 'previous_round_memory_data_not_ins
 assert 'ApplyReviewedDefinitions(Result)' in gameplay
 gate=(BASE/'Private/AlchemyDialogueReplyGate.cpp').read_text()
 assert 'speaker_contract' in gate and 'TryGetBoolField(TEXT("allowed")' in gate and 'reply_review_invalid' in gate
+assert 'commission_facts_validation_only_not_disclosure_permission' in gate
+assert 'if(!Success || !TopicsValid)' in forest and 'knowledge_plan_invalid' in forest
+assert 'Context->PlanRepairs++==0' in forest
 print('Nine approved definitions, codex-compatible cues, memory read interface, semantic gate and stale guards passed')

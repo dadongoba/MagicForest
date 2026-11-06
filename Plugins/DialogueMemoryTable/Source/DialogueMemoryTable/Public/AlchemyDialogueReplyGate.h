@@ -15,6 +15,8 @@ public:
  FName PersonaId;
  FString PlayerText;
  FString PendingReply;
+ FString CommissionFacts;
+ FString PurposeFallback;
  bool bReviewing=false;
  int32 Repairs=0;
  void Send();

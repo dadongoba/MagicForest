@@ -26,7 +26,18 @@ class NativePolicy:
   knowledge=(BASE/'Private/AlchemyDialogueKnowledge.cpp').read_text()
   shim=literal((ROOT/'Tools/Tests/run_persona_policy_tests.py').read_text(),'shim')
   shim=shim.replace('using int32=int;','using int32=int;using TCHAR=wchar_t;')
-  shim=shim.replace('template<class... A>static FString Printf(const wchar_t*,A...){return TEXT("matched");}',r'''template<class... A>static FString Printf(const wchar_t* fmt,A... a){std::wstring f=fmt;size_t at=0;while((at=f.find(L"%s",at))!=std::wstring::npos){f.replace(at,2,L"%ls");at+=3;}wchar_t buf[24000];std::swprintf(buf,24000,f.c_str(),a...);return buf;}''')
+  shim='#include <sstream>\n'+shim
+  shim=shim.replace('template<class... A>static FString Printf(const wchar_t*,A...){return TEXT("matched");}',r'''
+ template<class A>static std::wstring FormatArg(A a){std::wostringstream out;out<<a;return out.str();}
+ template<class... A>static FString Printf(const wchar_t* fmt,A... a){
+  std::vector<std::wstring> args={FormatArg(a)...};FString out;size_t next=0;
+  for(size_t i=0;fmt[i];++i){
+   if(fmt[i]==L'%' && (fmt[i+1]==L's'||fmt[i+1]==L'd')){assert(next<args.size());out+=args[next++];++i;}
+   else if(fmt[i]==L'%' && fmt[i+1]==L'%'){out+=L'%';++i;}
+   else out+=fmt[i];
+  }
+  assert(next==args.size());return out;
+ }''')
   shim=shim.replace(' bool IsEmpty()const{return empty();}',r'''
  static FString Chr(wchar_t c){return FString(1,c);}
  void ReplaceInline(const wchar_t* a,const wchar_t* b){size_t p=0;while((p=find(a,p))!=npos){replace(p,std::wstring(a).size(),b);p+=std::wstring(b).size();}}
@@ -87,6 +98,11 @@ if __name__=='__main__':
   assert n.call('guard','我要火6','') is False
   assert n.call('trigger','blacksmith',1,'你好')==1
   assert n.call('trigger','blacksmith',1,'安置办')==3
-  p=n.call('prompt','blacksmith',1,1,'{}');assert '新炉壁' in p and '火性6' not in p and '__GUIDANCE__' in p
+  profiles=n.call('profiles')
+  for who,idx in [('blacksmith',1),('operator',4),('novelist',7)]:
+   for level in [1,2,3]:
+    p=n.call('prompt',who,level,idx,'{}')
+    assert profiles[who]['name'] in p and profiles[who]['layers'][level-1] in p
+    assert '【基础人设】' in p and '【日常状态】' in p and '火性6' not in p and '__GUIDANCE__' in p
   print('Compiled production prompt/persona/trigger/guard bridge passed')
  finally:n.close()

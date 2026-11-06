@@ -2,6 +2,18 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-06-05：线上检查NPC知识、修复主题漏判与回复边界
+
+- **目的 / 基线 / 前置**：基于451d277、批次04；用户提供凭据，继续实际远端多轮检查并修复发现的问题。凭据仅用于临时进程，不写入工程、报告或Git；前批451d277已推送核对一致。
+- **修改源码**：Source/demo3_UE58/ForestNPCDialogueSubsystem.h/.cpp；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable下Private/AlchemyDialogueKnowledge.cpp、AlchemyDialogueReplyGate.cpp、AlchemyGameplaySubsystem.cpp、DialogueAIServiceSubsystem.cpp及Public/AlchemyDialogueReplyGate.h、DialogueAIServiceSubsystem.h。
+- **修改测试 / 文档**：Tools/Tests/dialogue_policy_bridge.py、run_npc_remote_dialogue_checks.py、run_dialogue_knowledge_tests.py；Docs/NPC_Knowledge_Integration_2026-11-06.md；CHANGELOG.md。**新增**：[Docs/NPC_Agent_Live_Validation_2026-11-06.md](Docs/NPC_Agent_Live_Validation_2026-11-06.md)、Docs/Tests/NPC_Agent_Live_2026-11-06.json。
+- **修正**：主题JSON改为先输出topics、短证据及600输出额度；本地验证缺字段/非法主题/超过两项时重试一次，仍失败则停止回答而不猜补或登记。复核器另读完整无数字任务事实用于查错，不授予台词新披露许可。普通条件短语及叠词不再误当数字；保持目标数字与猜数确认拦截。明确人设底稿不是实际发言记录，询问这份材料默认承接当前任务；连续重写失败优先返回已审用途，再过玩家猜数检查，避免空泛兜底。
+- **测试工具纠错**：最初中文格式化漏人设的宿主结果作废。改为确定性格式化并断言三人物及各层完整提示均存在，记录主题计划、格式重试和中间检查结果；支持定向复测、错误类别及分组报告。自动关键词检查不冒充完整人工语义判断。
+- **本次验证**：Mac UE5.8 arm64最终编译链接通过19.91秒，未启动UE。生产数字/猜数、普通表达、图鉴兼容、知识边界与主题失败处理检查通过。DeepSeek实际全量80轮自动检查通过（6次保守兜底），人工复核据此继续修正；随后火线索7轮/0兜底、连续性5轮/0、主题及措辞19轮/2、最终用途兜底与连续性12轮/0的定向组均通过。各组属于修正过程中的不同版本，不宣称最终源码一次完整跑过全部场景。逐组原始报告已脱敏收录；实际回复未发现目标数字泄露，三层和外部记忆读取均有线上样本。
+- **应用 / 依赖**：同路径合并上述头源及测试文档并重编译、正常重启。沿用同一服务和九份批准配置；不修改人设事实、任务目标、评分、图鉴或存档格式，没有地图资产或长期密钥配置。主题格式重试及语义复核会增加等待与调用量。
+- **未验证 / 限制**：测试宿主代替了UE存档、反射、状态登记与HTTP调度；未开UE/PIE，未验真实异步取消、存档、UI、Windows或打包。普通表达仍可能保守回退到用途而缺少当轮细节；有限场景与同模型复核不保证所有自由对话始终正确。详见检查记录，不把本批标为无限制agent验收完成。
+- **上传状态**：待本批提交推送及远端核对，交付时报告实际结果。
+
 ## 2026-11-06-04：核对委托知识接入批次上传状态
 
 - **基线 / 修改**：基于fe22252、前批03，仅修改CHANGELOG.md，补记其已上传状态；无功能、配置或资产变化，无需重编译。

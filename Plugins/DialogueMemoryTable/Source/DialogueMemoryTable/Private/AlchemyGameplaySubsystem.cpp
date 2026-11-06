@@ -244,6 +244,7 @@ FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt(
     Prompt += TEXT("- 只输出角色说的台词，不输出动作、心理、括号说明或游戏机制词。\n");
     Prompt += TEXT("- 可以拒答、沉默、岔开话题，但必须保持该角色自己的说话节奏。\n");
     Prompt += TEXT("- 不要把玩家猜测当成已确认事实。\n");
+    Prompt += TEXT("- 本层人设是可以谈的事实，不代表已经对玩家讲过。只有真实对话历史确实出现过对应内容，才能说我刚才说过、你已经知道；首次讲述直接说明，不伪造共同回忆。\n");
     // Commission identifiers and target values stay in native code.
 
 

@@ -119,13 +119,17 @@ void UDialogueAIServiceSubsystem::RequestNpcDialogue(
         if(DialogueHistory[Index].Role!=TEXT("assistant") || AlchemyDialogueKnowledge::IsSafeReply(DialogueHistory[Index].Content))Messages.Add(DialogueHistory[Index]);
     }
 
-    RequestReviewedNpcMessages(PersonaId,Messages,Callback);
+    FAlchemyCommissionDefinition Commission;FString Facts,Purpose;
+    if(Gameplay->GetCommission(CommissionOrderIndex,Commission)){Facts=AlchemyDialogueKnowledge::Guidance(Commission,0,63);Purpose=AlchemyDialogueKnowledge::Intro(Commission);}
+    RequestReviewedNpcMessages(PersonaId,Messages,Callback,Facts,Purpose);
 }
 
-void UDialogueAIServiceSubsystem::RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback)
+void UDialogueAIServiceSubsystem::RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback,const FString& CommissionFacts,const FString& PurposeFallback)
 {
     if(Messages.IsEmpty() || Messages[0].Role!=TEXT("system") || Messages[0].Content.IsEmpty()){Callback.ExecuteIfBound(false,TEXT("npc_prompt_missing"));return;}
     auto* Gate=NewObject<UAlchemyDialogueReplyGate>(this);Gate->Service=this;Gate->Result=Callback;Gate->Messages=Messages;Gate->PersonaId=PersonaId;
+    Gate->CommissionFacts=CommissionFacts;
+    Gate->PurposeFallback=PurposeFallback;
     for(int32 I=Messages.Num()-1;I>=0;--I)if(Messages[I].Role==TEXT("user")){Gate->PlayerText=Messages[I].Content;break;}
     NpcReplyGates.Add(Gate);Gate->Send();
 }

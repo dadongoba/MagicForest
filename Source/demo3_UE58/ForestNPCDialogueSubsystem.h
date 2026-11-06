@@ -45,7 +45,7 @@ public:
  int64 Session=0;
  int32 Generation=0;
  bool bSummary=false,bAcceptanceCheck=false,bAllowAcceptance=false;
- int32 Topics=1,ReplyRepairs=0;
+ int32 Topics=1,ReplyRepairs=0,PlanRepairs=0;
  int32 Day=0,Familiarity=1,CommissionId=0;
  TArray<FDialogueMessage> Evidence;
  FString AcceptanceNotice;
