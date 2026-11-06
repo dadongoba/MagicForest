@@ -1,89 +1,84 @@
 #!/usr/bin/env python3
-"""Exercise production numeric/topic policies without starting UE or an LLM."""
+"""Production turn/text policies and authored knowledge, without UE or network."""
 from pathlib import Path
-import json,re,subprocess,tempfile
+import hashlib,json
+from dialogue_policy_bridge import NativePolicy,ROOT,BASE
+from dialogue_fact_host import FactHost
 
-ROOT=Path(__file__).resolve().parents[2]
-BASE=ROOT/'Plugins/DialogueMemoryTable/Source/DialogueMemoryTable'
-policy=(BASE/'Private/AlchemyDialogueKnowledge.cpp').read_text()
-def function(name):
- m=re.search(r'(?:bool|int32|FString) '+name+r'\(',policy);assert m,name
- start=policy.index('{',m.start());depth=1;end=start+1
- while depth:
-  depth+=(policy[end]=='{')-(policy[end]=='}');end+=1
- return policy[m.start():end]
-shim=r'''
-#include <algorithm>
-#include <cassert>
-#include <cwctype>
-#include <iostream>
-#include <regex>
-#include <string>
-#define TEXT(x) L##x
-using TCHAR=wchar_t;using int32=int;
-struct FString:std::wstring{
- using std::wstring::wstring;using std::wstring::operator=;
- FString(const std::wstring& s):std::wstring(s){}
- static FString Chr(wchar_t c){return FString(1,c);}
- void ReplaceInline(const wchar_t* a,const wchar_t* b){size_t p=0;while((p=find(a,p))!=npos){replace(p,std::wstring(a).size(),b);p+=std::wstring(b).size();}}
- bool Contains(const FString& x)const{return find(x)!=npos;}
- bool StartsWith(const wchar_t* x)const{return find(x)==0;}
- int Len()const{return size();}bool IsEmpty()const{return empty();}
- FString TrimStartAndEnd()const{size_t b=0,e=size();while(b<e&&std::iswspace((*this)[b]))++b;while(e>b&&std::iswspace((*this)[e-1]))--e;return substr(b,e-b);}
-};
-struct FRegexPattern{std::wregex P;FRegexPattern(FString p){p.ReplaceInline(TEXT("(?i)"),TEXT(""));P=std::wregex(p,std::regex::icase);}};
-struct FRegexMatcher{const FRegexPattern& P;const FString& S;FRegexMatcher(const FRegexPattern& p,const FString& s):P(p),S(s){}bool FindNext(){return std::regex_search(S,P.P);}};
-'''
-cases=r'''
-int main(){
- for(const auto* s:{TEXT("我要火6"),TEXT("火六风零水零"),TEXT("六"),TEXT("火性６"),TEXT("six fire"),TEXT("FIRE SIX"),TEXT("fire_six"),TEXT("VI"),TEXT("Ⅵ"),TEXT("⑥"),TEXT("⁶"),TEXT("火陆"),TEXT("火贰"),TEXT("[6,0,0]"),TEXT("只要十分火"),TEXT("0x6"),TEXT("火6，风不需要"),TEXT("三本书，所以火三"),TEXT("second rank"),TEXT("八成"),TEXT("两倍"),TEXT("我需要火６点"),TEXT(" ")})assert(!IsSafeReply(s));
- for(const auto* s:{TEXT("热要进到厚砖里面，把深处的潮气烘出来。"),TEXT("炉子已有通风，不额外助风。"),TEXT("先回小屋，在合成台调配。"),TEXT("她写过三本书，第二本书里有雨。"),TEXT("一本样书也没带出来。"),TEXT("一点风，把一阵闷气散开。"),TEXT("我想把这件事讲清楚。")})assert(IsSafeReply(s));
- for(const auto* s:{TEXT("对，就是这个数。"),TEXT("没错，你猜对了。"),TEXT("接近了，再多加点。"),TEXT("不对，太少了。")})assert(!IsSafeReplyForPlayer(s,TEXT("火6对吗")));
- assert(IsSafeReplyForPlayer(TEXT("先看炉壁里面是否干透，别只看表面。"),TEXT("火6对吗")));
- for(const auto* s:{TEXT("潮气闷在里面，一开炉就容易裂。"),TEXT("一受热就卷边。"),TEXT("字迹一擦就花，一碰就掉。"),TEXT("纸页一吹就飞。")})assert(IsSafeReply(s));
- assert(IsSafeReply(TEXT("一烘就坏。一吸就过头，一拎就破。这是两回事。")));
- assert(IsSafeReply(TEXT("烟道清一清，你先看一看，再试一试。")));
- assert(TopicBit(TEXT("system"))==0 && TopicBit(TEXT("all"))==0 && TopicBit(TEXT("fire"))==2);
- for(int mask=-1;mask<128;++mask){int result=LimitTopics(mask);assert(result>0 && result<64);int n=0;for(int b=0;b<6;++b)n+=bool(result&(1<<b));assert(n<=2);}
- std::cout<<"Production numeric guard, numeric guess rejection and bounded disclosure topics passed\n";
-}
-'''
-codex=json.loads((ROOT/'Config/ForestElementCodex.json').read_text())
-config=json.loads((ROOT/'Config/ForestCommissionKnowledge.json').read_text())
-texts=[e['description'] for e in codex['entries']]
-for entry in config['entries']:texts+=[entry['purpose'],*entry['topics'].values()]
-checks='\n'.join('assert(IsSafeReply(TEXT('+json.dumps(t,ensure_ascii=True)+')));' for t in texts)
-cases=cases.replace(' std::cout<<',checks+'\n std::cout<<')
-source=shim+'\n'+ '\n'.join(function(n) for n in ['HasNumericDisclosure','IsSafeReply','IsSafeReplyForPlayer','TopicBit','LimitTopics'])+cases
-with tempfile.TemporaryDirectory(prefix='forest-knowledge-') as d:
- p=Path(d);(p/'test.cpp').write_text(source)
- subprocess.run(['c++','-std=c++17',str(p/'test.cpp'),'-o',str(p/'test')],check=True)
- subprocess.run([str(p/'test')],check=True)
+def main():
+ n=NativePolicy();host=FactHost(n)
+ try:
+  explicit=['我要火6','火六风零水零','火性６','火强度为8点','FIRE 6','water=0','火贰档','火6，风不需要']
+  ordinary=['一开炉，砖石就容易裂。','我出版过三本书，第二本写雨水。','我不能判断你猜得对不对。','这个火一直烧着。','风一吹，纸就飞了。','清一清烟道，先试一试。','一批药粉，两件事都要注意。','好，我不替你确认数字。','我今年32岁。','对，厚砖里头也得干透。']
+  for s in explicit:assert not n.call('guard',s,''),s
+  for s in ordinary:assert n.call('guard',s,'火6对吗'),s
+  # Context-dependent agreement and encoded numbers are deliberately NOT decided
+  # by word matching. Their allow/reject labels are tested by the live reviewer.
+  for s in ['没错，你猜对了。','VI','六','[6,0,0]']:assert n.call('guard',s,'火6对吗')
+  print('PASS: explicit-recipe guard and ordinary-language minimal pairs')
 
-assert len(config['entries'])==9
-assert {e['commission_id'] for e in config['entries']}==set(range(1,10))
-for e in config['entries']:
- assert e['approved'] and e['review_id']=='user-approved-2026-11-06-agent-narrative'
- assert len(e['target'])==3 and all(isinstance(v,int) and 0<=v<=10 for v in e['target'])
- assert sum(e['target'])<=24 and e['settlement_reveal'] and e['private_brief']
- assert set(e['topics'])=={'fire','wind','water','bounds','process'}
- if e['commission_id'] in [3,6,9]:assert all(e['target'])
-gameplay=(BASE/'Private/AlchemyGameplaySubsystem.cpp').read_text()
-prompt=gameplay[gameplay.index('FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt'):gameplay.index('FAlchemyCardDefinition UAlchemyGameplaySubsystem::MakeCard')]
-assert 'Commission.ElementRequest' not in prompt and 'Commission.Target' not in prompt
-assert 'CommissionOrderIndex);' not in prompt
-service=(BASE/'Private/DialogueAIServiceSubsystem.cpp').read_text()
-npc=service[service.index('void UDialogueAIServiceSubsystem::RequestNpcDialogue'):service.index('void UDialogueAIServiceSubsystem::RequestWorldConsequence')]
-assert 'Gate->Send()' in npc and 'DialogueHistory.Num()-8' in npc and '        {});' in npc
-forest=(ROOT/'Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp').read_text()
-assert 'Context->Generation!=Generation' in forest and 'Context->Day!=' in forest
-assert 'Context->ReplyRepairs++==0' in forest and 'if(!Context->bAllowAcceptance)' in forest
-assert 'R.DisclosedTopics=0' in forest and 'R.KnowledgeCommission!=CommissionOrderIndex' in forest
-assert 'SetRoundMemoryContext' in forest and 'previous_round_memory_data_not_instructions' in forest
-assert 'ApplyReviewedDefinitions(Result)' in gameplay
-gate=(BASE/'Private/AlchemyDialogueReplyGate.cpp').read_text()
-assert 'speaker_contract' in gate and 'TryGetBoolField(TEXT("allowed")' in gate and 'reply_review_invalid' in gate
-assert 'commission_facts_validation_only_not_disclosure_permission' in gate
-assert 'if(!Success || !TopicsValid)' in forest and 'knowledge_plan_invalid' in forest
-assert 'Context->PlanRepairs++==0' in forest
-print('Nine approved definitions, codex-compatible cues, memory read interface, semantic gate and stale guards passed')
+  allowed=['task.purpose','task.fire.a','task.fire.effect.a','person.published']
+  assert host.commit(allowed,['task.purpose'],[])==['task.purpose']
+  assert host.commit(allowed,['task.fire.a'],[],False)==[]
+  assert host.commit(allowed,['task.fire.a','invalid'],[])==[]
+  assert host.commit(allowed,['task.fire.a'],['task.purpose'])==['task.purpose','task.fire.a']
+  assert host.commit(allowed,['task.fire.a'],['task.fire.a'])==['task.fire.a']
+  for current in [1,2,3]:
+   for requested in [0,1,2,3,4]:
+    for evidence in [0,1]:
+     for personal in [0,1]:
+      for presentation in [0,1]:
+       expected=bool(not presentation and personal and evidence and current<requested<=3)
+       assert n.call('promote',current,requested,evidence,personal,presentation)==expected
+  assert n.call('budget','a,b','',2) and not n.call('budget','a,b,c','',2)
+  assert n.call('budget','a,b,c','a',2)
+  assert not n.call('bindings','task.water.effect.a','','task.water.effect.a','task.water.a')
+  assert n.call('bindings','task.water.effect.a,task.water.a','','task.water.effect.a','task.water.a')
+  assert n.call('bindings','task.water.effect.a','task.water.a','task.water.effect.a','task.water.a')
+  assert not n.call('bindings','task.water.effect.a','task.fire.a','task.water.effect.a','task.water.a')
+  assert n.call('bindings','task.water.effect.a,task.water.effect.b','task.water.a','task.water.effect.a,task.water.effect.b','task.water.a,task.water.a')
+  assert n.call('fresh',4,4,2,2,1,1)
+  for args in [(3,4,2,2,1,1),(4,4,1,2,1,1),(4,4,2,2,0,1),(4,4,2,2,1,0)]:assert not n.call('fresh',*args)
+  assert n.call('accept',1,0,1,2,1,1,1,1)
+  for args in [(1,1,0,2,1,1,1,1),(1,0,1,3,1,1,1,1),(1,0,1,2,0,1,1,1),(1,0,1,2,1,1,0,1),(0,0,1,2,1,1,1,1)]:assert not n.call('accept',*args)
+  print('PASS: production reducer, fallback-only delivery, promotion, freshness and acceptance evidence')
+
+  manifest=json.loads((ROOT/'Tools/Tests/fixtures/approved_commission_manifest.json').read_text())
+  expected={e['commission_id']:e['sha256'] for e in manifest['entries']}
+  count=0
+  for idx,e in host.entries.items():
+   keep={k:e[k] for k in ['commission_id','persona','target','purpose','topics','private_brief','settlement_reveal']}
+   assert hashlib.sha256(json.dumps(keep,ensure_ascii=False,sort_keys=True).encode()).hexdigest()==expected[idx]
+   assert e['approved'] and sum(e['target'])<=24 and all(0<=v<=10 for v in e['target'])
+   if idx in [3,6,9]:assert all(e['target'])
+   all_facts=host.facts(idx,3);count+=len(all_facts)
+   all_ids={f['id'] for f in all_facts}
+   assert all(f['id'].split('.effect.')[0]+'.a' in all_ids for f in all_facts if '.effect.' in f['id'])
+   for level in [1,2,3]:
+    facts=host.facts(idx,level);ids=[f['id'] for f in facts]
+    allowed_ids=host.allowed(idx,level,[],[])
+    assert 'task.purpose' in allowed_ids
+    assert not any(f['id'] in allowed_ids for f in facts if f['topic']=='constraint')
+    prompt=host.prompt(idx,level,allowed_ids,[])
+    assert e['private_brief'] not in prompt and '目标药性：' not in prompt
+    if level<3:assert not any(i.startswith('task.motive.') for i in ids)
+   assert all(n.call('guard',f['text'],'') for f in all_facts)
+  print('PASS: nine approved narratives/targets unchanged; fact sources, codex references and layer restrictions:',count,'facts')
+
+  memory={'nickname':'青苔2号','age':32,'books':3,'agreed':True,'note':'第二本写雨水。','target':[6,0,0],'recipe':'fire=6','familiarity':3,'nested':{'player_preference':'喜欢蓝色','score':100}}
+  clean=host.memory(memory)
+  assert clean=={'nickname':'青苔2号','age':32,'books':3,'agreed':True,'note':'第二本写雨水。','nested':{'player_preference':'喜欢蓝色'}}
+  print('PASS: typed memory projection preserves normal quantities and excludes target/state fields')
+
+  forest=(ROOT/'Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp').read_text()
+  gate=(BASE/'Private/AlchemyDialogueReplyGate.cpp').read_text();service=(BASE/'Private/DialogueAIServiceSubsystem.cpp').read_text()
+  assert 'R.DisclosedTopics|=' not in forest and 'CommitDelivered' in forest
+  assert 'R.History.Pop()' not in forest and 'SessionTranscript.Pop()' not in forest
+  assert 'LastActionReceipt' in forest and 'Context->VerifiedReply.DeliveredFacts' in forest
+  assert 'CancelNpcTurns(ActiveTurnScope)' in forest and 'Context->Scope' in forest
+  assert 'LastReviewReason' in gate and 'LastReviewSpan' in gate and 'LegacyResult' in gate
+  assert 'response_format' in service and 'if(bJson)' in service and 'response_truncated' in service and 'response_empty' in service
+  print('PASS: integration guards for actual delivery, retained player evidence, receipts, cancellation and JSON transport')
+ finally:n.close()
+
+if __name__=='__main__':main()

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 2,
+  "revision": 3,
   "entries": [
     {
       "commission_id": 1,
@@ -21,7 +21,166 @@
         "process": "在小屋合成台调配并封瓶，药剂用于正式开炉前烘干炉壁。"
       },
       "private_brief": "第一天 · 铁匠：烘干新炉壁\n\n**事情的起因**：铁匠新砌了一座炉子。炉壁表面已经干了，但砖石厚实，里面仍有潮气。她要先把炉壁彻底烘干，才能正式开炉。\n\n**她要完成的事**：让热进入砖石内部，赶出孔隙深处的水分。最终应当内外干燥、砖石完整。这次不是熔铁，也不是把炉子烧得越热越好。\n\n**数值依据，仅供内部使用**：火6“烘透”明确适合厚实、多孔材料；弱火容易只干外层。炉子已有正常通风，不额外助风；烘炉是排水，不补水，也不要求药剂主动抽水。目标火6、风0、水0。",
-      "settlement_reveal": "第一天 · 铁匠：烘干新炉壁\n\n铁匠新砌了一座炉子。炉壁表面已经干了，但砖石厚实，里面仍有潮气。她要先把炉壁彻底烘干，才能正式开炉。\n\n让热进入砖石内部，赶出孔隙深处的水分。最终应当内外干燥、砖石完整。这次不是熔铁，也不是把炉子烧得越热越好。\n\n火6“烘透”明确适合厚实、多孔材料；弱火容易只干外层。炉子已有正常通风，不额外助风；烘炉是排水，不补水，也不要求药剂主动抽水。目标火6、风0、水0。"
+      "settlement_reveal": "第一天 · 铁匠：烘干新炉壁\n\n铁匠新砌了一座炉子。炉壁表面已经干了，但砖石厚实，里面仍有潮气。她要先把炉壁彻底烘干，才能正式开炉。\n\n让热进入砖石内部，赶出孔隙深处的水分。最终应当内外干燥、砖石完整。这次不是熔铁，也不是把炉子烧得越热越好。\n\n火6“烘透”明确适合厚实、多孔材料；弱火容易只干外层。炉子已有正常通风，不额外助风；烘炉是排水，不补水，也不要求药剂主动抽水。目标火6、风0、水0。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "新炉壁表面干了，砖石内部还可能藏着潮气。我需要先把炉壁烘干，才能正式开炉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "热要进入厚实砖石深处，让炉壁内外都干透，不只是暖到表面。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "炉子已有正常通风，不需要药剂再助风，额外气流会扰乱稳定加热。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "烘炉是排除潮气，不补水，也不让药剂直接抽走水分。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "火弱了只能干表面；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "升温过急会使炉壁开裂。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.c",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "目的是烘透，不是熔化或烧毁。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "在小屋合成台调配并封瓶，药剂用于正式开炉前烘干炉壁。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "铁匠新砌了一座炉子。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "炉壁表面已经干了，但砖石厚实，里面仍有潮气。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.c",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "她要先把炉壁彻底烘干，才能正式开炉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "让热进入砖石内部，赶出孔隙深处的水分。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "最终应当内外干燥、砖石完整。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.c",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "这次不是熔铁，也不是把炉子烧得越热越好。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.fire.effect.c",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        }
+      ]
     },
     {
       "commission_id": 2,
@@ -42,7 +201,183 @@
         "process": "在小屋合成台调配并封瓶；药剂先为铁料加热，并给工作处通风，此时不淬火。"
       },
       "private_brief": "第二天 · 铁匠：修复铁件\n\n**事情的起因**：铁匠要校正、修复旧铁件。材料仍要放在砧上锻打，不能先熔成失去原形的液体。\n\n**她要完成的事**：把铁料烧红，使它能够在敲击下弯曲、塑形。同时让工作处保持持续气流，穿过晾开的衣物和疏松处，带走湿闷。此处气流用于工作环境，不是假称微弱和风独自制造锻炉高热。\n\n**数值依据，仅供内部使用**：火8“锻烧”明确对应烧红铁料并锻打，火9则已进入熔融用途。风3“和风”持续吹动衣角、可翻动松放薄纸，但没有推动负载的强拉力。淬火是之后的工序，本次不补水。目标火8、风3、水0。",
-      "settlement_reveal": "第二天 · 铁匠：修复铁件\n\n铁匠要校正、修复旧铁件。材料仍要放在砧上锻打，不能先熔成失去原形的液体。\n\n把铁料烧红，使它能够在敲击下弯曲、塑形。同时让工作处保持持续气流，穿过晾开的衣物和疏松处，带走湿闷。此处气流用于工作环境，不是假称微弱和风独自制造锻炉高热。\n\n火8“锻烧”明确对应烧红铁料并锻打，火9则已进入熔融用途。风3“和风”持续吹动衣角、可翻动松放薄纸，但没有推动负载的强拉力。淬火是之后的工序，本次不补水。目标火8、风3、水0。"
+      "settlement_reveal": "第二天 · 铁匠：修复铁件\n\n铁匠要校正、修复旧铁件。材料仍要放在砧上锻打，不能先熔成失去原形的液体。\n\n把铁料烧红，使它能够在敲击下弯曲、塑形。同时让工作处保持持续气流，穿过晾开的衣物和疏松处，带走湿闷。此处气流用于工作环境，不是假称微弱和风独自制造锻炉高热。\n\n火8“锻烧”明确对应烧红铁料并锻打，火9则已进入熔融用途。风3“和风”持续吹动衣角、可翻动松放薄纸，但没有推动负载的强拉力。淬火是之后的工序，本次不补水。目标火8、风3、水0。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "我要校正、修复旧铁件。铁料还得留在砧上敲，不能先熔成液体。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "铁料需要烧红，变得能锻打弯曲；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.b",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "仍能放在砧上敲，不流进模具。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "气流穿过工作处，持续吹动衣角，能带走湿闷，不扯动工具和重物。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "此时不淬火，不加入水；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.b",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "淬火是之后的工序。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "火弱了铁料仍太硬，太强则熔化而失去可锻打的形状。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "风只为工作环境通气，不是靠它独自制造炉温。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "在小屋合成台调配并封瓶；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂先为铁料加热，并给工作处通风，此时不淬火。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "铁匠要校正、修复旧铁件。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "材料仍要放在砧上锻打，不能先熔成失去原形的液体。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "把铁料烧红，使它能够在敲击下弯曲、塑形。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "同时让工作处保持持续气流，穿过晾开的衣物和疏松处，带走湿闷。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.c",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "此处气流用于工作环境，不是假称微弱和风独自制造锻炉高热。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        }
+      ]
     },
     {
       "commission_id": 3,
@@ -63,7 +398,217 @@
         "process": "先浸洗小件和褶皱里的旧污，再烧红连接部位，配合持续送风锻接。药剂仍在小屋合成台调配。"
       },
       "private_brief": "第三天 · 铁匠：把拆下的旧铁接起来\n\n**事情的起因**：铁匠留下了一些拆下的旧铁件。这次她希望修复它们，让零件重新成为能使用的东西。\n\n**她要完成的事**：先浸洗小件和褶皱里的旧污，再烧红需要连接的部位，配合炉子的持续送风进行锻接。清洗、加热与送风有各自的时机，水不直接倒进锻炉。\n\n**数值依据，仅供内部使用**：火8“锻烧”能烧红铁料并锻接，而不把整件熔毁；风6“强风”能持续带动装好的风轮、为锻炉送气；水7“饱满”足以包围小件浸洗，厚布拎起来沉且挤得出水。水6可湿透材料，却没有这次围住小件、持续浸洗的余量；不需要能冲走泥沙的大水势。目标火8、风6、水7，合计21。\n\n**人物关联，仅供内部使用**：她过去曾真心相信清理是对的，并参与拆毁人们住处里的东西。本次修补与那段经历有关，但不能强制解释成已经忏悔或获得原谅，也不能凭空增加一个等待她修复的具体受害者。未解锁深层时，只说旧铁与修复。",
-      "settlement_reveal": "第三天 · 铁匠：把拆下的旧铁接起来\n\n铁匠留下了一些拆下的旧铁件。这次她希望修复它们，让零件重新成为能使用的东西。\n\n先浸洗小件和褶皱里的旧污，再烧红需要连接的部位，配合炉子的持续送风进行锻接。清洗、加热与送风有各自的时机，水不直接倒进锻炉。\n\n火8“锻烧”能烧红铁料并锻接，而不把整件熔毁；风6“强风”能持续带动装好的风轮、为锻炉送气；水7“饱满”足以包围小件浸洗，厚布拎起来沉且挤得出水。水6可湿透材料，却没有这次围住小件、持续浸洗的余量；不需要能冲走泥沙的大水势。目标火8、风6、水7，合计21。"
+      "settlement_reveal": "第三天 · 铁匠：把拆下的旧铁接起来\n\n铁匠留下了一些拆下的旧铁件。这次她希望修复它们，让零件重新成为能使用的东西。\n\n先浸洗小件和褶皱里的旧污，再烧红需要连接的部位，配合炉子的持续送风进行锻接。清洗、加热与送风有各自的时机，水不直接倒进锻炉。\n\n火8“锻烧”能烧红铁料并锻接，而不把整件熔毁；风6“强风”能持续带动装好的风轮、为锻炉送气；水7“饱满”足以包围小件浸洗，厚布拎起来沉且挤得出水。水6可湿透材料，却没有这次围住小件、持续浸洗的余量；不需要能冲走泥沙的大水势。目标火8、风6、水7，合计21。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "我留下了些拆下的旧铁件。这次想把它们重新接起来，修到能够使用。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "连接处烧红，能够锻接，但不把整件熔成液体。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "风持续驱动装好的送风装置，为锻炉送气；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.b",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "提着布面会明显拽手。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "小件四周都能泡到，褶皱里的旧污能浸洗出来；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.b",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "厚布拎起来沉，挤得出水。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "先清洗再加热，水不倒进锻炉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "铁不能熔毁，风不晃乱器具，水不冲散小件。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先浸洗小件和褶皱里的旧污，再烧红连接部位，配合持续送风锻接。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂仍在小屋合成台调配。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "铁匠留下了一些拆下的旧铁件。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "这次她希望修复它们，让零件重新成为能使用的东西。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "先浸洗小件和褶皱里的旧污，再烧红需要连接的部位，配合炉子的持续送风进行锻接。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "清洗、加热与送风有各自的时机，水不直接倒进锻炉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.motive.a",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "她过去曾真心相信清理是对的，并参与拆毁人们住处里的东西。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "task.motive.b",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "本次修补与那段经历有关，但不能强制解释成已经忏悔或获得原谅，也不能凭空增加一个等待她修复的具体受害者。",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.c",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "未解锁深层时，只说旧铁与修复。",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.b",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.water.effect.c",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        }
+      ]
     },
     {
       "commission_id": 4,
@@ -84,7 +629,182 @@
         "process": "先回小屋合成台调配；赶路时药剂作用于小帆。这只是委托的使用叙事，不承诺玩家能够驾驶新载具。"
       },
       "private_brief": "第一天 · 接线员：借风送信\n\n**事情的起因**：山路绕远，接线员希望改借小舟渡过一段平静水面，带着随身信袋赶路。这里的小舟是任务叙事，不代表新增玩家可驾驶载具。\n\n**他要完成的事**：让轻舟的小帆持续鼓起，带着人和随身行李缓缓前行。船不运重货，也不需要在激流里对抗水势。需要的是能推着轻舟走的风，而不是让他顶着狂风爬山。\n\n**数值依据，仅供内部使用**：风5“劲风”可以撑满薄布、推动有迎风面的轻物，常见用途包含小帆轻舟。风弱了只能翻纸和散气，不能承担载人小舟；再加强到大货舟的拉力则超出用途。没有加热或补水工序，目标火0、风5、水0，替换无现成图鉴依据的风20。",
-      "settlement_reveal": "第一天 · 接线员：借风送信\n\n山路绕远，接线员希望改借小舟渡过一段平静水面，带着随身信袋赶路。这里的小舟是任务叙事，不代表新增玩家可驾驶载具。\n\n让轻舟的小帆持续鼓起，带着人和随身行李缓缓前行。船不运重货，也不需要在激流里对抗水势。需要的是能推着轻舟走的风，而不是让他顶着狂风爬山。\n\n风5“劲风”可以撑满薄布、推动有迎风面的轻物，常见用途包含小帆轻舟。风弱了只能翻纸和散气，不能承担载人小舟；再加强到大货舟的拉力则超出用途。没有加热或补水工序，目标火0、风5、水0，替换无现成图鉴依据的风20。"
+      "settlement_reveal": "第一天 · 接线员：借风送信\n\n山路绕远，接线员希望改借小舟渡过一段平静水面，带着随身信袋赶路。这里的小舟是任务叙事，不代表新增玩家可驾驶载具。\n\n让轻舟的小帆持续鼓起，带着人和随身行李缓缓前行。船不运重货，也不需要在激流里对抗水势。需要的是能推着轻舟走的风，而不是让他顶着狂风爬山。\n\n风5“劲风”可以撑满薄布、推动有迎风面的轻物，常见用途包含小帆轻舟。风弱了只能翻纸和散气，不能承担载人小舟；再加强到大货舟的拉力则超出用途。没有加热或补水工序，目标火0、风5、水0，替换无现成图鉴依据的风20。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "山路绕远，我想借小舟渡过平静水段，带着随身信袋赶路。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "不需要加热，信件也不需要额外热量。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "小舟只载人、随身信袋和行李。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.b",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "风撑满小帆，带着轻舟缓缓前进，薄布张开，衣袖已有推力。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "不需要额外增加河水，也不需要给信袋补湿。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "只能翻纸和散气的风推不动载人的轻舟；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "不需要拖动重货帆索的强拉力。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.c",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "小舟走的是平静水段。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先回小屋合成台调配；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "赶路时药剂作用于小帆。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.c",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "这只是委托的使用叙事，不承诺玩家能够驾驶新载具。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "山路绕远，接线员希望改借小舟渡过一段平静水面，带着随身信袋赶路。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "这里的小舟是任务叙事，不代表新增玩家可驾驶载具。",
+          "minimum_layer": 1,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "让轻舟的小帆持续鼓起，带着人和随身行李缓缓前行。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "船不运重货，也不需要在激流里对抗水势。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.c",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "需要的是能推着轻舟走的风，而不是让他顶着狂风爬山。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        }
+      ]
     },
     {
       "commission_id": 5,
@@ -105,7 +825,208 @@
         "process": "先装好药粉、封妥，再借货舟运送。风不直接托着散粉；水只照顾封口表面。药剂回小屋合成台调配。"
       },
       "private_brief": "第二天 · 接线员：运送封好的药粉\n\n**事情的起因**：接线员要把药粉运过水道。药粉已经装好，需要封妥后随货物前行，不能直接暴露在风里。\n\n**他要完成的事**：让风牵动货舟的宽帆，带动较沉的物资。封口胶还需要轻薄湿意保持柔韧，不要在旅途中干裂。水只照顾封口表面，绝不能浸进药粉。\n\n**数值依据，仅供内部使用**：风7“疾风”适合货舟和较沉负载，宽帆与绳索明显吃力；不是仅能带动轻舟的风。水2“轻柔”薄附表面、不滴落，适合胶不结皮。水不是防水膜，药粉防雨靠封妥的包装。无加热需求，目标火0、风7、水2。",
-      "settlement_reveal": "第二天 · 接线员：运送封好的药粉\n\n接线员要把药粉运过水道。药粉已经装好，需要封妥后随货物前行，不能直接暴露在风里。\n\n让风牵动货舟的宽帆，带动较沉的物资。封口胶还需要轻薄湿意保持柔韧，不要在旅途中干裂。水只照顾封口表面，绝不能浸进药粉。\n\n风7“疾风”适合货舟和较沉负载，宽帆与绳索明显吃力；不是仅能带动轻舟的风。水2“轻柔”薄附表面、不滴落，适合胶不结皮。水不是防水膜，药粉防雨靠封妥的包装。无加热需求，目标火0、风7、水2。"
+      "settlement_reveal": "第二天 · 接线员：运送封好的药粉\n\n接线员要把药粉运过水道。药粉已经装好，需要封妥后随货物前行，不能直接暴露在风里。\n\n让风牵动货舟的宽帆，带动较沉的物资。封口胶还需要轻薄湿意保持柔韧，不要在旅途中干裂。水只照顾封口表面，绝不能浸进药粉。\n\n风7“疾风”适合货舟和较沉负载，宽帆与绳索明显吃力；不是仅能带动轻舟的风。水2“轻柔”薄附表面、不滴落，适合胶不结皮。水不是防水膜，药粉防雨靠封妥的包装。无加热需求，目标火0、风7、水2。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "这趟要用货舟运送封好的药粉。途中不能散漏，也不能让药粉受潮。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "没有加热需求，不能把封口烘干。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "货舟载着较沉的物资，宽帆绷紧、绳索吃力，需要站稳，不是仅推轻舟的风。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "只在封口胶表面薄薄附着，不滴落，保持柔韧；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.b",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "里面的药粉仍然干燥。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "风弱则带不动货物，过强会扰乱器具；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "胶过干会裂，水太多会泡坏药粉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.c",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "水不是防水膜。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先装好药粉、封妥，再借货舟运送。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "风不直接托着散粉；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.c",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "水只照顾封口表面。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.d",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂回小屋合成台调配。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "接线员要把药粉运过水道。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "药粉已经装好，需要封妥后随货物前行，不能直接暴露在风里。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "让风牵动货舟的宽帆，带动较沉的物资。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "封口胶还需要轻薄湿意保持柔韧，不要在旅途中干裂。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.c",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "水只照顾封口表面，绝不能浸进药粉。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.b",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.water.effect.c",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        }
+      ]
     },
     {
       "commission_id": 6,
@@ -126,7 +1047,217 @@
         "process": "先借风清通烟道，再浸透土团揉泥修补漏雨处，最后煨熟热食。药剂回小屋合成台调配，不具有屏蔽监听的魔法能力。"
       },
       "private_brief": "第三天 · 接线员：准备一个可以安心说话的歇脚处\n\n**事情的起因**：接线员想把一处歇脚的地方收拾好。烟道积着烟，漏雨处要补，停下来的人也需要热食。\n\n**他要完成的事**：先借风清通长烟道，再把结实土团浸透、揉成均匀泥料，修补漏雨处，最后煨熟一锅热食。药剂负责实际准备工作，不获得屏蔽监听或读取人心的能力。\n\n**数值依据，仅供内部使用**：风7“疾风”的常见用途包含送出长烟道滞烟；只是吹动衣角的风不够。水6“丰沛”能使厚实土团内外湿透、不留干芯，适合揉匀泥料；没有包围浸洗或冲走泥沙的需求。火5“煨熟”维持锅内液体沸腾、使柔软食材熟透，不需要烘砖或熔铁。目标火5、风7、水6，合计18。\n\n**人物关联，仅供内部使用**：他曾监听、标记他人的通话，知道有人被带走仍睡得很好。现在他希望有一个让人坐下说话、而不需要把谈话记录交上去的地方。不将其简化成“他已经赎罪”，不安排具体旧同事来和解。浅层只说准备歇脚处，深层才能谈他为何在意谈话是否被记录。",
-      "settlement_reveal": "第三天 · 接线员：准备一个可以安心说话的歇脚处\n\n接线员想把一处歇脚的地方收拾好。烟道积着烟，漏雨处要补，停下来的人也需要热食。\n\n先借风清通长烟道，再把结实土团浸透、揉成均匀泥料，修补漏雨处，最后煨熟一锅热食。药剂负责实际准备工作，不获得屏蔽监听或读取人心的能力。\n\n风7“疾风”的常见用途包含送出长烟道滞烟；只是吹动衣角的风不够。水6“丰沛”能使厚实土团内外湿透、不留干芯，适合揉匀泥料；没有包围浸洗或冲走泥沙的需求。火5“煨熟”维持锅内液体沸腾、使柔软食材熟透，不需要烘砖或熔铁。目标火5、风7、水6，合计18。"
+      "settlement_reveal": "第三天 · 接线员：准备一个可以安心说话的歇脚处\n\n接线员想把一处歇脚的地方收拾好。烟道积着烟，漏雨处要补，停下来的人也需要热食。\n\n先借风清通长烟道，再把结实土团浸透、揉成均匀泥料，修补漏雨处，最后煨熟一锅热食。药剂负责实际准备工作，不获得屏蔽监听或读取人心的能力。\n\n风7“疾风”的常见用途包含送出长烟道滞烟；只是吹动衣角的风不够。水6“丰沛”能使厚实土团内外湿透、不留干芯，适合揉匀泥料；没有包围浸洗或冲走泥沙的需求。火5“煨熟”维持锅内液体沸腾、使柔软食材熟透，不需要烘砖或熔铁。目标火5、风7、水6，合计18。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "我想收拾好一处歇脚的地方。烟道积着烟，漏雨处要补，停下来的人也需要热食。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "火维持锅里缓缓沸腾，让食物从里面熟透，不要烤焦。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "风先把长烟道积着的滞烟送尽，不是只散去手边的墨气。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "把结实土团从外到内浸透，掰开不露干芯，揉成均匀泥料，不需要水流冲走泥。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "先清烟道再使用；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "水用来备泥，不直接浇进饭锅。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.c",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "不要把风吹到会掀翻器具的程度，热也不需要烘砖或熔铁。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先借风清通烟道，再浸透土团揉泥修补漏雨处，最后煨熟热食。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂回小屋合成台调配，不具有屏蔽监听的魔法能力。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "接线员想把一处歇脚的地方收拾好。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "烟道积着烟，漏雨处要补，停下来的人也需要热食。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "先借风清通长烟道，再把结实土团浸透、揉成均匀泥料，修补漏雨处，最后煨熟一锅热食。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "药剂负责实际准备工作，不获得屏蔽监听或读取人心的能力。",
+          "minimum_layer": 1,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.a",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "他曾监听、标记他人的通话，知道有人被带走仍睡得很好。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "task.motive.b",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "现在他希望有一个让人坐下说话、而不需要把谈话记录交上去的地方。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "task.motive.c",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "不将其简化成“他已经赎罪”，不安排具体旧同事来和解。",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.d",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "浅层只说准备歇脚处，深层才能谈他为何在意谈话是否被记录。",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.b",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.water.effect.c",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        }
+      ]
     },
     {
       "commission_id": 7,
@@ -147,7 +1278,167 @@
         "process": "慢慢收干纸中潮气和墨迹，配合轻风让附近空气流通；材料回小屋合成台调配。"
       },
       "private_brief": "第一天 · 小说家：烘干旧纸\n\n**事情的起因**：小说家整理的旧纸受潮了。纸薄而脆，边角还算完整，她不想为了弄干它们反而把它们烤坏。\n\n**她要完成的事**：慢慢收干纸里的潮气和墨迹，让纸重新可以翻动。旁边需要空气流通，但稿页应留在桌上，不能被翻乱或卷走。\n\n**数值依据，仅供内部使用**：火3“烘燥”适合薄纸、细线和草叶；风2“轻风”能抬纸角而不卷走整页。烘厚炉壁的热会伤纸；更强的风会翻动松放稿页。旧纸已经潮湿，不再补水。目标火3、风2、水0。",
-      "settlement_reveal": "第一天 · 小说家：烘干旧纸\n\n小说家整理的旧纸受潮了。纸薄而脆，边角还算完整，她不想为了弄干它们反而把它们烤坏。\n\n慢慢收干纸里的潮气和墨迹，让纸重新可以翻动。旁边需要空气流通，但稿页应留在桌上，不能被翻乱或卷走。\n\n火3“烘燥”适合薄纸、细线和草叶；风2“轻风”能抬纸角而不卷走整页。烘厚炉壁的热会伤纸；更强的风会翻动松放稿页。旧纸已经潮湿，不再补水。目标火3、风2、水0。"
+      "settlement_reveal": "第一天 · 小说家：烘干旧纸\n\n小说家整理的旧纸受潮了。纸薄而脆，边角还算完整，她不想为了弄干它们反而把它们烤坏。\n\n慢慢收干纸里的潮气和墨迹，让纸重新可以翻动。旁边需要空气流通，但稿页应留在桌上，不能被翻乱或卷走。\n\n火3“烘燥”适合薄纸、细线和草叶；风2“轻风”能抬纸角而不卷走整页。烘厚炉壁的热会伤纸；更强的风会翻动松放稿页。旧纸已经潮湿，不再补水。目标火3、风2、水0。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "旧纸受潮了，纸薄，边角还算完整。我想收干纸和墨迹，别把纸烤坏。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "温和小火慢慢收干薄纸和墨迹，纸边仍完整，不烙字、不焦化。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "纸角可以轻轻抬起，空气流通，但整张纸仍留在桌面，不被翻乱卷走。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "旧纸已经潮湿，不继续补水。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "热弱仍潮，热过头纸边焦脆；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "风太大则稿页散乱。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.c",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "目的只是干好原来的纸，不制作新纸。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "慢慢收干纸中潮气和墨迹，配合轻风让附近空气流通；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "材料回小屋合成台调配。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "小说家整理的旧纸受潮了。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "纸薄而脆，边角还算完整，她不想为了弄干它们反而把它们烤坏。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "慢慢收干纸里的潮气和墨迹，让纸重新可以翻动。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "旁边需要空气流通，但稿页应留在桌上，不能被翻乱或卷走。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        }
+      ]
     },
     {
       "commission_id": 8,
@@ -168,7 +1459,193 @@
         "process": "先备墨、再写字、最后收干。调墨与收干分步，不把调墨用水同时浇到成稿上。药剂回小屋合成台调配。"
       },
       "private_brief": "第二天 · 小说家：留下清楚的字迹\n\n**事情的起因**：小说家想留下清晰、能收存的文字。她要准备能落笔的墨，再将写好的纸页收干，不是把普通纸烧成耐火材料。\n\n**她要完成的事**：先调开浓墨、泡出花叶颜色，写好后以温和小火慢慢收墨。微风只散去书页近旁的墨气，不翻动尚未装订的稿纸。\n\n**数值依据，仅供内部使用**：水3“温和”明确可调开浓墨、泡出花叶色味；火3“烘燥”可干薄纸收墨；风1“微风”能散墨气而令纸页安稳。更强火力不等于文字更牢，反而伤纸。目标火3、风1、水3，替换原火10与保存纸张的用途冲突。",
-      "settlement_reveal": "第二天 · 小说家：留下清楚的字迹\n\n小说家想留下清晰、能收存的文字。她要准备能落笔的墨，再将写好的纸页收干，不是把普通纸烧成耐火材料。\n\n先调开浓墨、泡出花叶颜色，写好后以温和小火慢慢收墨。微风只散去书页近旁的墨气，不翻动尚未装订的稿纸。\n\n水3“温和”明确可调开浓墨、泡出花叶色味；火3“烘燥”可干薄纸收墨；风1“微风”能散墨气而令纸页安稳。更强火力不等于文字更牢，反而伤纸。目标火3、风1、水3，替换原火10与保存纸张的用途冲突。"
+      "settlement_reveal": "第二天 · 小说家：留下清楚的字迹\n\n小说家想留下清晰、能收存的文字。她要准备能落笔的墨，再将写好的纸页收干，不是把普通纸烧成耐火材料。\n\n先调开浓墨、泡出花叶颜色，写好后以温和小火慢慢收墨。微风只散去书页近旁的墨气，不翻动尚未装订的稿纸。\n\n水3“温和”明确可调开浓墨、泡出花叶色味；火3“烘燥”可干薄纸收墨；风1“微风”能散墨气而令纸页安稳。更强火力不等于文字更牢，反而伤纸。目标火3、风1、水3，替换原火10与保存纸张的用途冲突。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "我想留下清晰、能收存的文字。先备好能落笔的墨，再把写好的纸页收干。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "温和小火收干薄纸和墨迹，边角完整，不对纸页施加强烈火力。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "只散去书页近旁的墨气，贴近才觉到，纸页仍安稳，不需要抬起纸角。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "调开浓墨，泡出花叶颜色；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.b",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "不是让厚实材料内外湿透。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "火太强会伤纸，风太大翻乱稿页，水太多使纸软塌。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.b",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "更强火力不等于文字更牢。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先备墨、再写字、最后收干。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "调墨与收干分步，不把调墨用水同时浇到成稿上。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.c",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂回小屋合成台调配。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "小说家想留下清晰、能收存的文字。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "她要准备能落笔的墨，再将写好的纸页收干，不是把普通纸烧成耐火材料。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "先调开浓墨、泡出花叶颜色，写好后以温和小火慢慢收墨。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "微风只散去书页近旁的墨气，不翻动尚未装订的稿纸。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.b",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.water.effect.c",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        }
+      ]
     },
     {
       "commission_id": 9,
@@ -189,7 +1666,241 @@
         "process": "先浸透厚纸树皮并揉成均匀纸浆，让风吹过工作处、展开厚帘；另在木封面烙字。药剂在小屋合成台调配，不新增玩家手工操作菜单。"
       },
       "private_brief": "第三天 · 小说家：纸坏了，字仍留下\n\n**事情的起因**：小说家想重新留下一份能保存的文字。纸页会受潮、磨损，她希望即便纸张坏了，至少封面上的字还认得出来。\n\n**她要完成的事**：将厚纸和树皮浸透，揉成没有干芯的纸浆，用于制作纸页。工作时让挂起的厚帘展开、空气吹过整个工作处。另在木质封面上烙下清楚的文字，让字成为木料表面的深色痕迹。纸浆、风干与木面烙字分步处理，不对普通纸页施加强烈火力。\n\n**数值依据，仅供内部使用**：水6“丰沛”能湿透厚纸树皮，使纸浆均匀；火7“焦化”能在木器留下可控的烙痕，不以火10焚毁为目的；风4“清劲”可翻动宽叶、鼓动挂衣、推走地上干叶，适合展开厚帘与吹过工作场地，而不到将干叶卷离地面的风5。目标火7、风4、水6，合计17。\n\n**人物关联，仅供内部使用**：她曾出版三本书，作品被禁、作者身份受到针对，逃离时没有带出样书。她希望留下字，并不意味着从此放弃浪漫和调情。浅层可以谈保存文字；关于禁书、出逃与遗失样书的事实仍受熟悉度约束。",
-      "settlement_reveal": "第三天 · 小说家：纸坏了，字仍留下\n\n小说家想重新留下一份能保存的文字。纸页会受潮、磨损，她希望即便纸张坏了，至少封面上的字还认得出来。\n\n将厚纸和树皮浸透，揉成没有干芯的纸浆，用于制作纸页。工作时让挂起的厚帘展开、空气吹过整个工作处。另在木质封面上烙下清楚的文字，让字成为木料表面的深色痕迹。纸浆、风干与木面烙字分步处理，不对普通纸页施加强烈火力。\n\n水6“丰沛”能湿透厚纸树皮，使纸浆均匀；火7“焦化”能在木器留下可控的烙痕，不以火10焚毁为目的；风4“清劲”可翻动宽叶、鼓动挂衣、推走地上干叶，适合展开厚帘与吹过工作场地，而不到将干叶卷离地面的风5。目标火7、风4、水6，合计17。"
+      "settlement_reveal": "第三天 · 小说家：纸坏了，字仍留下\n\n小说家想重新留下一份能保存的文字。纸页会受潮、磨损，她希望即便纸张坏了，至少封面上的字还认得出来。\n\n将厚纸和树皮浸透，揉成没有干芯的纸浆，用于制作纸页。工作时让挂起的厚帘展开、空气吹过整个工作处。另在木质封面上烙下清楚的文字，让字成为木料表面的深色痕迹。纸浆、风干与木面烙字分步处理，不对普通纸页施加强烈火力。\n\n水6“丰沛”能湿透厚纸树皮，使纸浆均匀；火7“焦化”能在木器留下可控的烙痕，不以火10焚毁为目的；风4“清劲”可翻动宽叶、鼓动挂衣、推走地上干叶，适合展开厚帘与吹过工作场地，而不到将干叶卷离地面的风5。目标火7、风4、水6，合计17。",
+      "facts": [
+        {
+          "id": "task.purpose",
+          "topic": "purpose",
+          "source": "purpose",
+          "text": "我想重新留下一份能保存的文字。纸页会受潮磨损，至少木封面上的字还应该认得出来。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.a",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "木面留下清楚、可控的深色烙痕，字成为表面的痕迹；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.b",
+          "topic": "fire",
+          "source": "topics.fire",
+          "text": "不把木头烧成灰。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.a",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "厚帘能鼓起再落下，干叶在地面滑转；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.wind.b",
+          "topic": "wind",
+          "source": "topics.wind",
+          "text": "不需要卷叶离地，也不拖动帆舟。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.water.a",
+          "topic": "water",
+          "source": "topics.water",
+          "text": "厚纸和树皮内外湿透，揉开没有干芯，能做均匀纸浆，不只是湿表面。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.bounds.a",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "纸浆处理与木面烙字分开，不说烈火让普通纸永久不坏，也不承诺文字永远无法毁去。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.a",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "先浸透厚纸树皮并揉成均匀纸浆，让风吹过工作处、展开厚帘；",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.b",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "另在木封面烙字。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.process.c",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "药剂在小屋合成台调配，不新增玩家手工操作菜单。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.a",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "小说家想重新留下一份能保存的文字。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.context.b",
+          "topic": "purpose",
+          "source": "private_brief",
+          "text": "纸页会受潮、磨损，她希望即便纸张坏了，至少封面上的字还认得出来。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.a",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "将厚纸和树皮浸透，揉成没有干芯的纸浆，用于制作纸页。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.b",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "工作时让挂起的厚帘展开、空气吹过整个工作处。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.c",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "另在木质封面上烙下清楚的文字，让字成为木料表面的深色痕迹。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "task.outcome.d",
+          "topic": "process",
+          "source": "private_brief",
+          "text": "纸浆、风干与木面烙字分步处理，不对普通纸页施加强烈火力。",
+          "minimum_layer": 1,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.a",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "她曾出版三本书，作品被禁、作者身份受到针对，逃离时没有带出样书。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "task.motive.b",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "她希望留下字，并不意味着从此放弃浪漫和调情。",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.c",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "浅层可以谈保存文字；",
+          "minimum_layer": 3,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.motive.d",
+          "topic": "motive",
+          "source": "private_brief",
+          "text": "关于禁书、出逃与遗失样书的事实仍受熟悉度约束。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "task.fire.effect.a",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.fire.effect.b",
+          "topic": "fire",
+          "source": "codex",
+          "codex_element": "fire",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.a",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.wind.effect.b",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.wind.effect.c",
+          "topic": "wind",
+          "source": "codex",
+          "codex_element": "wind",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        },
+        {
+          "id": "task.water.effect.a",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 0
+        },
+        {
+          "id": "task.water.effect.b",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 1
+        },
+        {
+          "id": "task.water.effect.c",
+          "topic": "water",
+          "source": "codex",
+          "codex_element": "water",
+          "minimum_layer": 1,
+          "kind": "effect_reference",
+          "codex_sentence": 2
+        }
+      ]
     }
   ]
 }

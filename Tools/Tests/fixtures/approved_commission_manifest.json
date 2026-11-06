@@ -1,0 +1,41 @@
+{
+  "baseline": "fca03ee",
+  "entries": [
+    {
+      "commission_id": 1,
+      "sha256": "99ba07035f1bd3c7c832d2802c76df74daaef7036c0bfaef12b231c72224317c"
+    },
+    {
+      "commission_id": 2,
+      "sha256": "7464e113a30e51a09ffcbbeb21c47810b9e7738efc2dd4f0d8db58aab8704b28"
+    },
+    {
+      "commission_id": 3,
+      "sha256": "8a72cc998a031e0f1a0394993f1a38e5a8766f78d7964bfe425601c79f185a85"
+    },
+    {
+      "commission_id": 4,
+      "sha256": "cee1877b5f42f56e41ca86417d496f87bb3c710f150d79a0e5ed057f670faeb7"
+    },
+    {
+      "commission_id": 5,
+      "sha256": "0844e38bc5ca8a2d49686400f08128352478de6c9ac21ce985ad7331fe150faf"
+    },
+    {
+      "commission_id": 6,
+      "sha256": "535342db0ac1417ef4bfb097d6a338709e11fce778b813fd9f0ff2a7158431ad"
+    },
+    {
+      "commission_id": 7,
+      "sha256": "2f4fc89c66879e0f762b9c5768a930f4f311f82e9906068b57c3c2cd5f3f74b5"
+    },
+    {
+      "commission_id": 8,
+      "sha256": "40f80d5172f5242a83618e6235f3a7099589f09e4c675851be2cde273758af75"
+    },
+    {
+      "commission_id": 9,
+      "sha256": "3fcb68a85bde39a7eac8f1fa15e575ce5f1e172c13398ea41a110b68dbec6576"
+    }
+  ]
+}

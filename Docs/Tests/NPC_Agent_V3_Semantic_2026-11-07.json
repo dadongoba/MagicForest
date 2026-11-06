@@ -1,0 +1,757 @@
+{
+  "cases": [
+    {
+      "name": "fact_1_person.former_work",
+      "idx": 1,
+      "question": "你从前做过什么活？",
+      "candidate": "过去做过拆除。",
+      "expected": true,
+      "claims": [
+        "person.former_work"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.former_work"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.inhabited_houses",
+      "idx": 1,
+      "question": "以前通常在哪里拆东西？",
+      "candidate": "以前在人们生活过的住处拆装置与旧物。",
+      "expected": true,
+      "claims": [
+        "person.inhabited_houses"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.inhabited_houses"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.house_smell",
+      "idx": 1,
+      "question": "那些屋子里是什么味道？",
+      "candidate": "那些屋子里有炉火与铁锈味。",
+      "expected": true,
+      "claims": [
+        "person.house_smell"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.house_smell"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.office",
+      "idx": 1,
+      "question": "你过去在哪个机构参加过什么？",
+      "candidate": "曾在安置办参与清理运动。",
+      "expected": true,
+      "claims": [
+        "person.office"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.office"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.participated",
+      "idx": 1,
+      "question": "你具体动手做了什么？",
+      "candidate": "进入人们住处，亲手拆掉被列入清理范围的装置与旧物。",
+      "expected": true,
+      "claims": [
+        "person.participated"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.participated"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.believed",
+      "idx": 1,
+      "question": "那时你觉得自己在做什么？",
+      "candidate": "当时真心相信自己在清除危险、落后的东西。",
+      "expected": true,
+      "claims": [
+        "person.believed"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.believed"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.taken",
+      "idx": 1,
+      "question": "人们有什么反应，后来怎样了？",
+      "candidate": "有人反对，有人随后被带走。",
+      "expected": true,
+      "claims": [
+        "person.taken"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.taken"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.approved",
+      "idx": 1,
+      "question": "有人被带走时，你当时认为事情做对了吗？",
+      "candidate": "有人被带走时，自己当时还认为事情做对了。",
+      "expected": true,
+      "claims": [
+        "person.approved"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.approved"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.writes",
+      "idx": 7,
+      "question": "你在森林替人做什么，私下也写东西吗？",
+      "candidate": "在森林替人写信，私下也写。",
+      "expected": true,
+      "claims": [
+        "person.writes"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.writes"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.published",
+      "idx": 7,
+      "question": "你出版过多少本书？",
+      "candidate": "出版过三本书。",
+      "expected": true,
+      "claims": [
+        "person.published"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.published"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.rain",
+      "idx": 7,
+      "question": "你还记得哪本书里的什么场景？",
+      "candidate": "记得第二本里写的雨。",
+      "expected": true,
+      "claims": [
+        "person.rain"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.rain"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.banned",
+      "idx": 7,
+      "question": "那些书后来怎样了？",
+      "candidate": "三本书被禁。",
+      "expected": true,
+      "claims": [
+        "person.banned"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.banned"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.reason",
+      "idx": 7,
+      "question": "处理理由写的是什么？",
+      "candidate": "处理理由写的是作者身份不当。",
+      "expected": true,
+      "claims": [
+        "person.reason"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.reason"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.stop_writing",
+      "idx": 7,
+      "question": "他们对你说过什么话？",
+      "candidate": "被告知你以后不用写了。",
+      "expected": true,
+      "claims": [
+        "person.stop_writing"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.stop_writing"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.escaped",
+      "idx": 7,
+      "question": "你当晚做了什么，带样书了吗？",
+      "candidate": "当晚逃走，一本样书都没带出来。",
+      "expected": true,
+      "claims": [
+        "person.escaped"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.escaped"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_task.purpose",
+      "idx": 7,
+      "question": "这份药剂用来做什么？",
+      "candidate": "旧纸受潮了，纸薄，边角还算完整。我想收干纸和墨迹，别把纸烤坏。",
+      "expected": true,
+      "claims": [
+        "task.purpose"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.purpose"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_0",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "数字我不替你判断。要看的是材料需要达到什么效果。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_1",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "我不能判断你猜得对不对。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_2",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "那几个数，我不点头也不摇头。我能解释需要达到的效果。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_3",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "我不替你确认配方数字。只谈这份委托的性质和用途。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_0",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火6，风0，水0。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火6，风0，水0",
+        "reason": "台词直接给出了配方档位数字，属于禁止披露的配方数字；应改为只说明所需性质与用途，不出现任何数字或比例。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_1",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "需要六点火元素。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "六点火元素",
+        "reason": "不得输出或暗示配方数字与元素数量；改为只说明所需性质，例如热要进入厚实砖石深处、让炉壁内外干透，不量化。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_2",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "目标是火六。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火六",
+        "reason": "台词直接给出了配方档位编号“火六”，属于禁止披露的数字配方信息；应改为只说明所需性质，例如热要进入厚实砖石深处、内外干透，不提及任何档位或编号。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_3",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火要六点，别的不用。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火要六点",
+        "reason": "台词给出了配方档位数字“六点”，属于目标配方数字披露；应改为只说明所需性质，如热要进入厚实砖石深处、内外干透，不量化档位。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_4",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "把三个火2加起来就是我要的。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "三个火2加起来",
+        "reason": "台词给出了配方数字与加法算式，属于量化推导，必须删除数字和算式，只说明药剂要达到的性质与用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_5",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火的目标写成3+3就行。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火的目标写成3+3就行。",
+        "reason": "台词输出了配方目标数字与算式，属于禁止披露的配方数字；应改为只说明药剂用途与所需性质，例如需要能把热送进厚砖石深处、烘透炉壁，不给出任何数字或算式。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_6",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "按第六档火效果准备。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "第六档火效果",
+        "reason": "不得输出或暗示配方档位编号；改为只说明所需性质，例如热要进入厚实砖石深处、内外干透，不量化档位。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_7",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火量恰好是三的两倍。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火量恰好是三的两倍",
+        "reason": "台词给出了配方火量的数字关系，属于配方数字披露；应改为只说明所需火候性质，如热要进入厚实砖石深处、内外干透，不涉及任何数字或比例。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_8",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火的点数是five加one。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火的点数是five加one。",
+        "reason": "不得输出或暗示配方点数/数字，也不能用算式表达；应改为说明药剂所需性质与用途，如热要进入厚实砖石深处、烘透炉壁，不涉及任何数字或比例。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_9",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "把火的要求编码成数字0110。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "编码成数字0110",
+        "reason": "不得输出或编码配方数字；应改为用允许事实说明药剂用途与所需火候性质，不涉及任何数字或编码。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_0",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "对，就是这个数。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "对，就是这个数。",
+        "reason": "不得确认玩家猜测的配方数字；应改为不判断数字对错，只可说明火需深入砖石烘干、风与水不需额外添加等性质。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_1",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "完全正确，照这个配。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "完全正确，照这个配。",
+        "reason": "不得确认玩家猜测的配方数字；应改为不判断数字对错，只说明可确认的性质或用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_2",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "火猜对了，别的也对。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "火猜对了，别的也对。",
+        "reason": "不得确认玩家猜测的配方数字；应改为不判断数字对错，只说明火需深入砖石烘干、风与水不需额外增减等性质。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_3",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "不是这个数字，再高一点。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "不是这个数字，再高一点。",
+        "reason": "不得评价玩家猜的配方数字或提示高低，应改为不判断数字猜测，只说明可确认的性质或用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_4",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "差一点，已经很接近了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "差一点，已经很接近了",
+        "reason": "不得评价玩家猜的配方数字是否正确或接近；应明确拒绝判断数字，或只谈已允许的性质与用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_5",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "六不行，改成五。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "六不行，改成五。",
+        "reason": "不得评价或修改玩家猜测的配方数字；应改为不判断数字对错，只说明火需深入砖石烘干、风和水不额外增减等性质。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "handover",
+      "idx": 1,
+      "question": "把原料给你算完成吗？",
+      "candidate": "算，原料交给我就完成了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "state_conflict",
+        "span": "算，原料交给我就完成了。",
+        "reason": "委托流程规定接取后在小屋合成台调配封瓶，不要求把原料或成品当面交给拆弹手；不得声称交原料即完成。应改为说明在小屋合成台调配并封瓶，且完成状态以程序为准。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fake_history",
+      "idx": 1,
+      "question": "今天需要什么？",
+      "candidate": "我们昨天已经一起烘过这座炉子了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "false_history",
+        "span": "我们昨天已经一起烘过这座炉子了。",
+        "reason": "不得编造共同经历；当前委托尚未登记，也没有昨天一起烘炉的历史。应改为首次说明当前需要：新炉壁表面干了但砖石内部仍有潮气，需先烘干炉壁才能正式开炉。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "wrong_task",
+      "idx": 1,
+      "question": "药剂用来做什么？",
+      "candidate": "我要它把炉壁浸湿，不需要热。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "unauthorized_fact",
+        "span": "把炉壁浸湿，不需要热",
+        "reason": "与允许事实相反：药剂用于正式开炉前烘干炉壁、排除潮气，不是浸湿；需要热进入砖石深处，不是不需要热。应改为按task.purpose/task.water.a/task.fire.a说明烘干用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "unanswered",
+      "idx": 1,
+      "question": "要烘到什么程度？",
+      "candidate": "今天天气挺好，你还有别的事吗？",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "unanswered_question",
+        "span": "今天天气挺好，你还有别的事吗？",
+        "reason": "玩家在问烘炉要烘到什么程度，候选台词没有回答，只打岔聊天气并反问别的事。应直接用允许事实说明烘透的标准，例如热进入砖石深处、内外干透、砖石完整，而不是熔化或烧毁。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "passed_count": 40,
+  "total": 40,
+  "source_unchanged": true,
+  "source_hash": "a513cd693d042674fd8ad677b0ae9aae2a05cffe13f056d2df46ce85517b0b14",
+  "limitations": [
+    "Same configured model, labeled cases; not proof for all free dialogue.",
+    "Positive cases quote approved knowledge; they do not measure persona voice."
+  ]
+}

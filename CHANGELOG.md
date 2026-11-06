@@ -2,6 +2,21 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-07-01：按事实控制 NPC 知识、语义披露与回合提交
+
+- **目标 / 基线 / 前置**：执行用户批准的完整 agent 优化方案，基于 fca03ee577c501fac3dda22e816f7b748ff54eaf、前置批次2026-11-06-05；该基线已在 origin/main 核对。本批不改九份批准委托的目标与叙事，不改人设故事、图鉴文本、合成评分、每日推进或地图。
+- **修改配置 / 插件构建**：Config/ForestCommissionKnowledge.json新增逐条事实来源与图鉴引用；新增Config/ForestPersonaFacts.json；Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/DialogueMemoryTable.Build.cs分发新人物事实文件。
+- **修改插件源码**：同插件目录下Private/AlchemyDialogueKnowledge.cpp、AlchemyDialogueReplyGate.cpp、AlchemyGameplaySubsystem.cpp、DialogueAIServiceSubsystem.cpp；Public/AlchemyDialogueKnowledge.h、AlchemyDialogueReplyGate.h、DialogueAIServiceSubsystem.h。**新增**Public/AlchemyDialogueTurn.h、AlchemyDialogueTurnPolicy.h。
+- **修改游戏源码**：Source/demo3_UE58/ForestNPCDialogueSubsystem.h/.cpp，接入语义分析、已提交动作收据、逐条实际披露账本、知识指纹、过期校验和取消。
+- **修改 / 新增测试**：修改Tools/Tests/dialogue_policy_bridge.py、run_dialogue_knowledge_tests.py、run_npc_remote_dialogue_checks.py；新增dialogue_fact_host.py、run_semantic_review_tests.py、run_semantic_action_tests.py、fixtures/approved_commission_manifest.json。均在Tools/Tests/下。
+- **新增文档 / 证据**：[Docs/NPC_Agent_Implementation_2026-11-07.md](Docs/NPC_Agent_Implementation_2026-11-07.md)；新增Docs/Tests/NPC_Agent_V3_Live_2026-11-07.json、NPC_Agent_V3_Actions_2026-11-07.json、NPC_Agent_V3_Semantic_2026-11-07.json、NPC_Agent_V3_SourceSync_2026-11-07.json。修改CHANGELOG.md。
+- **实际行为**：语义分析选择具体事实并提出人物层级和接取；本地检查事实权限、每轮新增上限、原话证据、状态及保存结果。生成与复核各有结构化协议，隔离历史台词及生成格式指令。只登记最终回复实际说出的事实；兜底不把选择过的整个主题记为已讲。图鉴效果必须与同元素的当前委托用途对象配对或该对象已讲，缺配对/超预算/非法编号向分析器反馈具体错误并重试；不让抽象效果丢失任务对象。狭窄本地配方检查结合语义复核，正常数量和拒绝猜数允许；复核要检查性质强弱是否被改写。定向修复一次，有限格式重试共享45秒/最多6次请求预算；退出或变更日期、NPC、回合与知识后旧结果不能提交。
+- **记忆 / 迁移**：保留Set/Get/ClearRoundMemoryContext及既有紧凑账本读取；保留普通数量、布尔类型，排除目标、配方、评分与层级字段，旧记忆不能扩大权限。修订3重建旧粗主题披露账本，保留熟悉度、接取、收据与有效历史；知识指纹变化重建事实编号。没有直接修改用户存档，也没有新增记忆衰减、关系效果或触发规则。
+- **应用 / 依赖**：完整Air工程制作，按上述同路径同步增量；必须一起合并配置、头源和Build.cs，重编译并正常重启。新增JSON随NonUFS分发。沿用同一网关与模型配置；没有API凭据、完整工程、缓存、编译产物或地图资产。更新前可按原流程备份存档。
+- **本次验证**：最终Mac UE5.8 arm64编译链接通过7.40秒；完整Air与同步增量的原生检查通过。最终源码冻结后线上92轮通过，2次安全兜底；12条语义动作和40条语义复核通过（知识/规则散列一致）。九委托盲读9/9精确、全部在一档内且零元素准确；不同规则但同接口模型评审，非独立人工结论。报告有实际台词、分析尝试、实际披露与散列，不把旧版试跑拼为最终验收。未改图鉴JSON仅格式不同，解析内容一致，另附同步证明。
+- **限制**：未打开UE/PIE；真实SaveGame、UI、反射装载、异步取消、Windows与打包未实测。测试桥直接读取生产策略与接取校验头，调用实际原生提示与策略；UE容器/正则兼容、JSON读取/HTTP调度/保存结果仍由适配器替代。同接口模型的不同评审规则与盲读估计不能替代人工或任意自由对话证明。
+- **上传状态**：待本批提交推送及读取远端SHA核对；交付时报告实际结果。
+
 ## 2026-11-06-05：线上检查NPC知识、修复主题漏判与回复边界
 
 - **目的 / 基线 / 前置**：基于451d277、批次04；用户提供凭据，继续实际远端多轮检查并修复发现的问题。凭据仅用于临时进程，不写入工程、报告或Git；前批451d277已推送核对一致。

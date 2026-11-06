@@ -40,6 +40,7 @@ class NativePolicy:
  }''')
   shim=shim.replace(' bool IsEmpty()const{return empty();}',r'''
  static FString Chr(wchar_t c){return FString(1,c);}
+ FString ToLower()const{FString s=*this;for(auto& c:s)c=std::towlower(c);return s;}
  void ReplaceInline(const wchar_t* a,const wchar_t* b){size_t p=0;while((p=find(a,p))!=npos){replace(p,std::wstring(a).size(),b);p+=std::wstring(b).size();}}
  bool StartsWith(const wchar_t* s)const{return find(s)==0;}
  int Len()const{return size();}
@@ -53,29 +54,46 @@ class NativePolicy:
  FString Intro(const FAlchemyCommissionDefinition& c){return c.Wish;}
  FString Guidance(const FAlchemyCommissionDefinition&,int,int){return TEXT("__GUIDANCE__");}
  FString SafeMemoryJson(const FString& s){return s;}
-'''+ '\n'.join(extract(knowledge,n) for n in ['HasNumericDisclosure','IsSafeReply','IsSafeReplyForPlayer','TopicBit','LimitTopics'])+'\n}\n'
+'''+ '\n'.join(extract(knowledge,n) for n in ['HasNumericDisclosure','IsSafeReply','IsSafeReplyForPlayer','IsMemoryFieldAllowed','TopicBit','LimitTopics','AnalysisRules','ReviewRules','GenerationRules'])+'\n}\n'
   helper='namespace AlchemyGameplay {\n'+'\n'.join(extract(gameplay,n) for n in ['FindKeyword','MatchesLayerTrigger','LayerPrompt'])+'\n}\n'
   methods='\n'.join(extract(gameplay,'UAlchemyGameplaySubsystem::'+n) for n in ['GetPersonaProfile','EvaluatePersonaTrigger','BuildPersonaSystemPrompt'])
-  extra=r'''
+  extra=(BASE/'Public/AlchemyDialogueTurnPolicy.h').read_text()+'\n'+(ROOT/'Source/demo3_UE58/ForestCommissionAcceptance.h').read_text()+r'''
 #include <codecvt>
 #include <locale>
 std::wstring_convert<std::codecvt_utf8<wchar_t>> cv;
 std::string q(const std::wstring& s){std::string v=cv.to_bytes(s),out="\"";for(char ch:v){if(ch=='"'||ch=='\\')out+='\\';if(ch=='\n')out+="\\n";else if(ch=='\r')out+="\\r";else if(ch=='\t')out+="\\t";else out+=ch;}return out+"\"";}
+struct Ledger:std::vector<std::wstring>{
+ int Num()const{return static_cast<int>(size());}
+ bool Contains(const std::wstring& x)const{return std::find(begin(),end(),x)!=end();}
+ void AddUnique(const std::wstring& x){if(!Contains(x))push_back(x);}
+};
+Ledger ids(const std::wstring& s){Ledger out;std::wstringstream in(s);std::wstring x;while(std::getline(in,x,L','))if(!x.empty())out.AddUnique(x);return out;}
+Ledger sequence(const std::wstring& s){Ledger out;std::wstringstream in(s);std::wstring x;while(std::getline(in,x,L','))if(!x.empty())out.push_back(x);return out;}
+std::string array(const Ledger& a){std::string out="[";for(size_t i=0;i<a.size();++i){if(i)out+=",";out+=q(a[i]);}return out+"]";}
 int main(int argc,char** argv){
  UAlchemyGameplaySubsystem g;std::string mode=argc>1?argv[1]:"profiles";
  auto arg=[&](int n)->FString{return n<argc?cv.from_bytes(argv[n]):std::wstring();};
+ if(mode=="rules"){std::cout<<q(arg(2)==TEXT("analysis")?AlchemyDialogueKnowledge::AnalysisRules():arg(2)==TEXT("review")?AlchemyDialogueKnowledge::ReviewRules():AlchemyDialogueKnowledge::GenerationRules());return 0;}
+ if(mode=="memory_string"){std::cout<<(!AlchemyDialogueKnowledge::HasNumericDisclosure(arg(2))?"true":"false");return 0;}
+ if(mode=="memory_key"){std::cout<<(AlchemyDialogueKnowledge::IsMemoryFieldAllowed(arg(2))?"true":"false");return 0;}
+ if(mode=="commit"){auto allowed=ids(arg(2)),delivered=ids(arg(3)),known=ids(arg(4));AlchemyDialogueTurnPolicy::CommitDelivered(allowed,delivered,known,std::stoi(argv[5]));std::cout<<array(known);return 0;}
+ if(mode=="budget"){std::cout<<(AlchemyDialogueTurnPolicy::WithinNewFactBudget(ids(arg(2)),ids(arg(3)),std::stoi(argv[4]))?"true":"false");return 0;}
+ if(mode=="bindings"){std::cout<<(AlchemyDialogueTurnPolicy::ValidateBindings(ids(arg(2)),ids(arg(3)),sequence(arg(4)),sequence(arg(5)))?"true":"false");return 0;}
+ if(mode=="promote"){std::cout<<(AlchemyDialogueTurnPolicy::MayPromote(std::stoi(argv[2]),std::stoi(argv[3]),std::stoi(argv[4]),std::stoi(argv[5]),std::stoi(argv[6]))?"true":"false");return 0;}
+ if(mode=="fresh"){std::cout<<(AlchemyDialogueTurnPolicy::IsFresh(std::stoi(argv[2]),std::stoi(argv[3]),std::stoi(argv[4]),std::stoi(argv[5]),std::stoi(argv[6]),std::stoi(argv[7]))?"true":"false");return 0;}
+ if(mode=="accept"){std::cout<<(ForestCommissionAcceptance::EvidenceIsValid(std::stoi(argv[2]),std::stoi(argv[3]),std::stoi(argv[4]),std::stoi(argv[5]),std::stoi(argv[6]),std::stoi(argv[7]),std::stoi(argv[8]),std::stoi(argv[9]))?"true":"false");return 0;}
  if(mode=="guard"){std::cout<<(AlchemyDialogueKnowledge::IsSafeReplyForPlayer(arg(2),arg(3))?"true":"false");return 0;}
  if(mode=="safe"){std::cout<<q(AlchemyDialogueKnowledge::IsSafeReply(arg(2))?arg(2):FString());return 0;}
  if(mode=="clean"){std::cout<<q(AlchemyPersonaPolicy::CleanReply(arg(2),arg(3)));return 0;}
  if(mode=="trigger"){int layer=0;FString why;int result=g.EvaluatePersonaTrigger(arg(2),arg(4),std::stoi(argv[3]),layer,why);std::cout<<result;return 0;}
  if(mode=="topics"){std::cout<<AlchemyDialogueKnowledge::LimitTopics(std::stoi(argv[2]));return 0;}
  if(mode=="prompt"){std::cout<<q(g.BuildPersonaSystemPrompt(arg(2),std::stoi(argv[3]),std::stoi(argv[4]),arg(5),{}));return 0;}
- std::cout<<"{";bool first=true;for(const auto& p:{g.MakeBlacksmithProfile(),g.MakeOperatorProfile(),g.MakeNovelistProfile()}){if(!first)std::cout<<",";first=false;std::cout<<q(p.PersonaId)<<":{\"name\":"<<q(p.Name)<<",\"layers\":[";for(int i=0;i<3;++i){if(i)std::cout<<",";std::cout<<q(p.Layers[i].Prompt);}std::cout<<"]}";}std::cout<<"}";
+ std::cout<<"{";bool first=true;for(const auto& p:{g.MakeBlacksmithProfile(),g.MakeOperatorProfile(),g.MakeNovelistProfile()}){if(!first)std::cout<<",";first=false;std::cout<<q(p.PersonaId)<<":{\"name\":"<<q(p.Name)<<",\"layers\":[";for(int i=0;i<3;++i){if(i)std::cout<<",";std::cout<<q(p.Layers[i].Prompt);}std::cout<<"],\"unlocks\":[";for(int i=0;i<3;++i){if(i)std::cout<<",";std::cout<<"{\"layer\":"<<p.Layers[i].FamiliarityLevel<<",\"topic\":"<<q(p.Layers[i].Summary)<<",\"topic_hints_not_literal_triggers\":[";for(size_t k=0;k<p.Layers[i].TriggerKeywords.size();++k){if(k)std::cout<<",";std::cout<<q(p.Layers[i].TriggerKeywords[k]);}std::cout<<"]}";}std::cout<<"]}";}std::cout<<"}";
 }
 '''
   source=shim+'\nstruct FDialogueMessage{};\n'+(BASE/'Private/AlchemyPersonaProfiles.inl').read_text()+helper+definitions+knowledge_stub+methods+'\nnamespace AlchemyPersonaPolicy{'+extract(persona,'CanonicalId')+extract(persona,'CleanReply')+'}\n'+extra
   (p/'bridge.cpp').write_text(source)
-  subprocess.run(['c++','-std=c++17',str(p/'bridge.cpp'),'-o',str(self.exe)],check=True,capture_output=True)
+  subprocess.run(['c++','-std=c++17','-Wno-deprecated-declarations','-Wno-pragma-once-outside-header',str(p/'bridge.cpp'),'-o',str(self.exe)],check=True)
  def call(self,*args):
   return json.loads(subprocess.check_output([str(self.exe),*map(str,args)]))
  def close(self):self.tmp.cleanup()
@@ -103,6 +121,6 @@ if __name__=='__main__':
    for level in [1,2,3]:
     p=n.call('prompt',who,level,idx,'{}')
     assert profiles[who]['name'] in p and profiles[who]['layers'][level-1] in p
-    assert '【基础人设】' in p and '【日常状态】' in p and '火性6' not in p and '__GUIDANCE__' in p
+    assert '【基础人设】' in p and '【日常状态】' in p and '火性6' not in p and '__GUIDANCE__' not in p
   print('Compiled production prompt/persona/trigger/guard bridge passed')
  finally:n.close()

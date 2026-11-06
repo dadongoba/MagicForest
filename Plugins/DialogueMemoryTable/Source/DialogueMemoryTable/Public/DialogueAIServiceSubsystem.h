@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "AlchemyGameplaySubsystem.h"
+#include "AlchemyDialogueTurn.h"
 #include "DialogueAIServiceSubsystem.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FDialogueAICompletion, bool, bSuccess, const FString&, Text);
@@ -27,7 +28,10 @@ public:
     UFUNCTION(BlueprintPure, Category = "Dialogue AI|Gateway")
     bool HasApiKey() const { return !ApiKey.IsEmpty(); }
     // NPC callers may provide an already assembled, state-bound prompt.
-    void RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback,const FString& CommissionFacts=FString(),const FString& PurposeFallback=FString());
+    void RequestReviewedNpcMessages(FName PersonaId,const TArray<FDialogueMessage>& Messages,FDialogueAICompletion Callback,const FString& CommissionFacts=FString(),const FString& PurposeFallback=FString(),const TArray<FName>& Allowed={});
+    void RequestScopedCompletion(const TArray<FDialogueMessage>& Messages,float Temperature,int32 MaxTokens,FDialogueAICompletion Callback,bool bJson,const TSharedPtr<FDialogueRequestScope>& Scope);
+    void RequestNpcTurn(FName PersonaId,const TArray<FDialogueMessage>& Messages,const FString& Catalog,const TArray<FName>& Allowed,FName FallbackFact,const FString& FallbackText,FAlchemyNpcReplyCompletion Callback,const TSharedPtr<FDialogueRequestScope>& Scope);
+    void CancelNpcTurns(const TSharedPtr<FDialogueRequestScope>& Scope);
 
     UFUNCTION(BlueprintCallable, Category = "Dialogue AI|Chat")
     void RequestChatCompletion(

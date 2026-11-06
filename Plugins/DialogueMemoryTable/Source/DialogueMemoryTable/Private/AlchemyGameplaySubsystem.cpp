@@ -252,7 +252,7 @@ FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt(
     if (GetCommission(CommissionOrderIndex, Commission))
     {
         Prompt += TEXT("【既有委托用途，不含数字配方】\n")+AlchemyDialogueKnowledge::Intro(Commission)+TEXT("\n");
-        Prompt += AlchemyDialogueKnowledge::Guidance(Commission,1,0);
+        // The caller supplies fact-level permissions and actual delivery history.
     }
 
     if (!CompactMemoryJson.IsEmpty())

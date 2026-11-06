@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "source": "user-approved-personas-2026-11-03",
+  "entries": [
+    {
+      "persona": "blacksmith",
+      "facts": [
+        {
+          "id": "person.former_work",
+          "topic": "backstory",
+          "text": "过去做过拆除。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "person.inhabited_houses",
+          "topic": "backstory",
+          "text": "以前在人们生活过的住处拆装置与旧物。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.house_smell",
+          "topic": "backstory",
+          "text": "那些屋子里有炉火与铁锈味。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.office",
+          "topic": "backstory",
+          "text": "曾在安置办参与清理运动。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.participated",
+          "topic": "backstory",
+          "text": "进入人们住处，亲手拆掉被列入清理范围的装置与旧物。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.believed",
+          "topic": "backstory",
+          "text": "当时真心相信自己在清除危险、落后的东西。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.taken",
+          "topic": "backstory",
+          "text": "有人反对，有人随后被带走。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.approved",
+          "topic": "backstory",
+          "text": "有人被带走时，自己当时还认为事情做对了。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        }
+      ]
+    },
+    {
+      "persona": "operator",
+      "facts": [
+        {
+          "id": "person.route",
+          "topic": "backstory",
+          "text": "在森林跑腿，记路好。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "person.official_lines",
+          "topic": "backstory",
+          "text": "以前接过官线，声音经铜线传到耳边。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.records",
+          "topic": "backstory",
+          "text": "会整理记录、留记号。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.surveillance",
+          "topic": "backstory",
+          "text": "曾在总局接线并监听人们谈话。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.submitted",
+          "topic": "backstory",
+          "text": "有些记录与标记是自己交上去的。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.taken",
+          "topic": "backstory",
+          "text": "有人被标记后被带走。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.slept",
+          "topic": "backstory",
+          "text": "知道有人被带走后，当晚却睡得很好。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        }
+      ]
+    },
+    {
+      "persona": "novelist",
+      "facts": [
+        {
+          "id": "person.writes",
+          "topic": "backstory",
+          "text": "在森林替人写信，私下也写。",
+          "minimum_layer": 1,
+          "kind": "fact"
+        },
+        {
+          "id": "person.published",
+          "topic": "backstory",
+          "text": "出版过三本书。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.rain",
+          "topic": "backstory",
+          "text": "记得第二本里写的雨。",
+          "minimum_layer": 2,
+          "kind": "fact"
+        },
+        {
+          "id": "person.banned",
+          "topic": "backstory",
+          "text": "三本书被禁。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.reason",
+          "topic": "backstory",
+          "text": "处理理由写的是作者身份不当。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.stop_writing",
+          "topic": "backstory",
+          "text": "被告知你以后不用写了。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        },
+        {
+          "id": "person.escaped",
+          "topic": "backstory",
+          "text": "当晚逃走，一本样书都没带出来。",
+          "minimum_layer": 3,
+          "kind": "fact"
+        }
+      ]
+    }
+  ]
+}

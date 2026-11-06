@@ -3,6 +3,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GameFramework/SaveGame.h"
 #include "AlchemyGameplayTypes.h"
+#include "AlchemyDialogueTurn.h"
 #include "ForestNPCDialogueSubsystem.generated.h"
 class UForestNPCDialogueSubsystem;
 USTRUCT()
@@ -19,7 +20,13 @@ struct FForestConversationRow
  UPROPERTY() int32 KnowledgeRevision=0;
  UPROPERTY() int32 KnowledgeDay=0;
  UPROPERTY() int32 KnowledgeCommission=0;
- UPROPERTY() int32 DisclosedTopics=0;
+ UPROPERTY() int32 DisclosedTopics=0; // Legacy save field; no longer a disclosure ledger.
+ UPROPERTY() TArray<FName> DeliveredTaskFacts;
+ UPROPERTY() TArray<FName> DeliveredPersonaFacts;
+ UPROPERTY() FString KnowledgeFingerprint;
+ UPROPERTY() FString LastReplyError;
+ UPROPERTY() FString LastActionReceipt;
+ UPROPERTY() bool bLastReplyFallback=false;
  UPROPERTY() TArray<FDialogueMessage> ArchivedKnowledgeHistory;
  UPROPERTY() TArray<FDialogueMessage> ArchivedPersonaHistory;
  UPROPERTY() int64 NextSession=1;
@@ -49,6 +56,14 @@ public:
  int32 Day=0,Familiarity=1,CommissionId=0;
  TArray<FDialogueMessage> Evidence;
  FString AcceptanceNotice;
+ FString PlanRepairNotice;
+ bool bPresentation=false,bVerifiedReply=false;
+ FString Intent;
+ FString KnowledgeFingerprint;
+ TArray<FName> SelectedFacts,AllowedFacts;
+ FAlchemyDialogueTurnResult VerifiedReply;
+ TSharedPtr<FDialogueRequestScope> Scope;
+ UFUNCTION() void ReplyCompleted(const FAlchemyDialogueTurnResult& Reply);
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };
 /** Per-NPC conversations; delegates keep network responses scoped to a session. */
@@ -88,6 +103,7 @@ private:
  FString Slot=TEXT("ForestNPCConversations"),Status;
  TArray<FDialogueMessage> SessionTranscript;
  int32 Generation=0;
+ TSharedPtr<FDialogueRequestScope> ActiveTurnScope;
  bool bWaiting=false,bOfflineTest=false,bPersistenceReady=false;
  FForestConversationRow& Row(FName Id);
  bool Persist();

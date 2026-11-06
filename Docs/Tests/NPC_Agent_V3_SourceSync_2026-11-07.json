@@ -1,0 +1,138 @@
+{
+  "baseline": "fca03ee577c501fac3dda22e816f7b748ff54eaf",
+  "files": [
+    {
+      "path": "Config/ForestCommissionKnowledge.json",
+      "sha256": "92548ed5a2eef41f3beacf0084f37bffbd9860dd11633d3d327ea6a23503753d",
+      "byte_identical": true
+    },
+    {
+      "path": "Config/ForestPersonaFacts.json",
+      "sha256": "11316f1ababde92fb170a02b9114348413f0a0b9044d81ee9e0a058f17f1bdf8",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/DialogueMemoryTable.Build.cs",
+      "sha256": "5fc32e5ee46960978d071ab2fad8dffde4da2b335aa05b7700f1ba0061f10f2a",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueKnowledge.h",
+      "sha256": "7500eebd270946ada0ac90dd9f53a391061c96f324c0620954ef0822e4221ad9",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyDialogueKnowledge.cpp",
+      "sha256": "a513cd693d042674fd8ad677b0ae9aae2a05cffe13f056d2df46ce85517b0b14",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueReplyGate.h",
+      "sha256": "71f4115c789dbcb15711cc514b9ddf54fb5282011aba846b48f95b441e3f2387",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyDialogueReplyGate.cpp",
+      "sha256": "b13436b4af3365135140a101a47030be9771e177faaae517e7271eb084e00c8d",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueAIServiceSubsystem.h",
+      "sha256": "79d4d86e50990434e2c669064113788e6487393045113cb18549e9c72f6efd52",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueAIServiceSubsystem.cpp",
+      "sha256": "ee7362b9ccf8508e56aa2f2c85d7103bf1a6dd8facbc587062e92e60d2401450",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueTurn.h",
+      "sha256": "120bdfb2a63dc9cfc702ec449706bd1f2d2fcc0a4879b16dca06923637f3f390",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueTurnPolicy.h",
+      "sha256": "8152cc413b38d5a84d10e4de05ff14510c15d29909156b326766878c9f6d548d",
+      "byte_identical": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyGameplaySubsystem.cpp",
+      "sha256": "e14198cc63d62cd8fc64b4ff89f18247ce1cda151be95ae191059693c5e78ef8",
+      "byte_identical": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestNPCDialogueSubsystem.h",
+      "sha256": "326ebdb2a832c58c2d2e8715498f2adf865ad7940a5d0793f09b2eaf556bd98a",
+      "byte_identical": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp",
+      "sha256": "02f90a011a742e8d35be9fc82dcc6323a24a16726817089c96e527dffd59c21d",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/dialogue_policy_bridge.py",
+      "sha256": "7b74c870dff8c42b09316f67622b091365f6de17c4a5b8c3339dd2eb03270935",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/dialogue_fact_host.py",
+      "sha256": "3138959e041d4701526789b85c8cfff7e44cc6793e9d0e5d02c73ed851f73f8d",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/run_dialogue_knowledge_tests.py",
+      "sha256": "e425c6da288fd75076ce67a71e5555b72c3547070b5196aef0c96b2230f39053",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/run_npc_remote_dialogue_checks.py",
+      "sha256": "a1c2e405ecb48942e1c0e9d5269e60eead52f0c0ab22632de5f980161baf7069",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/run_semantic_review_tests.py",
+      "sha256": "87a2dc80ecf8e70cf4de44bdad38b8c13ea3461d4e186cf1c44168c9ceb2f340",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/fixtures/approved_commission_manifest.json",
+      "sha256": "e557125b7d56c7ec0caa9915ff51139c4374b3872b8d0232a38e6c70f71131c5",
+      "byte_identical": true
+    },
+    {
+      "path": "Docs/NPC_Agent_Implementation_2026-11-07.md",
+      "sha256": "4a2bf8c84357d8192b0deccb7fb6c793b397552d17a475e39fdd5050dc35559a",
+      "byte_identical": true
+    },
+    {
+      "path": "Tools/Tests/run_semantic_action_tests.py",
+      "sha256": "bd06fae74924935065773a50fc47c7a9fb28b1216e964cc21b09223948bb0a6b",
+      "byte_identical": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_V3_Live_2026-11-07.json",
+      "sha256": "909c44f5518dd7eb3411929bed2abd2963f97b8e9524eb99f4e54cc5028b1773",
+      "byte_identical": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_V3_Actions_2026-11-07.json",
+      "sha256": "66b9f1a4b735f533ee031db53022d1b2369cbbf0c44f3777437b8c13b2add3ba",
+      "byte_identical": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_V3_Semantic_2026-11-07.json",
+      "sha256": "c935cd816e3c0d3ec5d6c1bac3fe5a6db164e424d3118bc26c6c2194d34cc4fc",
+      "byte_identical": true
+    }
+  ],
+  "frozen_snapshot_verified": true,
+  "unchanged_reference": {
+    "path": "Config/ForestElementCodex.json",
+    "parsed_json_equal": true,
+    "air_sha256": "b23ada92aa66c71343b7ea949cf52f4bb745a0e10eda5fab125d08e37ce3e586",
+    "incremental_sha256": "c1cf1c3cebb77192c496a641540c75c3c3b18d9124733e165133f06ff2c363bc",
+    "note": "Formatting differs; guide contents were not changed or copied."
+  }
+}
