@@ -1,0 +1,8 @@
+{
+  "SchemaVersion": 1,
+  "Rules": [
+    {"RuleId": "fire_daily", "SourceId": "Region_Fire_Mushroom", "Element": "fire", "MinimumPip": 1, "MaximumPip": 9, "SeedSalt": 92821, "Tags": "regional_resource,daily_value,mushroom"},
+    {"RuleId": "wind_daily", "SourceId": "Region_Wind_Mushroom", "Element": "wind", "MinimumPip": 1, "MaximumPip": 9, "SeedSalt": 92821, "Tags": "regional_resource,daily_value,mushroom"},
+    {"RuleId": "water_daily", "SourceId": "Region_Water_Shell", "Element": "water", "MinimumPip": 1, "MaximumPip": 9, "SeedSalt": 92821, "Tags": "regional_resource,daily_value,shell"}
+  ]
+}

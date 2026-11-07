@@ -1,0 +1,602 @@
+{
+  "mode": "live",
+  "daily_policy": {
+    "passed": true,
+    "daily_identity_samples": 288,
+    "invalid_configs": 15,
+    "all_pip_values_seen": 9
+  },
+  "metadata_policy": {
+    "passed": true,
+    "metadata_save_cases": 8,
+    "immutable_attributes": true
+  },
+  "integration_guards": true,
+  "source_hashes": {
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DailyMushroomSubsystem.cpp": "4b26615ca70c2c8b4f591f803b513fb0130384440ea8311e9a2dab17e340250a",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DailyMushroomSubsystem.h": "5f708e6c56fdd10b9caad36216e78189a5bfbc7260a32ca09d8d6294627b410b",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DailyResourceValuePolicy.h": "290aaeedb9b4d5b5f8f020acedb9a056a35dcddba2a81a384b4309b23798ca4c",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/DialogueMemoryTable.Build.cs": "b0e7f4b2d0373394e9a58f18ad237db203f2e6c0a674633e92744ca76aafebc4",
+    "Config/ForestDailyResourceValues.json": "14402556b08df819dd58638f668d134338c9fcedcfb8e7525c2553198f8a0b36",
+    "Source/demo3_UE58/ForestElementRegions.cpp": "13e088ad8cd7a53e8e8410a5b14c2a248eb39addc9890f719d54a8d4d84070e0",
+    "Source/demo3_UE58/ForestElementRegions.h": "3212750609fa7d1ae0038507b14f82d2768f4cb8064919796104f5d4b2dd0afd",
+    "Source/demo3_UE58/ForestHarvestMagic.cpp": "7fe81dd9875bcb856d5f5e0307fa9f02c2f35789d7bbef4961ee4955d27e9292",
+    "Source/demo3_UE58/ForestItemNarrativePolicy.h": "d37f5661d84640122ad9a582ce43e33a8b69d28df35c226219871350d420fc9b",
+    "Tools/Tests/harvest_native_bridge.py": "2be6fc7f3acfe714814e0ac68490a259b53573551273b0130730c947cc6cebb8",
+    "Tools/Tests/run_harvest_emergence_checks.py": "f900363eecdd8ee051a0be2fa6bedebf28e8de7e05918d842bdc796478afb509"
+  },
+  "cases": [
+    {
+      "element": "fire",
+      "pip": 1,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "余烬陶哨",
+          "description": "粗陶捏成的小哨，表面留着手捏的指痕。吹口处嵌着一小撮不灭的暗红余烬，贴近时掌心发烫，摇一摇能听见细碎的噼啪声。",
+          "raw_content": "{\"name\":\"余烬陶哨\",\"description\":\"粗陶捏成的小哨，表面留着手捏的指痕。吹口处嵌着一小撮不灭的暗红余烬，贴近时掌心发烫，摇一摇能听见细碎的噼啪声。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "余烬陶哨",
+      "description": "粗陶捏成的小哨，表面留着手捏的指痕。吹口处嵌着一小撮不灭的暗红余烬，贴近时掌心发烫，摇一摇能听见细碎的噼啪声。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 3.009
+    },
+    {
+      "element": "fire",
+      "pip": 2,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "暖陶小火镰",
+          "description": "一只拇指大的粗陶小镰，釉面有橘红细斑。握在掌心会慢慢发烫，贴在纸上能烘出浅褐色焦痕，片刻后焦痕自己淡去。",
+          "raw_content": "{\"name\":\"暖陶小火镰\",\"description\":\"一只拇指大的粗陶小镰，釉面有橘红细斑。握在掌心会慢慢发烫，贴在纸上能烘出浅褐色焦痕，片刻后焦痕自己淡去。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "暖陶小火镰",
+      "description": "一只拇指大的粗陶小镰，釉面有橘红细斑。握在掌心会慢慢发烫，贴在纸上能烘出浅褐色焦痕，片刻后焦痕自己淡去。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.017
+    },
+    {
+      "element": "fire",
+      "pip": 3,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "暖陶炭盅",
+          "description": "粗陶小盅，内壁嵌着细碎炭渣，摸上去总比外壁温热。搁在阴凉处一夜，盅口也会自己浮起一缕极淡的热气，像刚离了火。",
+          "raw_content": "{\"name\":\"暖陶炭盅\",\"description\":\"粗陶小盅，内壁嵌着细碎炭渣，摸上去总比外壁温热。搁在阴凉处一夜，盅口也会自己浮起一缕极淡的热气，像刚离了火。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "暖陶炭盅",
+      "description": "粗陶小盅，内壁嵌着细碎炭渣，摸上去总比外壁温热。搁在阴凉处一夜，盅口也会自己浮起一缕极淡的热气，像刚离了火。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 3.24
+    },
+    {
+      "element": "fire",
+      "pip": 4,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "赤纹陶哨",
+          "description": "掌心里一枚粗陶小哨，表面烧出几道赤红纹路。凑近细看，纹路深处像有极细的暗光缓缓游动，握久了陶面始终微微发烫。",
+          "raw_content": "{\"name\":\"赤纹陶哨\",\"description\":\"掌心里一枚粗陶小哨，表面烧出几道赤红纹路。凑近细看，纹路深处像有极细的暗光缓缓游动，握久了陶面始终微微发烫。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "赤纹陶哨",
+      "description": "掌心里一枚粗陶小哨，表面烧出几道赤红纹路。凑近细看，纹路深处像有极细的暗光缓缓游动，握久了陶面始终微微发烫。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.54
+    },
+    {
+      "element": "fire",
+      "pip": 5,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "余烬陶哨",
+          "description": "拇指大的粗陶小哨，表面布满细密裂纹。凑近嘴边时，裂纹里会透出暗红微光，像被吹熄的炭芯仍有余温。",
+          "raw_content": "{\"name\":\"余烬陶哨\",\"description\":\"拇指大的粗陶小哨，表面布满细密裂纹。凑近嘴边时，裂纹里会透出暗红微光，像被吹熄的炭芯仍有余温。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "余烬陶哨",
+      "description": "拇指大的粗陶小哨，表面布满细密裂纹。凑近嘴边时，裂纹里会透出暗红微光，像被吹熄的炭芯仍有余温。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.206
+    },
+    {
+      "element": "fire",
+      "pip": 6,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "赤鳞小陶盏",
+          "description": "拇指大的粗陶小盏，外壁刻着鳞片纹。盏底沉着一点暗红余烬，不用火也能感到温热；凑近时，那点红会缓慢明灭，像在均匀呼吸。",
+          "raw_content": "{\"name\":\"赤鳞小陶盏\",\"description\":\"拇指大的粗陶小盏，外壁刻着鳞片纹。盏底沉着一点暗红余烬，不用火也能感到温热；凑近时，那点红会缓慢明灭，像在均匀呼吸。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "赤鳞小陶盏",
+      "description": "拇指大的粗陶小盏，外壁刻着鳞片纹。盏底沉着一点暗红余烬，不用火也能感到温热；凑近时，那点红会缓慢明灭，像在均匀呼吸。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 3.119
+    },
+    {
+      "element": "fire",
+      "pip": 7,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": false,
+          "name": "暖茸火绒袋",
+          "description": "粗麻缝的小袋，内填火元素凝成的暗红绒团，摸上去像刚晒过太阳的羊毛。袋口从不系紧，绒面偶尔冒出细小的火星，在布面上烫出焦痕却不会烧穿。",
+          "raw_content": "{\"name\":\"暖茸火绒袋\",\"description\":\"粗麻缝的小袋，内填火元素凝成的暗红绒团，摸上去像刚晒过太阳的羊毛。袋口从不系紧，绒面偶尔冒出细小的火星，在布面上烫出焦痕却不会烧穿。\"}",
+          "returned_model": "deepseek-flash"
+        },
+        {
+          "valid": true,
+          "name": "暖茸火绒袋",
+          "description": "粗麻缝的小袋，内填暗红绒团，摸上去像晒过太阳的羊毛。袋口不系紧，绒面偶尔冒出细小火星，在布上烫出焦痕却不烧穿。",
+          "raw_content": "{\"name\":\"暖茸火绒袋\",\"description\":\"粗麻缝的小袋，内填暗红绒团，摸上去像晒过太阳的羊毛。袋口不系紧，绒面偶尔冒出细小火星，在布上烫出焦痕却不烧穿。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "暖茸火绒袋",
+      "description": "粗麻缝的小袋，内填暗红绒团，摸上去像晒过太阳的羊毛。袋口不系紧，绒面偶尔冒出细小火星，在布上烫出焦痕却不烧穿。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 4.833
+    },
+    {
+      "element": "fire",
+      "pip": 8,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "暖陶小火盏",
+          "description": "巴掌大的粗陶小盏，内壁釉色泛着橘红。凑近时能看见盏底凝着一粒豆大的暗红火珠，用手轻触陶壁，指尖会传来一阵持续温热，像炉边烤过。",
+          "raw_content": "{\"name\":\"暖陶小火盏\",\"description\":\"巴掌大的粗陶小盏，内壁釉色泛着橘红。凑近时能看见盏底凝着一粒豆大的暗红火珠，用手轻触陶壁，指尖会传来一阵持续温热，像炉边烤过。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "暖陶小火盏",
+      "description": "巴掌大的粗陶小盏，内壁釉色泛着橘红。凑近时能看见盏底凝着一粒豆大的暗红火珠，用手轻触陶壁，指尖会传来一阵持续温热，像炉边烤过。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 3.273
+    },
+    {
+      "element": "fire",
+      "pip": 9,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "烬纹陶哨",
+          "description": "一小枚粗陶哨子，表面布满细密裂纹，握在掌心微微发烫。对着光看，裂痕里透出暗红微光，像余烬未熄，放下后仍暖一阵才慢慢凉下去。",
+          "raw_content": "{\"name\":\"烬纹陶哨\",\"description\":\"一小枚粗陶哨子，表面布满细密裂纹，握在掌心微微发烫。对着光看，裂痕里透出暗红微光，像余烬未熄，放下后仍暖一阵才慢慢凉下去。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "烬纹陶哨",
+      "description": "一小枚粗陶哨子，表面布满细密裂纹，握在掌心微微发烫。对着光看，裂痕里透出暗红微光，像余烬未熄，放下后仍暖一阵才慢慢凉下去。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.237
+    },
+    {
+      "element": "wind",
+      "pip": 1,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": false,
+          "name": "风痕纸鸢坠",
+          "description": "用轻木削成的小鸢鸟，翼面糊着半透明的桑皮纸，尾羽缀三片薄竹片。悬在掌心时，纸面会自行鼓起细密涟漪，像有微风从内部拂过，凑近能听见极轻的簌簌声。",
+          "raw_content": "{\"name\":\"风痕纸鸢坠\",\"description\":\"用轻木削成的小鸢鸟，翼面糊着半透明的桑皮纸，尾羽缀三片薄竹片。悬在掌心时，纸面会自行鼓起细密涟漪，像有微风从内部拂过，凑近能听见极轻的簌簌声。\"}",
+          "returned_model": "deepseek-flash"
+        },
+        {
+          "valid": true,
+          "name": "风痕纸鸢坠",
+          "description": "轻木削成的小鸢鸟，翼面糊半透明桑皮纸。悬在掌心时，纸面自行鼓起细密涟漪，凑近能听见极轻簌簌声。",
+          "raw_content": "{\"name\":\"风痕纸鸢坠\",\"description\":\"轻木削成的小鸢鸟，翼面糊半透明桑皮纸。悬在掌心时，纸面自行鼓起细密涟漪，凑近能听见极轻簌簌声。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "风痕纸鸢坠",
+      "description": "轻木削成的小鸢鸟，翼面糊半透明桑皮纸。悬在掌心时，纸面自行鼓起细密涟漪，凑近能听见极轻簌簌声。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 4.439
+    },
+    {
+      "element": "wind",
+      "pip": 2,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "风中转动的纸风车",
+          "description": "用薄韧皮纸折成的小风车，插在竹签上。没有风吹时，它的叶片也会缓缓自转，偶尔停住，又猛地倒转半圈，纸面始终绷得平整。",
+          "raw_content": "{\"name\":\"风中转动的纸风车\",\"description\":\"用薄韧皮纸折成的小风车，插在竹签上。没有风吹时，它的叶片也会缓缓自转，偶尔停住，又猛地倒转半圈，纸面始终绷得平整。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "风中转动的纸风车",
+      "description": "用薄韧皮纸折成的小风车，插在竹签上。没有风吹时，它的叶片也会缓缓自转，偶尔停住，又猛地倒转半圈，纸面始终绷得平整。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.121
+    },
+    {
+      "element": "wind",
+      "pip": 3,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "轻旋纸风车",
+          "description": "一枚纸折的四叶风车，穿在细竹签上，叶片泛着淡淡的青白色。没有风吹时，它仍在缓慢打转，叶面拂过指尖会带来一缕微凉的气流。",
+          "raw_content": "{\"name\":\"轻旋纸风车\",\"description\":\"一枚纸折的四叶风车，穿在细竹签上，叶片泛着淡淡的青白色。没有风吹时，它仍在缓慢打转，叶面拂过指尖会带来一缕微凉的气流。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "轻旋纸风车",
+      "description": "一枚纸折的四叶风车，穿在细竹签上，叶片泛着淡淡的青白色。没有风吹时，它仍在缓慢打转，叶面拂过指尖会带来一缕微凉的气流。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.509
+    },
+    {
+      "element": "wind",
+      "pip": 4,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "轻旋纸风车",
+          "description": "薄棉纸折成的小风车，插在细竹签上。没有气流时，四片纸叶也会缓缓朝同一方向转动，偶尔停下，叶尖微微发颤，像在等一阵不存在的风。",
+          "raw_content": "{\"name\":\"轻旋纸风车\",\"description\":\"薄棉纸折成的小风车，插在细竹签上。没有气流时，四片纸叶也会缓缓朝同一方向转动，偶尔停下，叶尖微微发颤，像在等一阵不存在的风。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "轻旋纸风车",
+      "description": "薄棉纸折成的小风车，插在细竹签上。没有气流时，四片纸叶也会缓缓朝同一方向转动，偶尔停下，叶尖微微发颤，像在等一阵不存在的风。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 1.796
+    },
+    {
+      "element": "wind",
+      "pip": 5,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "轻旋陶哨",
+          "description": "拇指大的灰陶哨子，表面留着指纹压痕，系着褪色的麻绳。凑近吹口能感到一股细风自己打转，把哨腔里的一粒草籽托起来悬着，久久不落。",
+          "raw_content": "{\"name\":\"轻旋陶哨\",\"description\":\"拇指大的灰陶哨子，表面留着指纹压痕，系着褪色的麻绳。凑近吹口能感到一股细风自己打转，把哨腔里的一粒草籽托起来悬着，久久不落。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "轻旋陶哨",
+      "description": "拇指大的灰陶哨子，表面留着指纹压痕，系着褪色的麻绳。凑近吹口能感到一股细风自己打转，把哨腔里的一粒草籽托起来悬着，久久不落。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.549
+    },
+    {
+      "element": "wind",
+      "pip": 6,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "清风陶铃",
+          "description": "粗陶捏成的小铃铛，表面布满细密气孔。无风时它也会轻轻晃动，铃舌悬在半空不碰壁，靠近能感到一缕凉风从孔中渗出。",
+          "raw_content": "{\"name\":\"清风陶铃\",\"description\":\"粗陶捏成的小铃铛，表面布满细密气孔。无风时它也会轻轻晃动，铃舌悬在半空不碰壁，靠近能感到一缕凉风从孔中渗出。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "清风陶铃",
+      "description": "粗陶捏成的小铃铛，表面布满细密气孔。无风时它也会轻轻晃动，铃舌悬在半空不碰壁，靠近能感到一缕凉风从孔中渗出。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.063
+    },
+    {
+      "element": "wind",
+      "pip": 7,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "轻旋纸捻哨",
+          "description": "三股薄宣纸捻成的小哨，握在掌心几乎没重量。凑近嘴边不吹，纸壁会自己发出细碎的风声，像远处树梢被气流反复拨动，忽近忽远。",
+          "raw_content": "{\"name\":\"轻旋纸捻哨\",\"description\":\"三股薄宣纸捻成的小哨，握在掌心几乎没重量。凑近嘴边不吹，纸壁会自己发出细碎的风声，像远处树梢被气流反复拨动，忽近忽远。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "轻旋纸捻哨",
+      "description": "三股薄宣纸捻成的小哨，握在掌心几乎没重量。凑近嘴边不吹，纸壁会自己发出细碎的风声，像远处树梢被气流反复拨动，忽近忽远。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.401
+    },
+    {
+      "element": "wind",
+      "pip": 8,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "风息纸鸢佩",
+          "description": "薄桐木片削成的小小纸鸢，尾翼用麻线缠着。悬在掌心时总能自己歪向风来的方向，微微颤动，像是随时要飘走。",
+          "raw_content": "{\"name\":\"风息纸鸢佩\",\"description\":\"薄桐木片削成的小小纸鸢，尾翼用麻线缠着。悬在掌心时总能自己歪向风来的方向，微微颤动，像是随时要飘走。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "风息纸鸢佩",
+      "description": "薄桐木片削成的小小纸鸢，尾翼用麻线缠着。悬在掌心时总能自己歪向风来的方向，微微颤动，像是随时要飘走。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 4.415
+    },
+    {
+      "element": "wind",
+      "pip": 9,
+      "source": "mushroom",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "青绸风团",
+          "description": "巴掌大的青绸束口小囊，装的是炼尽的轻絮。囊身会自己缓缓鼓起又瘪下，像在悄悄呼吸；摸上去总有一股细风从缝口漏过，吹得指缝发凉。",
+          "raw_content": "{\"name\":\"青绸风团\",\"description\":\"巴掌大的青绸束口小囊，装的是炼尽的轻絮。囊身会自己缓缓鼓起又瘪下，像在悄悄呼吸；摸上去总有一股细风从缝口漏过，吹得指缝发凉。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "青绸风团",
+      "description": "巴掌大的青绸束口小囊，装的是炼尽的轻絮。囊身会自己缓缓鼓起又瘪下，像在悄悄呼吸；摸上去总有一股细风从缝口漏过，吹得指缝发凉。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 3.037
+    },
+    {
+      "element": "water",
+      "pip": 1,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "露纹陶哨",
+          "description": "拇指大的灰白陶哨，表面釉孔里沁着细密水雾，始终不干。轻轻一吹，哨声里混着细碎的流水声，像含着半口清泉。",
+          "raw_content": "{\"name\":\"露纹陶哨\",\"description\":\"拇指大的灰白陶哨，表面釉孔里沁着细密水雾，始终不干。轻轻一吹，哨声里混着细碎的流水声，像含着半口清泉。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "露纹陶哨",
+      "description": "拇指大的灰白陶哨，表面釉孔里沁着细密水雾，始终不干。轻轻一吹，哨声里混着细碎的流水声，像含着半口清泉。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.21
+    },
+    {
+      "element": "water",
+      "pip": 2,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "露凝陶哨",
+          "description": "拇指大的粗陶小哨，表面布满细密的开片纹。放在掌心片刻，陶壁会沁出一层凉丝丝的水膜，吹出的声音像雨滴落进空贝壳。",
+          "raw_content": "{\"name\":\"露凝陶哨\",\"description\":\"拇指大的粗陶小哨，表面布满细密的开片纹。放在掌心片刻，陶壁会沁出一层凉丝丝的水膜，吹出的声音像雨滴落进空贝壳。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "露凝陶哨",
+      "description": "拇指大的粗陶小哨，表面布满细密的开片纹。放在掌心片刻，陶壁会沁出一层凉丝丝的水膜，吹出的声音像雨滴落进空贝壳。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.104
+    },
+    {
+      "element": "water",
+      "pip": 3,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "露滴琉璃镇纸",
+          "description": "一块巴掌大的浅蓝琉璃，内里封着几缕缓缓游动的水线，像被凝住的细雨。搁在桌上时，琉璃表面总沁出薄薄一层凉雾，指尖一碰便散开。",
+          "raw_content": "{\"name\":\"露滴琉璃镇纸\",\"description\":\"一块巴掌大的浅蓝琉璃，内里封着几缕缓缓游动的水线，像被凝住的细雨。搁在桌上时，琉璃表面总沁出薄薄一层凉雾，指尖一碰便散开。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "露滴琉璃镇纸",
+      "description": "一块巴掌大的浅蓝琉璃，内里封着几缕缓缓游动的水线，像被凝住的细雨。搁在桌上时，琉璃表面总沁出薄薄一层凉雾，指尖一碰便散开。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.331
+    },
+    {
+      "element": "water",
+      "pip": 4,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": false,
+          "name": "凝水叶脉纸笺",
+          "description": "一张用古法抄制的厚纸笺，压着半透明的叶脉纹路。纸面永远潮润，指尖按上去会留下浅浅的水痕，水痕过一会儿自己聚成一颗颤动的小水珠，顺着纹路滚到纸边停住。",
+          "raw_content": "{\"name\":\"凝水叶脉纸笺\",\"description\":\"一张用古法抄制的厚纸笺，压着半透明的叶脉纹路。纸面永远潮润，指尖按上去会留下浅浅的水痕，水痕过一会儿自己聚成一颗颤动的小水珠，顺着纹路滚到纸边停住。\"}",
+          "returned_model": "deepseek-flash"
+        },
+        {
+          "valid": false,
+          "name": "潮纹纸笺",
+          "description": "一张厚实的棉纸笺，表面压着半透明的叶脉纹路。纸面始终微微潮润，指尖按过会留下水痕，水痕缓缓聚成一颗颤动的小水珠，沿纹路滚到纸边停住。",
+          "raw_content": "{\"name\":\"潮纹纸笺\",\"description\":\"一张厚实的棉纸笺，表面压着半透明的叶脉纹路。纸面始终微微潮润，指尖按过会留下水痕，水痕缓缓聚成一颗颤动的小水珠，沿纹路滚到纸边停住。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "潮纹纸笺",
+      "description": "一张厚实的棉纸笺，表面压着半透明的叶脉纹路。纸面始终微微潮润，指尖按过会留下水痕，水痕缓缓聚成一颗颤动的小水珠，沿纹路滚到纸边停住。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": false,
+      "seconds": 6.179
+    },
+    {
+      "element": "water",
+      "pip": 5,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "潮息陶哨",
+          "description": "巴掌大的灰陶小哨，表面布满细孔。凑近能听见里面极轻的浪声，对着孔洞呼气时，哨口会凝出一层薄薄的水膜，久久不散。",
+          "raw_content": "{\"name\":\"潮息陶哨\",\"description\":\"巴掌大的灰陶小哨，表面布满细孔。凑近能听见里面极轻的浪声，对着孔洞呼气时，哨口会凝出一层薄薄的水膜，久久不散。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "潮息陶哨",
+      "description": "巴掌大的灰陶小哨，表面布满细孔。凑近能听见里面极轻的浪声，对着孔洞呼气时，哨口会凝出一层薄薄的水膜，久久不散。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.11
+    },
+    {
+      "element": "water",
+      "pip": 6,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "露珠纹陶哨",
+          "description": "拇指大的灰陶哨子，表面布满细密孔洞。吹口处凝着一层永远不干的水膜，指腹碰上去会留下凉意，片刻后水膜又自行合拢。",
+          "raw_content": "{\"name\":\"露珠纹陶哨\",\"description\":\"拇指大的灰陶哨子，表面布满细密孔洞。吹口处凝着一层永远不干的水膜，指腹碰上去会留下凉意，片刻后水膜又自行合拢。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "露珠纹陶哨",
+      "description": "拇指大的灰陶哨子，表面布满细密孔洞。吹口处凝着一层永远不干的水膜，指腹碰上去会留下凉意，片刻后水膜又自行合拢。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.504
+    },
+    {
+      "element": "water",
+      "pip": 7,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "潮纹小陶盒",
+          "description": "粗陶小盒，盖面釉色不均。盒内无物，内壁却始终凝着一层薄薄的水膜，水膜会缓缓顺着陶壁移动，像在寻找缝隙。",
+          "raw_content": "{\"name\":\"潮纹小陶盒\",\"description\":\"粗陶小盒，盖面釉色不均。盒内无物，内壁却始终凝着一层薄薄的水膜，水膜会缓缓顺着陶壁移动，像在寻找缝隙。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "潮纹小陶盒",
+      "description": "粗陶小盒，盖面釉色不均。盒内无物，内壁却始终凝着一层薄薄的水膜，水膜会缓缓顺着陶壁移动，像在寻找缝隙。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 1.887
+    },
+    {
+      "element": "water",
+      "pip": 8,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "潮声陶哨",
+          "description": "拇指大的粗陶小哨，表面爬满浅蓝釉裂。吹口处凝着细小水膜，不吹时也缓缓渗出，沿陶壁汇成一道细流，触手湿凉。",
+          "raw_content": "{\"name\":\"潮声陶哨\",\"description\":\"拇指大的粗陶小哨，表面爬满浅蓝釉裂。吹口处凝着细小水膜，不吹时也缓缓渗出，沿陶壁汇成一道细流，触手湿凉。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "潮声陶哨",
+      "description": "拇指大的粗陶小哨，表面爬满浅蓝釉裂。吹口处凝着细小水膜，不吹时也缓缓渗出，沿陶壁汇成一道细流，触手湿凉。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.641
+    },
+    {
+      "element": "water",
+      "pip": 9,
+      "source": "shell",
+      "attempts": [
+        {
+          "valid": true,
+          "name": "露滴陶哨",
+          "description": "巴掌大的粗陶小哨，表面布满细密孔洞；贴耳时能听见哨内缓慢回荡的水声，像封着一小片不肯退去的潮汐。",
+          "raw_content": "{\"name\":\"露滴陶哨\",\"description\":\"巴掌大的粗陶小哨，表面布满细密孔洞；贴耳时能听见哨内缓慢回荡的水声，像封着一小片不肯退去的潮汐。\"}",
+          "returned_model": "deepseek-flash"
+        }
+      ],
+      "name": "露滴陶哨",
+      "description": "巴掌大的粗陶小哨，表面布满细密孔洞；贴耳时能听见哨内缓慢回荡的水声，像封着一小片不肯退去的潮汐。",
+      "returned_model": "deepseek-flash",
+      "finish_reason": "stop",
+      "passed": true,
+      "seconds": 2.419
+    }
+  ],
+  "limitations": [
+    "No UE/PIE, real SaveGame, renderer, input or UI interaction.",
+    "Production daily loader/getter, value policy, naming prompt and metadata application are compiled; JSON/file IO, CRC/RNG and UE types are portable adapters.",
+    "Live cases check actual structured output and production text validation; semantic quality requires reading the captured text."
+  ],
+  "requested_model": "deepseek-chat",
+  "base_url": "https://api.deepseek.com/v1",
+  "source_unchanged": true,
+  "passed": false,
+  "total": 27,
+  "passed_count": 26
+}

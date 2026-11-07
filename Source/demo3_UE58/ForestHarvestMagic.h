@@ -6,6 +6,7 @@
 #include "AlchemyGameplayTypes.h"
 #include "ForestHarvestMagic.generated.h"
 
+struct FDialogueRequestScope;
 class UForestHarvestMagic;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -47,6 +48,8 @@ class DEMO3_UE58_API UForestHarvestRequest : public UObject
 public:
  TWeakObjectPtr<UForestHarvestMagic> Owner;
  FString ItemId;
+ int32 RepairCount=0;
+ TSharedPtr<FDialogueRequestScope> Scope;
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };
 UCLASS()
@@ -158,6 +161,7 @@ private:
  void Harvest(const FString& Source,int32 Count);
  void PrepareItem(FForestMagicItem& Item);
  void RequestItemName(const FString& ItemId);
+ void SendItemNameRequest(UForestHarvestRequest* Request,const FString& Repair=FString());
  void RefreshItemViews(const FForestMagicItem& Item);
  void Adjust(const FString& Key,int32 Delta);
  void RefreshLegacyHUD();

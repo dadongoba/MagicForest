@@ -1,5 +1,10 @@
 #include "DailyMushroomSubsystem.h"
 #include "AlchemyCampaignPolicy.h"
+#include "DailyResourceValuePolicy.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -7,6 +12,57 @@ void UDailyMushroomSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     ConfigureSaveSlot(SaveSlotName, SaveUserIndex);
+    if(!LoadRegionalValueRules())UE_LOG(LogTemp,Error,TEXT("Daily regional resource value rules are missing or invalid; regional harvesting is unavailable."));
+}
+
+bool UDailyMushroomSubsystem::LoadRegionalValueRules()
+{
+    RegionalValueRules.Reset();
+    FString Text;TSharedPtr<FJsonObject> Root;double Version=0;
+    const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;
+    if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectConfigDir()/TEXT("ForestDailyResourceValues.json"))) ||
+       !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root) || !Root ||
+       !Root->TryGetNumberField(TEXT("SchemaVersion"),Version) || Version!=1 ||
+       !Root->TryGetArrayField(TEXT("Rules"),Rows) || Rows->Num()!=3)return false;
+    TArray<FDailyRegionalValueRule> Validated;
+    for(const auto& Value:*Rows)
+    {
+        if(!Value || Value->Type!=EJson::Object)return false;
+        const auto Row=Value->AsObject();FString Id,Source,Element,Tags;double Min=0,Max=0,Salt=0;
+        if(!Row->TryGetStringField(TEXT("RuleId"),Id) || Id.IsEmpty() ||
+           !Row->TryGetStringField(TEXT("SourceId"),Source) || Source.IsEmpty() ||
+           !Row->TryGetStringField(TEXT("Element"),Element) ||
+           !Row->TryGetNumberField(TEXT("MinimumPip"),Min) || !Row->TryGetNumberField(TEXT("MaximumPip"),Max) ||
+           !Row->TryGetNumberField(TEXT("SeedSalt"),Salt) ||
+           !FMath::IsFinite(Min) || !FMath::IsFinite(Max) || !FMath::IsFinite(Salt) ||
+           Min!=FMath::FloorToDouble(Min) || Max!=FMath::FloorToDouble(Max) || Salt!=FMath::FloorToDouble(Salt) ||
+           Min<1 || Max>9 || Min>Max || Salt<0 || Salt>MAX_int32)return false;
+        if(Element!=TEXT("fire") && Element!=TEXT("wind") && Element!=TEXT("water"))return false;
+        FDailyRegionalValueRule Rule;Rule.RuleId=FName(*Id);Rule.SourceId=FName(*Source);
+        Rule.Element=Element==TEXT("fire")?EAlchemyElement::Fire:Element==TEXT("wind")?EAlchemyElement::Wind:EAlchemyElement::Water;
+        const FString Expected=Rule.Element==EAlchemyElement::Fire?TEXT("Region_Fire_Mushroom"):Rule.Element==EAlchemyElement::Wind?TEXT("Region_Wind_Mushroom"):TEXT("Region_Water_Shell");
+        if(Source!=Expected || Validated.ContainsByPredicate([&](const auto& R){return R.RuleId==Rule.RuleId || R.SourceId==Rule.SourceId || R.Element==Rule.Element;}))return false;
+        Rule.MinimumPip=static_cast<int32>(Min);Rule.MaximumPip=static_cast<int32>(Max);Rule.SeedSalt=static_cast<int32>(Salt);
+        Row->TryGetStringField(TEXT("Tags"),Rule.Tags);Validated.Add(Rule);
+    }
+    RegionalValueRules=MoveTemp(Validated);return true;
+}
+
+bool UDailyMushroomSubsystem::GetDailyRegionalResource(const FString& ResourceId,EAlchemyElement Element,FDailyMushroomCardRow& Out) const
+{
+    Out=FDailyMushroomCardRow();
+    const auto* Rule=RegionalValueRules.FindByPredicate([Element](const auto& R){return R.Element==Element;});
+    if(!Rule || ResourceId.IsEmpty())return false;
+    const int32 Pip=DailyResourceValuePolicy::Roll(CurrentDay,ResourceId,static_cast<int32>(Element),Rule->SeedSalt,Rule->MinimumPip,Rule->MaximumPip);
+    if(Pip<1)return false;
+    Out.MushroomId=FName(*ResourceId);Out.DisplayName=Rule->SourceId.ToString();Out.Day=CurrentDay;
+    // Zone availability remains authoritative; no unapproved rarity/penalty is enabled here.
+    Out.bAvailable=true;Out.Element=Element;Out.PipValue=Pip;Out.Tags=Rule->Tags;
+    Out.CardId=FName(*FString::Printf(TEXT("regional_day_%d_%s"),CurrentDay,*ResourceId));
+    if(Element==EAlchemyElement::Fire)Out.Value.Fire=Pip;
+    else if(Element==EAlchemyElement::Wind)Out.Value.Wind=Pip;
+    else Out.Value.Water=Pip;
+    return true;
 }
 
 bool UDailyMushroomSubsystem::ConfigureSaveSlot(const FString& InSlotName, const int32 InUserIndex)

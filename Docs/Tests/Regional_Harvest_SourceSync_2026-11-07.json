@@ -1,0 +1,128 @@
+{
+  "baseline": "21509c75f0d39615e3cb58725521552a9f4f35a9",
+  "files": [
+    {
+      "path": "Config/ForestDailyResourceValues.json",
+      "full_project_sha256": "14402556b08df819dd58638f668d134338c9fcedcfb8e7525c2553198f8a0b36",
+      "incremental_sha256": "14402556b08df819dd58638f668d134338c9fcedcfb8e7525c2553198f8a0b36",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Config/DefaultForestResources.ini",
+      "full_project_sha256": "a50fff30693999c7e73d2815f939fd2a42c474e7eeae73478971c952a314326f",
+      "incremental_sha256": "a50fff30693999c7e73d2815f939fd2a42c474e7eeae73478971c952a314326f",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/DialogueMemoryTable.Build.cs",
+      "full_project_sha256": "b0e7f4b2d0373394e9a58f18ad237db203f2e6c0a674633e92744ca76aafebc4",
+      "incremental_sha256": "b0e7f4b2d0373394e9a58f18ad237db203f2e6c0a674633e92744ca76aafebc4",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DailyResourceValuePolicy.h",
+      "full_project_sha256": "290aaeedb9b4d5b5f8f020acedb9a056a35dcddba2a81a384b4309b23798ca4c",
+      "incremental_sha256": "290aaeedb9b4d5b5f8f020acedb9a056a35dcddba2a81a384b4309b23798ca4c",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DailyMushroomSubsystem.h",
+      "full_project_sha256": "5f708e6c56fdd10b9caad36216e78189a5bfbc7260a32ca09d8d6294627b410b",
+      "incremental_sha256": "5f708e6c56fdd10b9caad36216e78189a5bfbc7260a32ca09d8d6294627b410b",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DailyMushroomSubsystem.cpp",
+      "full_project_sha256": "4b26615ca70c2c8b4f591f803b513fb0130384440ea8311e9a2dab17e340250a",
+      "incremental_sha256": "4b26615ca70c2c8b4f591f803b513fb0130384440ea8311e9a2dab17e340250a",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestElementRegions.h",
+      "full_project_sha256": "3212750609fa7d1ae0038507b14f82d2768f4cb8064919796104f5d4b2dd0afd",
+      "incremental_sha256": "14f25557cdb274b167cc31580e1c3364d4c665f0b0545645d70ee3257f012525",
+      "byte_equal": false,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestElementRegions.cpp",
+      "full_project_sha256": "13e088ad8cd7a53e8e8410a5b14c2a248eb39addc9890f719d54a8d4d84070e0",
+      "incremental_sha256": "6d6891a579c9859bba32f7f28dda3aa9068cf00d6f99f936c995ce602879fe5b",
+      "byte_equal": false,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestItemNarrativePolicy.h",
+      "full_project_sha256": "d37f5661d84640122ad9a582ce43e33a8b69d28df35c226219871350d420fc9b",
+      "incremental_sha256": "d37f5661d84640122ad9a582ce43e33a8b69d28df35c226219871350d420fc9b",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Tools/Tests/harvest_native_bridge.py",
+      "full_project_sha256": "2be6fc7f3acfe714814e0ac68490a259b53573551273b0130730c947cc6cebb8",
+      "incremental_sha256": "2be6fc7f3acfe714814e0ac68490a259b53573551273b0130730c947cc6cebb8",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Tools/Tests/run_harvest_emergence_checks.py",
+      "full_project_sha256": "f900363eecdd8ee051a0be2fa6bedebf28e8de7e05918d842bdc796478afb509",
+      "incremental_sha256": "f900363eecdd8ee051a0be2fa6bedebf28e8de7e05918d842bdc796478afb509",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Docs/Regional_Daily_Values_2026-11-07.md",
+      "full_project_sha256": "d47cf91d3363ddd3ad6d735527e4c357b1422c78733394270c55b6d981de0a35",
+      "incremental_sha256": "d47cf91d3363ddd3ad6d735527e4c357b1422c78733394270c55b6d981de0a35",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Docs/Tests/Regional_Harvest_Live_2026-11-07.json",
+      "full_project_sha256": "564c5bf1582face7c64c62a78d90faf797f390e74cec49c4553041391846e64f",
+      "incremental_sha256": "564c5bf1582face7c64c62a78d90faf797f390e74cec49c4553041391846e64f",
+      "byte_equal": true,
+      "normalized_text_equal": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestHarvestMagic.cpp",
+      "full_project_sha256": "7fe81dd9875bcb856d5f5e0307fa9f02c2f35789d7bbef4961ee4955d27e9292",
+      "incremental_sha256": "1c869fb6af44632f2bd4273531e17996aadeed3a4d8a5e7ab28815bf45688736",
+      "byte_equal": false,
+      "functional_methods_equal": {
+        "UForestMagicInventoryWidget::Refresh": true,
+        "UForestHarvestMagic::GrantRegionalMaterial": true,
+        "UForestHarvestMagic::Prompt": true,
+        "UForestHarvestMagic::RequestItemName": true,
+        "UForestHarvestMagic::HandleResponse": true,
+        "UForestHarvestMagic::Tick": true,
+        "UForestHarvestMagic::Deinitialize": true,
+        "UForestHarvestMagic::SendItemNameRequest": true
+      }
+    },
+    {
+      "path": "Source/demo3_UE58/ForestHarvestMagic.h",
+      "full_project_sha256": "d6dd7b7460631f530673c0ec698b46c5770cb52d276f9ac73b784405bf8e4aa3",
+      "incremental_sha256": "80f728a29d03fd1e192c9f75372187e8f70cc897dcf3df91107e7cb953ffac41",
+      "byte_equal": false,
+      "request_contract_equal": true
+    }
+  ],
+  "preserved_existing_HUD_layout": true,
+  "build": {
+    "result": "Succeeded",
+    "seconds": 25.9,
+    "editor_launched": false
+  },
+  "api_generated": 26,
+  "api_samples": 27,
+  "expected_local_fallbacks": 1
+}

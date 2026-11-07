@@ -42,6 +42,20 @@ struct DIALOGUEMEMORYTABLE_API FDailyMushroomCardRow
     FString Tags;
 };
 
+/** Editable source rules; generated rows reuse the existing daily value schema. */
+USTRUCT(BlueprintType)
+struct DIALOGUEMEMORYTABLE_API FDailyRegionalValueRule
+{
+    GENERATED_BODY()
+    UPROPERTY(BlueprintReadOnly) FName RuleId;
+    UPROPERTY(BlueprintReadOnly) FName SourceId;
+    UPROPERTY(BlueprintReadOnly) EAlchemyElement Element=EAlchemyElement::Fire;
+    UPROPERTY(BlueprintReadOnly) int32 MinimumPip=1;
+    UPROPERTY(BlueprintReadOnly) int32 MaximumPip=9;
+    UPROPERTY(BlueprintReadOnly) int32 SeedSalt=92821;
+    UPROPERTY(BlueprintReadOnly) FString Tags;
+};
+
 /**
  * Next-day element consequence row. Conditions and numeric thresholds are
  * intentionally placeholders until the scoring system is defined.
@@ -157,6 +171,12 @@ public:
     UFUNCTION(BlueprintPure, Category = "World|Mushrooms")
     bool GetMushroomValue(FName MushroomId, FAlchemyVector& OutValue) const;
 
+    UFUNCTION(BlueprintPure, Category = "World|Resources")
+    bool GetDailyRegionalResource(const FString& ResourceId,EAlchemyElement Element,FDailyMushroomCardRow& OutDefinition) const;
+
+    UFUNCTION(BlueprintPure, Category = "World|Resources")
+    TArray<FDailyRegionalValueRule> GetRegionalValueRules() const { return RegionalValueRules; }
+
     UFUNCTION(BlueprintPure, Category = "World|Mushrooms")
     TArray<FDailyElementModifierRow> GetDailyElementModifierRuleTemplates() const;
 
@@ -189,6 +209,8 @@ private:
     int32 SaveUserIndex = 0;
 
     bool Persist();
+    bool LoadRegionalValueRules();
+    UPROPERTY(Transient) TArray<FDailyRegionalValueRule> RegionalValueRules;
     static const TArray<FName>& MushroomCatalog();
     static EAlchemyElement MushroomElementForIndex(int32 Index);
     static int32 DailySeed(int32 Day, int32 Index);

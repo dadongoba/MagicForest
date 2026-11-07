@@ -2,6 +2,16 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-07-05：新地图采集接入每日1–9表并核对物品涌现
+
+- **目的 / 基线 / 前置**：基于main `21509c75f0d39615e3cb58725521552a9f4f35a9`、前批04，修复区域采集仍统一3点；保持元素归属、既有背包、产区生成/收集标识、委托、评分和三日流程。不启用尚未定案的世界后果或稀缺率。
+- **新增 / 修改配置与插件**：新增Config/ForestDailyResourceValues.json、插件Public/DailyResourceValuePolicy.h；修改Config/DefaultForestResources.ini及Plugins/DialogueMemoryTable/Source/DialogueMemoryTable下DialogueMemoryTable.Build.cs、Public/DailyMushroomSubsystem.h、Private/DailyMushroomSubsystem.cpp。三来源规则表生成可复现的当日节点行，新JSON随NonUFS分发。
+- **游戏源码 / 测试**：修改Source/demo3_UE58/ForestElementRegions.h/.cpp、ForestHarvestMagic.h/.cpp；新增同目录ForestItemNarrativePolicy.h。新数值接入生成/提示/确认入包；名称描述JSON校验、有界修正与保存失败回退，保留身份/数量/属性；背包详情避免选择零数量条目。新增Tools/Tests/harvest_native_bridge.py、run_harvest_emergence_checks.py。
+- **文档 / 证据**：新增[接入说明](Docs/Regional_Daily_Values_2026-11-07.md)、Docs/Tests/Regional_Harvest_Live_2026-11-07.json、Regional_Harvest_SourceSync_2026-11-07.json；修改本记录。
+- **本次验证**：最终Mac UE5.8 arm64编译链接通过25.90秒，未开UE；生产规则/提示词/元数据策略便携回归288样本、15配置故障、8保存与所有权组合通过。最终冻结源码DeepSeek27组，26组AI文本合格，1组修正后仍超长会保留本地文案；不将报告passed=false掩饰为全量AI成功。源码散列、配置、同步与凭据检查通过。未验真实UI/SaveGame/特效、Windows与打包；CRC/RNG/JSON等为便携适配，不冒充引擎实测。
+- **同步 / 应用**：同路径合并本批配置、插件和源码并重新编译重启；MaterialPipValue退役，新规则表不可漏。完整Air与增量的既存HUD布局差异保留，只同步同一功能方法/声明，已分别记录散列与方法核对。无地图/素材、存档、缓存、构建产物或密钥上传。
+- **上传状态**：待本批提交推送及远端核对，交付时报告实际结果。
+
 ## 2026-11-07-04：核对 NPC 修复上传结果
 
 - **基线 / 文件 / 类型**：基于功能提交d9c6f32031e90849060d48226a2c31dda68d2228、前批03，只修改CHANGELOG.md补记已核对上传；无源码、配置、资源、依赖或应用步骤变化。

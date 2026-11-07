@@ -24,7 +24,7 @@ struct FForestElementRegion
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FString AnchorId;
 };
 
-/** A fixed elemental source, rather than a random daily mushroom card. */
+/** Element is fixed by region; value comes from the daily resource table. */
 UCLASS()
 class DEMO3_UE58_API AForestElementResource : public AActor
 {
@@ -38,6 +38,8 @@ public:
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UStaticMeshComponent> Mesh;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) EAlchemyElement Element=EAlchemyElement::Fire;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bWaterShell=false;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly) int32 PipValue=0;
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly) int32 ValueDay=0;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bCollected=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FString ResourceId;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FName ZoneId;
@@ -88,7 +90,6 @@ public:
  UPROPERTY(Config,EditAnywhere,Category="Regions",meta=(ClampMin="1000")) float WaterRadius=6000.f;
  UPROPERTY(Config,EditAnywhere,Category="Resources",meta=(ClampMin="1",ClampMax="150")) int32 MushroomsPerRegion=36;
  UPROPERTY(Config,EditAnywhere,Category="Resources",meta=(ClampMin="1",ClampMax="100")) int32 ShellsPerRegion=24;
- UPROPERTY(Config,EditAnywhere,Category="Resources",meta=(ClampMin="1",ClampMax="9")) int32 MaterialPipValue=3;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Regions") TArray<FForestElementRegion> Regions;
  bool IsRegionalWorld() const;
  bool CanHarvestResource(const ACharacter* Character,bool bSwimming,const AForestElementResource* Resource) const;

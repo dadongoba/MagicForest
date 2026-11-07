@@ -275,6 +275,9 @@ void UForestElementRegions::GrowCandidates(int32 Budget)
   Resource->SetActorLocation(Point);Resource->RestLocation=Point;
   Resource->FloatPhase=PlacementRandom.FRand()*2*PI;
   Resource->ResourceId=Region.AnchorId+FString::Printf(TEXT(":%d"),BuildCount++);
+  FDailyMushroomCardRow DailyRow;
+  if(auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();Daily && Daily->GetDailyRegionalResource(Resource->ResourceId,Resource->Element,DailyRow))
+  {Resource->PipValue=DailyRow.PipValue;Resource->ValueDay=DailyRow.Day;}
   Resource->bCollected=HarvestSave && HarvestSave->Collected.Contains(CollectionKey(Resource));
   Resource->SetActorHiddenInGame(Resource->bCollected);Resource->SetActorEnableCollision(!Resource->bCollected);
   Resource->SetActorTickEnabled(Water && !Resource->bCollected);
@@ -286,7 +289,7 @@ AForestElementResource* UForestElementRegions::Nearest(const ACharacter* Charact
 {
  if(!Character)return nullptr;
  AForestElementResource* Best=nullptr;float Distance=FMath::Square(Range);
- for(const auto& Resource:Resources)if(IsValid(Resource) && !Resource->bCollected && Resource->bZoneAvailable)
+ for(const auto& Resource:Resources)if(IsValid(Resource) && !Resource->bCollected && Resource->bZoneAvailable && Resource->ValueDay==CurrentDay && Resource->PipValue>=1 && Resource->PipValue<=9)
  {
   const float D=FVector::DistSquared(Character->GetActorLocation(),Resource->Mesh->Bounds.GetBox().GetClosestPointTo(Character->GetActorLocation()));
   if(D>=Distance)continue;
@@ -301,7 +304,7 @@ AForestElementResource* UForestElementRegions::Nearest(const ACharacter* Charact
 FString UForestElementRegions::CollectionKey(const AForestElementResource* Resource) const{return FString::Printf(TEXT("%d:%s"),CurrentDay,*Resource->ResourceId);}
 bool UForestElementRegions::CanHarvestResource(const ACharacter* Character,bool Swimming,const AForestElementResource* Resource) const
 {
- if(!bInitialized || !HarvestSave || !Character || !IsValid(Resource) || Resource->bCollected || !Resource->bZoneAvailable || !Resources.Contains(Resource) || (Resource->bWaterShell && !Swimming))return false;
+ if(!bInitialized || !HarvestSave || !Character || !IsValid(Resource) || Resource->bCollected || !Resource->bZoneAvailable || Resource->ValueDay!=CurrentDay || Resource->PipValue<1 || Resource->PipValue>9 || !Resources.Contains(Resource) || (Resource->bWaterShell && !Swimming))return false;
  if(FVector::DistSquared(Character->GetActorLocation(),Resource->Mesh->Bounds.GetBox().GetClosestPointTo(Character->GetActorLocation()))>FMath::Square(230.f))return false;
  FCollisionQueryParams Query(SCENE_QUERY_STAT(RegionalHarvestTarget),false,Character);Query.AddIgnoredActor(Resource);
  for(const auto& Weak:WaterSurfaces)if(auto* Mesh=Weak.Get())Query.AddIgnoredComponent(Mesh);
@@ -319,12 +322,15 @@ bool UForestElementRegions::CollectResource(ACharacter* Character,bool Swimming,
  // Commit the original target only, after its animation. A moved/respawned target cancels.
  if(!CanHarvestResource(Character,Swimming,Resource))return false;
  if(!bInitialized || !HarvestSave || !Resource || (Resource->bWaterShell && !Swimming))return false;
+ FDailyMushroomCardRow DailyRow;
+ auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();
+ if(!Daily || !Daily->GetDailyRegionalResource(Resource->ResourceId,Resource->Element,DailyRow) || DailyRow.Day!=CurrentDay || DailyRow.PipValue!=Resource->PipValue)return false;
  const FString Key=CollectionKey(Resource);
  if(HarvestSave->Collected.Contains(Key))return false;
  HarvestSave->Collected.Add(Key);
  if(!UGameplayStatics::SaveGameToSlot(HarvestSave,HarvestSlot,0)){HarvestSave->Collected.Remove(Key);return false;}
  auto* Harvest=GetWorld()->GetSubsystem<UForestHarvestMagic>();
- if(!Harvest || !Harvest->GrantRegionalMaterial(Resource->Element,MaterialPipValue,Resource->Mesh))
+ if(!Harvest || !Harvest->GrantRegionalMaterial(DailyRow.Element,DailyRow.PipValue,Resource->Mesh))
  {HarvestSave->Collected.Remove(Key);UGameplayStatics::SaveGameToSlot(HarvestSave,HarvestSlot,0);return false;}
  Resource->bCollected=true;Resource->SetActorHiddenInGame(true);Resource->SetActorEnableCollision(false);Resource->SetActorTickEnabled(false);
  return true;
@@ -332,10 +338,12 @@ bool UForestElementRegions::CollectResource(ACharacter* Character,bool Swimming,
 FString UForestElementRegions::GetHarvestHint(const ACharacter* Character,bool Swimming) const
 {
  if(!bInitialized)return TEXT("元素产区正在准备 · 请稍候");
+ auto* Daily=GetWorld()->GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();
+ if(!Daily || Daily->GetRegionalValueRules().Num()!=3)return TEXT("每日资源数值配置未就绪，暂时无法采集。");
  if(const auto* Resource=Nearest(Character,300.f))
  {
   if(Resource->bWaterShell && !Swimming)return TEXT("水灵贝壳 · 需要游泳靠近后按 E 采集");
-  return FString::Printf(TEXT("E 采集%s · %s元素 %d"),Resource->bWaterShell?TEXT("漂浮贝壳"):Resource->Element==EAlchemyElement::Fire?TEXT("火纹蘑菇"):TEXT("风息蘑菇"),*UForestHarvestMagic::ElementText(Resource->Element),FMath::Clamp(MaterialPipValue,1,9));
+  return FString::Printf(TEXT("E 采集%s · %s元素 %d"),Resource->bWaterShell?TEXT("漂浮贝壳"):Resource->Element==EAlchemyElement::Fire?TEXT("火纹蘑菇"):TEXT("风息蘑菇"),*UForestHarvestMagic::ElementText(Resource->Element),Resource->PipValue);
  }
  if(Character)for(const auto& Region:Regions)if(FVector::DistSquared2D(Character->GetActorLocation(),Region.Center)<=FMath::Square(Region.Radius))
   return FString::Printf(TEXT("%s元素产区 · 半径 %.0f 米 · %s"),*UForestHarvestMagic::ElementText(Region.Element),Region.Radius/100,Region.Element==EAlchemyElement::Water?TEXT("游泳寻找水面漂浮贝壳"):TEXT("寻找符文石周围的元素蘑菇"));
