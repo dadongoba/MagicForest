@@ -16,6 +16,7 @@ namespace AlchemyDialogueKnowledge
  DIALOGUEMEMORYTABLE_API FString SafeMemoryJson(const FString& Json);
  DIALOGUEMEMORYTABLE_API bool IsMemoryFieldAllowed(const FString& Key);
  DIALOGUEMEMORYTABLE_API FString Rules();
+ DIALOGUEMEMORYTABLE_API FString StateRules();
  DIALOGUEMEMORYTABLE_API int32 TopicBit(const FString& Topic);
  DIALOGUEMEMORYTABLE_API int32 LimitTopics(int32 Mask);
  DIALOGUEMEMORYTABLE_API bool HasReviewedEntry(const FAlchemyCommissionDefinition& Commission);

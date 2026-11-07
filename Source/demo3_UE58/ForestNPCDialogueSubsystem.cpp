@@ -218,8 +218,12 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
  FString Prompt=G->BuildPersonaSystemPrompt(Context->NpcId,Context->Familiarity,Context->CommissionId,GetCompactMemoryJson(Context->NpcId),{});
  Prompt+=AlchemyDialogueKnowledge::FactGuidance(C,Context->Familiarity,Context->AllowedFacts,Known);
  Prompt+=TEXT("\n【本轮意图】\n")+Context->Intent;
- if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())Prompt+=TEXT("\n【程序确认的委托状态】\n")+A->TaskStatusForNpc(Context->NpcId);
- if(!Context->AcceptanceNotice.IsEmpty())Prompt+=TEXT("\n【本轮登记结果，必须遵守】\n")+Context->AcceptanceNotice;
+ // Action receipts constrain what has happened; they are not dialogue to quote.
+ auto Authority=MakeShared<FJsonObject>();
+ Authority->SetStringField(TEXT("visibility"),TEXT("internal_only"));
+ if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())Authority->SetStringField(TEXT("commission_state"),A->IsCommissionResolved(Context->CommissionId)?TEXT("resolved"):A->IsCommissionAccepted(Context->CommissionId)?TEXT("accepted"):TEXT("not_accepted"));
+ Authority->SetStringField(TEXT("action_receipt"),Context->AcceptanceNotice.IsEmpty()?TEXT("none"):Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("accepted_saved"):TEXT("not_saved"));
+ Prompt+=AlchemyDialogueKnowledge::StateRules()+ForestDialogue::Json(Authority);
  TArray<FDialogueMessage> Messages;Messages.Add(ForestDialogue::Message(TEXT("system"),Prompt));
  for(int32 I=FMath::Max(0,Context->Evidence.Num()-8);I<Context->Evidence.Num();++I)Messages.Add(Context->Evidence[I]);
  FName Fallback=TEXT("task.purpose");
@@ -392,7 +396,9 @@ void UForestNPCDialogueSubsystem::EndConversation()
  if(ActiveNpc.IsNone() || !Save)return;
  auto& R=Row(ActiveNpc);
  ++Generation;bWaiting=false;
- if(auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>())AI->CancelNpcTurns(ActiveTurnScope);ActiveTurnScope.Reset();
+ const auto ClosingScope=ActiveTurnScope;
+ ActiveTurnScope.Reset();
+ if(auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>())AI->CancelNpcTurns(ClosingScope);
  if(!SessionTranscript.IsEmpty())
  {
   // A failed earlier summary is retained and included in the next attempt.

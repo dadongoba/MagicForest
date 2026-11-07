@@ -1,0 +1,127 @@
+{
+  "baseline": "2c5c65c4f59d56f4fe405a299ef62df4a4445d50",
+  "files": [
+    {
+      "path": "Config/ForestCommissionKnowledge.json",
+      "full_project_sha256": "ed2579b8ebff7051aed0bd94517cba890dec2c30aeaeb7750b8df2f9ac8ddd21",
+      "incremental_sha256": "ed2579b8ebff7051aed0bd94517cba890dec2c30aeaeb7750b8df2f9ac8ddd21",
+      "equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyDialogueKnowledge.cpp",
+      "full_project_sha256": "a87400c5c6a7a14951dd800edd20feb0a06ed9f160a65df2370f9d565c66cc83",
+      "incremental_sha256": "a87400c5c6a7a14951dd800edd20feb0a06ed9f160a65df2370f9d565c66cc83",
+      "equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueKnowledge.h",
+      "full_project_sha256": "1ae747f17e4c88236dc1e25febbcff9823c2c4ef1c3163d75e55f7db1d49ee41",
+      "incremental_sha256": "1ae747f17e4c88236dc1e25febbcff9823c2c4ef1c3163d75e55f7db1d49ee41",
+      "equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyGameplaySubsystem.cpp",
+      "full_project_sha256": "8d95495475cc4aa7a075cb883fa14a3b8a3bbf16e7e522e54fa8dbb1e02dcfd6",
+      "incremental_sha256": "8d95495475cc4aa7a075cb883fa14a3b8a3bbf16e7e522e54fa8dbb1e02dcfd6",
+      "equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueAIServiceSubsystem.cpp",
+      "full_project_sha256": "df83fb204a19251015a19a6be72a67b3a6c408a25ed4ea9c72141b34af929689",
+      "incremental_sha256": "df83fb204a19251015a19a6be72a67b3a6c408a25ed4ea9c72141b34af929689",
+      "equal": true
+    },
+    {
+      "path": "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueAIServiceSubsystem.h",
+      "full_project_sha256": "0e4517a0cf07adb29b4e48068fa7d5656349ee4a7caaf6529f76a654a276b54c",
+      "incremental_sha256": "0e4517a0cf07adb29b4e48068fa7d5656349ee4a7caaf6529f76a654a276b54c",
+      "equal": true
+    },
+    {
+      "path": "Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp",
+      "full_project_sha256": "9880f8a62d4be7fb3ee763a439a717909e5234b748308beb483b6706c3fc9d4a",
+      "incremental_sha256": "9880f8a62d4be7fb3ee763a439a717909e5234b748308beb483b6706c3fc9d4a",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/dialogue_policy_bridge.py",
+      "full_project_sha256": "3217edad9afd22ecd4ef39ab7d62d5550ca1bb668bd5490ed442257791ff8151",
+      "incremental_sha256": "3217edad9afd22ecd4ef39ab7d62d5550ca1bb668bd5490ed442257791ff8151",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/dialogue_fact_host.py",
+      "full_project_sha256": "9555a13a9da7cce7cfa7c207fc7097fabebaa890d1028becef920e0f62a3ecfa",
+      "incremental_sha256": "9555a13a9da7cce7cfa7c207fc7097fabebaa890d1028becef920e0f62a3ecfa",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_dialogue_knowledge_tests.py",
+      "full_project_sha256": "d38ab42cdd45e18426989e366ccf8bb0032a133e0cac9032325910f41356b280",
+      "incremental_sha256": "d38ab42cdd45e18426989e366ccf8bb0032a133e0cac9032325910f41356b280",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_npc_remote_dialogue_checks.py",
+      "full_project_sha256": "abea97a7a7421f5cdc8a64b01dde8b9b686208d33f951fcdfbbb8c5c1809dafc",
+      "incremental_sha256": "abea97a7a7421f5cdc8a64b01dde8b9b686208d33f951fcdfbbb8c5c1809dafc",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_semantic_review_tests.py",
+      "full_project_sha256": "bb3d4cc8b25402399c319da5eefc9aa444eaaf700161496da98175a6acd012bb",
+      "incremental_sha256": "bb3d4cc8b25402399c319da5eefc9aa444eaaf700161496da98175a6acd012bb",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_dialogue_cancellation_tests.py",
+      "full_project_sha256": "cf7b25c9e9ed4a0660b5d0bf24dedfe0cdcb7ac0075c7ed0d0a6db08dc66a66d",
+      "incremental_sha256": "cf7b25c9e9ed4a0660b5d0bf24dedfe0cdcb7ac0075c7ed0d0a6db08dc66a66d",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_commission_configuration_failure_tests.py",
+      "full_project_sha256": "c16a01e0973d1a93c253845399872267332c1e57f3d662895f29210a4fda5de0",
+      "incremental_sha256": "c16a01e0973d1a93c253845399872267332c1e57f3d662895f29210a4fda5de0",
+      "equal": true
+    },
+    {
+      "path": "Tools/Tests/run_consequence_gateway_failure_tests.py",
+      "full_project_sha256": "2537fbd434c56332ec00832843c3859b79261f6f7641611b94e4bc375e5fe4c1",
+      "incremental_sha256": "2537fbd434c56332ec00832843c3859b79261f6f7641611b94e4bc375e5fe4c1",
+      "equal": true
+    },
+    {
+      "path": "Docs/NPC_Agent_Hotfix_2026-11-07.md",
+      "full_project_sha256": "7003a215de7b142d5cb034c49ade4bb341fc842b653c56a381bf06b7cc492c4a",
+      "incremental_sha256": "7003a215de7b142d5cb034c49ade4bb341fc842b653c56a381bf06b7cc492c4a",
+      "equal": true
+    },
+    {
+      "path": "Docs/NPC_Agent_Implementation_2026-11-07.md",
+      "full_project_sha256": "863a3fc216f8707281409e93b878881e782d3e8ccf2b4f9c2a13ed7e32661f1e",
+      "incremental_sha256": "863a3fc216f8707281409e93b878881e782d3e8ccf2b4f9c2a13ed7e32661f1e",
+      "equal": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_Hotfix_Native_2026-11-07.json",
+      "full_project_sha256": "0996bc472a5f31b77c8b69f1e1c9391ef7411881bd7db8fc98697a5864201c0e",
+      "incremental_sha256": "0996bc472a5f31b77c8b69f1e1c9391ef7411881bd7db8fc98697a5864201c0e",
+      "equal": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_Hotfix_Live_2026-11-07.json",
+      "full_project_sha256": "6ba5872dc4236dab704639f79557a83374c52f5c88e39f146061d4b396989f2e",
+      "incremental_sha256": "6ba5872dc4236dab704639f79557a83374c52f5c88e39f146061d4b396989f2e",
+      "equal": true
+    },
+    {
+      "path": "Docs/Tests/NPC_Agent_Hotfix_Semantic_2026-11-07.json",
+      "full_project_sha256": "7da8a0348db1184b21911bba5b367b2304df406c62915e7badfe4a867429888e",
+      "incremental_sha256": "7da8a0348db1184b21911bba5b367b2304df406c62915e7badfe4a867429888e",
+      "equal": true
+    }
+  ],
+  "final_online_validation": "passed; final frozen source hashes independently verified",
+  "no_editor_or_credentials": true
+}

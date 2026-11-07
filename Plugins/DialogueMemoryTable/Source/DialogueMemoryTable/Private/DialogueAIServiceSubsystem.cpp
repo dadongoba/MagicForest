@@ -140,7 +140,12 @@ void UDialogueAIServiceSubsystem::RequestNpcDialogue(
     }
 
     FAlchemyCommissionDefinition Commission;FString Facts,Purpose;TArray<FName> Allowed;
-    if(Gameplay->GetCommission(CommissionOrderIndex,Commission)){Facts=AlchemyDialogueKnowledge::Catalog(Commission,Familiarity);Purpose=AlchemyDialogueKnowledge::Intro(Commission);Allowed=AlchemyDialogueKnowledge::AllowedFacts(Commission,Familiarity,{},{});Messages[0].Content+=AlchemyDialogueKnowledge::FactGuidance(Commission,Familiarity,Allowed,{});}
+    if(!Gameplay->GetCommission(CommissionOrderIndex,Commission))
+    {
+        Callback.ExecuteIfBound(false,TEXT("commission_missing"));
+        return;
+    }
+    Facts=AlchemyDialogueKnowledge::Catalog(Commission,Familiarity);Purpose=AlchemyDialogueKnowledge::Intro(Commission);Allowed=AlchemyDialogueKnowledge::AllowedFacts(Commission,Familiarity,{},{});Messages[0].Content+=AlchemyDialogueKnowledge::FactGuidance(Commission,Familiarity,Allowed,{});
     RequestReviewedNpcMessages(PersonaId,Messages,Callback,Facts,Purpose,Allowed);
 }
 
@@ -164,11 +169,14 @@ void UDialogueAIServiceSubsystem::RequestNpcTurn(FName PersonaId,const TArray<FD
  for(int32 I=Messages.Num()-1;I>=0;--I)if(Messages[I].Role==TEXT("user")){Gate->PlayerText=Messages[I].Content;break;}
  NpcReplyGates.Add(Gate);Gate->Send();
 }
-void UDialogueAIServiceSubsystem::CancelNpcTurns(const TSharedPtr<FDialogueRequestScope>& Scope)
+void UDialogueAIServiceSubsystem::CancelNpcTurns(TSharedPtr<FDialogueRequestScope> Scope)
 {
- if(!Scope)return;const auto Gates=NpcReplyGates;
- for(const auto& Gate:Gates)if(Gate && Gate->Scope==Scope)Gate->Finish(false,TEXT("turn_cancelled"));
+ if(!Scope)return;
+ // Mark cancelled before invoking HTTP/gate callbacks. Both may synchronously
+ // re-enter this service or clear the caller's ActiveTurnScope.
  Scope->Cancel();
+ const auto Gates=NpcReplyGates;
+ for(const auto& Gate:Gates)if(Gate && Gate->Scope==Scope)Gate->Finish(false,TEXT("turn_cancelled"));
 }
 
 void UDialogueAIServiceSubsystem::ReleaseNpcReplyGate(UAlchemyDialogueReplyGate* Gate){NpcReplyGates.Remove(Gate);}
@@ -189,6 +197,11 @@ void UDialogueAIServiceSubsystem::RequestWorldConsequence(
     FDialogueMessage Message;
     Message.Role = TEXT("user");
     Message.Content = Gameplay->BuildWorldConsequencePrompt(CommissionOrderIndex, Evaluation, CompactMemoryJson);
+    if (Message.Content.IsEmpty())
+    {
+        Callback.ExecuteIfBound(false, TEXT("commission_missing"));
+        return;
+    }
     TArray<FDialogueMessage> Messages;
     Messages.Add(Message);
     RequestChatCompletion(Messages, 0.7f, 500, Callback);

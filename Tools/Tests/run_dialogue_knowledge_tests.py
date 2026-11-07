@@ -64,6 +64,11 @@ def main():
     if level<3:assert not any(i.startswith('task.motive.') for i in ids)
    assert all(n.call('guard',f['text'],'') for f in all_facts)
   print('PASS: nine approved narratives/targets unchanged; fact sources, codex references and layer restrictions:',count,'facts')
+  for idx,fid in [(4,'task.process.c'),(9,'task.motive.d'),(9,'task.bounds.constraint'),(9,'task.process.constraint')]:
+   facts=host.facts(idx,3);fact=next(f for f in facts if f['id']==fid)
+   assert fact['topic']=='constraint' and fid not in host.allowed(idx,3,[fid],[])
+  assert host.facts(9,1)[0]['id']=='task.purpose'
+  assert next(f for f in host.entries[9]['facts'] if f['id']=='task.bounds.a')['text']=='纸浆处理与木面烙字分开'
 
   memory={'nickname':'青苔2号','age':32,'books':3,'agreed':True,'note':'第二本写雨水。','target':[6,0,0],'recipe':'fire=6','familiarity':3,'nested':{'player_preference':'喜欢蓝色','score':100}}
   clean=host.memory(memory)
@@ -75,7 +80,9 @@ def main():
   assert 'R.DisclosedTopics|=' not in forest and 'CommitDelivered' in forest
   assert 'R.History.Pop()' not in forest and 'SessionTranscript.Pop()' not in forest
   assert 'LastActionReceipt' in forest and 'Context->VerifiedReply.DeliveredFacts' in forest
-  assert 'CancelNpcTurns(ActiveTurnScope)' in forest and 'Context->Scope' in forest
+  assert 'CancelNpcTurns(ClosingScope)' in forest and 'ActiveTurnScope.Reset()' in forest and 'Context->Scope' in forest
+  assert '"internal_only"' in forest and '"commission_state"' in forest and '"action_receipt"' in forest
+  assert '程序确认的委托状态' not in forest and '本轮登记结果，必须遵守' not in forest
   assert 'LastReviewReason' in gate and 'LastReviewSpan' in gate and 'LegacyResult' in gate
   assert 'response_format' in service and 'if(bJson)' in service and 'response_truncated' in service and 'response_empty' in service
   print('PASS: integration guards for actual delivery, retained player evidence, receipts, cancellation and JSON transport')

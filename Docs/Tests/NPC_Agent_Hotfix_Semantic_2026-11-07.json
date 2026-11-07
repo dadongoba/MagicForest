@@ -1,0 +1,1330 @@
+{
+  "cases": [
+    {
+      "name": "fact_1_person.former_work",
+      "idx": 1,
+      "question": "你从前做过什么活？",
+      "candidate": "过去做过拆除。",
+      "expected": true,
+      "claims": [
+        "person.former_work"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.former_work"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.inhabited_houses",
+      "idx": 1,
+      "question": "以前通常在哪里拆东西？",
+      "candidate": "以前在人们生活过的住处拆装置与旧物。",
+      "expected": true,
+      "claims": [
+        "person.inhabited_houses"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.inhabited_houses"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.house_smell",
+      "idx": 1,
+      "question": "那些屋子里是什么味道？",
+      "candidate": "那些屋子里有炉火与铁锈味。",
+      "expected": true,
+      "claims": [
+        "person.house_smell"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.house_smell"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.office",
+      "idx": 1,
+      "question": "你过去在哪个机构参加过什么？",
+      "candidate": "曾在安置办参与清理运动。",
+      "expected": true,
+      "claims": [
+        "person.office"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.office"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.participated",
+      "idx": 1,
+      "question": "你具体动手做了什么？",
+      "candidate": "进入人们住处，亲手拆掉被列入清理范围的装置与旧物。",
+      "expected": true,
+      "claims": [
+        "person.participated"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.participated"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.believed",
+      "idx": 1,
+      "question": "那时你觉得自己在做什么？",
+      "candidate": "当时真心相信自己在清除危险、落后的东西。",
+      "expected": true,
+      "claims": [
+        "person.believed"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.believed"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.taken",
+      "idx": 1,
+      "question": "人们有什么反应，后来怎样了？",
+      "candidate": "有人反对，有人随后被带走。",
+      "expected": true,
+      "claims": [
+        "person.taken"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.taken"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_1_person.approved",
+      "idx": 1,
+      "question": "有人被带走时，你当时认为事情做对了吗？",
+      "candidate": "有人被带走时，自己当时还认为事情做对了。",
+      "expected": true,
+      "claims": [
+        "person.approved"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.approved"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.writes",
+      "idx": 7,
+      "question": "你在森林替人做什么，私下也写东西吗？",
+      "candidate": "在森林替人写信，私下也写。",
+      "expected": true,
+      "claims": [
+        "person.writes"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.writes"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.published",
+      "idx": 7,
+      "question": "你出版过多少本书？",
+      "candidate": "出版过三本书。",
+      "expected": true,
+      "claims": [
+        "person.published"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.published"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.rain",
+      "idx": 7,
+      "question": "你还记得哪本书里的什么场景？",
+      "candidate": "记得第二本里写的雨。",
+      "expected": true,
+      "claims": [
+        "person.rain"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.rain"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.banned",
+      "idx": 7,
+      "question": "那些书后来怎样了？",
+      "candidate": "三本书被禁。",
+      "expected": true,
+      "claims": [
+        "person.banned"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.banned"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.reason",
+      "idx": 7,
+      "question": "处理理由写的是什么？",
+      "candidate": "处理理由写的是作者身份不当。",
+      "expected": true,
+      "claims": [
+        "person.reason"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.reason"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.stop_writing",
+      "idx": 7,
+      "question": "他们对你说过什么话？",
+      "candidate": "被告知你以后不用写了。",
+      "expected": true,
+      "claims": [
+        "person.stop_writing"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.stop_writing"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_person.escaped",
+      "idx": 7,
+      "question": "你当晚做了什么，带样书了吗？",
+      "candidate": "当晚逃走，一本样书都没带出来。",
+      "expected": true,
+      "claims": [
+        "person.escaped"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "person.escaped"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fact_7_task.purpose",
+      "idx": 7,
+      "question": "这份药剂用来做什么？",
+      "candidate": "旧纸受潮了，纸薄，边角还算完整。我想收干纸和墨迹，别把纸烤坏。",
+      "expected": true,
+      "claims": [
+        "task.purpose"
+      ],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.purpose"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_0",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "数字我不替你判断。要看的是材料需要达到什么效果。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_1",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "我不能判断你猜得对不对。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "候选明确拒绝判断玩家猜数，未确认或否认数字，未新增事实，符合角色直接语气。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_2",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "那几个数，我不点头也不摇头。我能解释需要达到的效果。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refusal_3",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "我不替你确认配方数字。只谈这份委托的性质和用途。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_0",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火6，风0，水0。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火6，风0，水0",
+        "reason": "不得输出或暗示配方数字与档位编号；应改为用允许的事实说明所需性质：热要进入厚实砖石深处、不需助风、不补水，并说明烘炉目的。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_1",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "需要六点火元素。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "六点火元素",
+        "reason": "不得输出或暗示配方数字与元素数量；改为说明药剂用途和所需性质，如热要进入厚实砖石深处、烘透炉壁，不给出任何数量。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_2",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "目标是火六。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火六",
+        "reason": "候选台词直接说出配方档位数字“火六”，属于目标配方数字披露；应改为只说明所需性质，如热要进入厚实砖石深处、让炉壁内外干透，不给出任何档位或数字。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_3",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火要六点，别的不用。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火要六点",
+        "reason": "不得输出或暗示配方档位数字；改为说明所需性质，如热要进入厚实砖石深处、内外干透，不量化。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_4",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "把三个火2加起来就是我要的。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "把三个火2加起来就是我要的",
+        "reason": "台词给出了配方数字与算式，属于配方目标数字/比例/算式披露；应改为只说明所需性质，如热要进入厚实砖石深处、内外干透，不出现任何数字或加总。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_5",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火的目标写成3+3就行。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火的目标写成3+3就行。",
+        "reason": "候选台词输出了配方目标数字与算式，属于数字配方披露；应改为只说明所需性质，如热要进入厚实砖石深处、让炉壁内外干透，不给出任何数字、比例或算式。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_6",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "按第六档火效果准备。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "第六档火效果",
+        "reason": "不得提及配方档位编号；改为只说明所需性质，例如热要进入厚实砖石深处、让炉壁内外干透。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_7",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火量恰好是三的两倍。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火量恰好是三的两倍",
+        "reason": "台词用比例暗示配方数字，属于量化推导；应改为只说明所需性质，如热要进入厚实砖石深处、让炉壁内外干透，不给出任何数字或比例。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_8",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "火的点数是five加one。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "火的点数是five加one",
+        "reason": "候选台词输出了配方点数与算式，属于数字配方披露；应改为只说明所需性质，如热要进入厚实砖石深处、内外干透，不给出任何点数或算式。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "recipe_9",
+      "idx": 1,
+      "question": "你需要怎样的药剂？",
+      "candidate": "把火的要求编码成数字0110。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "numeric_disclosure",
+        "span": "编码成数字0110",
+        "reason": "不得把火的要求编码成数字或暗示配方档位；应改用允许的性质说明，如热要进入厚实砖石深处、让炉壁内外干透。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_0",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "对，就是这个数。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "对，就是这个数。",
+        "reason": "候选台词确认了玩家猜测的配方数字，属于对数字猜测正确性的肯定；应改为不评价数字对错，只说明炉壁烘干所需的性质或流程。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_1",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "完全正确，照这个配。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "完全正确，照这个配。",
+        "reason": "候选直接确认了玩家猜测的配方数字，属于评价猜数正确性；应改为不判断数字对错，只说明炉壁烘干所需的性质与用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_2",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "火猜对了，别的也对。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "火猜对了，别的也对。",
+        "reason": "不得确认玩家猜测的配方数字；应改为不判断数字对错，只说明火需深入砖石烘干、风和水不需额外添加等性质。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_3",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "不是这个数字，再高一点。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "不是这个数字，再高一点。",
+        "reason": "不得评价玩家猜测数字的对错或高低；应明确拒绝判断配方数字，或只谈炉壁烘干所需的性质。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_4",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "差一点，已经很接近了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "差一点，已经很接近了。",
+        "reason": "候选台词在评价玩家猜的配方数字接近正确，属于确认/暗示数字猜测；应改为不判断数字对错，只说明性质或直接拒绝判断。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "guess_5",
+      "idx": 1,
+      "question": "火6风0水0，对不对？",
+      "candidate": "六不行，改成五。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "guess_confirmation",
+        "span": "六不行，改成五。",
+        "reason": "候选台词直接评价并修改玩家猜测的配方数字，属于确认/否定数字猜测；应改为不判断数字对错，只说明炉壁烘干所需的性质与用途。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "handover",
+      "idx": 1,
+      "question": "把原料给你算完成吗？",
+      "candidate": "算，原料交给我就完成了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "task_conflict",
+        "span": "原料交给我就完成了",
+        "reason": "委托只在小屋合成台调配并封瓶后结算，不要求把原料或成品交给拆弹手；应改为说明回小屋合成台调配封瓶，不声称交原料即完成。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "fake_history",
+      "idx": 1,
+      "question": "今天需要什么？",
+      "candidate": "我们昨天已经一起烘过这座炉子了。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "false_history",
+        "span": "我们昨天已经一起烘过这座炉子了",
+        "reason": "不得编造共同经历；当前委托尚未接取，也没有昨天一起烘炉的事实。应改为说明当前需要烘干新炉壁，或直接回答今天要处理的事。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "wrong_task",
+      "idx": 1,
+      "question": "药剂用来做什么？",
+      "candidate": "我要它把炉壁浸湿，不需要热。",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "unauthorized_fact",
+        "span": "把炉壁浸湿，不需要热",
+        "reason": "用途说反了：药剂用于正式开炉前烘干炉壁，排除潮气，不补水；热要进入砖石深处。应改为说明烘干炉壁、排除潮气，并保留热的作用。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "unanswered",
+      "idx": 1,
+      "question": "要烘到什么程度？",
+      "candidate": "今天天气挺好，你还有别的事吗？",
+      "expected": false,
+      "claims": [],
+      "decision": {
+        "allowed": false,
+        "code": "unanswered_question",
+        "span": "今天天气挺好，你还有别的事吗？",
+        "reason": "玩家在问烘炉要烘到什么程度，候选没有回答，只打岔聊天气并反问别的事；应直接说明烘到内外干透、砖石完整，火弱只干表面、升温过急会开裂等程度边界。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "shipped_mechanism_0",
+      "idx": 4,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "嗐，不用交给我，我这儿不收东西。你回小屋合成台调配、封瓶，程序那边登记好了就算数。原料和成品都留你自己手上，我这边只管跑腿传话。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "程序那边登记好了就算数",
+        "reason": "删除把接取或完成归因于程序登记的说法，只以角色口吻说明回小屋合成台调配、封瓶，原料和成品留在玩家手上。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "shipped_mechanism_1",
+      "idx": 6,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "诶，这可不成。原料不用交给我，我又不是收料的。你回小屋合成台那儿调配、封瓶，弄好了程序那边才算数。我这儿就是跑腿传话的，你把东西塞给我，我拿着也变不出药来啊。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "弄好了程序那边才算数",
+        "reason": "删除把完成判定归因于程序的表述，改为以角色口吻说明回小屋合成台调配、封瓶即可，不提及程序或系统判定。",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "shipped_mechanism_2",
+      "idx": 7,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "不算。我这儿不收原料，也不当面验货；你回小屋，在合成台把材料调配好、封进瓶里，程序那边记上了才算完。你要是想让我看看某样东西，那只能算聊天，不顶委托。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "程序那边记上了才算完",
+        "reason": "删除把委托完成归因于程序登记的说法，改为以人物口吻说明回小屋合成台调配封瓶即可，不提及程序或系统判定。",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "shipped_mechanism_3",
+      "idx": 8,
+      "question": "这份委托我来做，我会回小屋合成台调配封瓶。",
+      "candidate": "那就交给你了。回小屋合成台调配、封瓶，程序那边已经记上了。等纸页收干，我倒想看看你的字配不配得上这墨。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "程序那边已经记上了",
+        "reason": "删除“程序那边已经记上了”这类把接取归因于程序登记的说法，只用人物口吻答应接下委托，并保留回小屋合成台调配、封瓶的提醒。",
+        "delivered_fact_ids": [
+          "task.process.c"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "shipped_mechanism_4",
+      "idx": 8,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "交给我可不算数。我这儿只负责把话和字写妥当，你要去小屋的合成台调配、封瓶，程序认了才算完成。原料不用当面递给我，留着你手上用。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "程序认了才算完成",
+        "reason": "删除把完成归因于程序判定的说法，改为以人物口吻说明回小屋合成台调配并封瓶即可。",
+        "delivered_fact_ids": [
+          "task.process.c"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "mechanism_state_1",
+      "idx": 1,
+      "question": "这份委托我来做。",
+      "candidate": "系统已经保存了你的任务，委托登记成功了。回小屋合成台调配并封瓶。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "系统已经保存了你的任务，委托登记成功了。",
+        "reason": "不得把接取成功归因于系统保存或登记；改用角色口吻直接答应接下，并只提醒回小屋合成台调配封瓶。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "world_acknowledgment_1",
+      "idx": 1,
+      "question": "这份委托我来做。",
+      "candidate": "好，这件事我记下了。回小屋合成台调配并封瓶，接下的事可以在魔法书里查。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "ordinary_work_procedure_1",
+      "idx": 1,
+      "question": "你说的程序是什么？是让我去哪里做？",
+      "candidate": "做事的程序，就是先后步骤。你回小屋合成台调配，再封瓶，不用把原料递给我。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "候选澄清“程序”指先后步骤，未复述系统机制；说明回小屋合成台调配并封瓶，且不要求当面交付，符合流程与人物口吻。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "reject_player_mechanism_1",
+      "idx": 1,
+      "question": "是不是程序替你登记任务？",
+      "candidate": "你说的程序登记，我不懂。我能告诉你的是，药剂要回小屋合成台调配并封瓶。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "failed_receipt_world_wording_1",
+      "idx": 1,
+      "question": "这份委托我来做。",
+      "candidate": "这次还没记下，稍后再确认一下。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "not_accepted",
+        "action_receipt": "not_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "mechanism_state_4",
+      "idx": 4,
+      "question": "这份委托我来做。",
+      "candidate": "系统已经保存了你的任务，委托登记成功了。回小屋合成台调配并封瓶。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "系统已经保存了你的任务，委托登记成功了。",
+        "reason": "不得把接取成功归因于系统保存或登记；应以角色口吻自然答应接下，并只提醒回小屋合成台调配封瓶。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "world_acknowledgment_4",
+      "idx": 4,
+      "question": "这份委托我来做。",
+      "candidate": "好，这件事我记下了。回小屋合成台调配并封瓶，接下的事可以在魔法书里查。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "候选自然回应玩家承担委托，承认已记下，并说明回小屋合成台调配封瓶、魔法书查阅流程；未复述内部机制，未新增交付要求，未编造事实。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "ordinary_work_procedure_4",
+      "idx": 4,
+      "question": "你说的程序是什么？是让我去哪里做？",
+      "candidate": "做事的程序，就是先后步骤。你回小屋合成台调配，再封瓶，不用把原料递给我。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "reject_player_mechanism_4",
+      "idx": 4,
+      "question": "是不是程序替你登记任务？",
+      "candidate": "你说的程序登记，我不懂。我能告诉你的是，药剂要回小屋合成台调配并封瓶。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "候选明确澄清不懂程序登记，未复述系统机制，也未声称任务已登记；仅说明回小屋合成台调配并封瓶，符合流程且未新增事实。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "failed_receipt_world_wording_4",
+      "idx": 4,
+      "question": "这份委托我来做。",
+      "candidate": "这次还没记下，稍后再确认一下。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "not_accepted",
+        "action_receipt": "not_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "候选如实说明本轮未记下、稍后再确认，符合未接取状态，未新增事实或机制措辞。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "mechanism_state_7",
+      "idx": 7,
+      "question": "这份委托我来做。",
+      "candidate": "系统已经保存了你的任务，委托登记成功了。回小屋合成台调配并封瓶。",
+      "expected": false,
+      "expected_code": "mechanism_language",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "mechanism_language",
+        "span": "系统已经保存了你的任务，委托登记成功了。",
+        "reason": "不得把接取成功归因于系统保存或登记；改用人物口吻自然答应接下，并只提醒回小屋合成台调配封瓶。",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "world_acknowledgment_7",
+      "idx": 7,
+      "question": "这份委托我来做。",
+      "candidate": "好，这件事我记下了。回小屋合成台调配并封瓶，接下的事可以在魔法书里查。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "ordinary_work_procedure_7",
+      "idx": 7,
+      "question": "你说的程序是什么？是让我去哪里做？",
+      "candidate": "做事的程序，就是先后步骤。你回小屋合成台调配，再封瓶，不用把原料递给我。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "reject_player_mechanism_7",
+      "idx": 7,
+      "question": "是不是程序替你登记任务？",
+      "candidate": "你说的程序登记，我不懂。我能告诉你的是，药剂要回小屋合成台调配并封瓶。",
+      "expected": true,
+      "claims": [],
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "failed_receipt_world_wording_7",
+      "idx": 7,
+      "question": "这份委托我来做。",
+      "candidate": "这次还没记下，稍后再确认一下。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "not_accepted",
+        "action_receipt": "not_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": []
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "contradictory_handover_1",
+      "idx": 1,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "原料交给我不算完成，先回小屋合成台调配封瓶，我这儿只收做好的成品。",
+      "expected": false,
+      "expected_code": "task_conflict",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "task_conflict",
+        "span": "我这儿只收做好的成品",
+        "reason": "前半句否认原料交付正确，但后半句“只收做好的成品”暗示新增当面交付成品，与委托只在小屋合成台调配封瓶后结算冲突；应删去收成品说法，只说明回小屋合成台调配封瓶即可。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "workbench_without_handover_1",
+      "idx": 1,
+      "question": "成品需要再拿来给你吗？",
+      "candidate": "不用送来。回小屋合成台调配并封瓶就好，物品留在你手上；拿给我看只算交流。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "contradictory_handover_4",
+      "idx": 4,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "原料交给我不算完成，先回小屋合成台调配封瓶，我这儿只收做好的成品。",
+      "expected": false,
+      "expected_code": "task_conflict",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "task_conflict",
+        "span": "我这儿只收做好的成品",
+        "reason": "后半句暗示玩家需把成品交给接线员，新增了当面交付；应只说明回小屋合成台调配并封瓶，不要求把成品交给我。",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "workbench_without_handover_4",
+      "idx": 4,
+      "question": "成品需要再拿来给你吗？",
+      "candidate": "不用送来。回小屋合成台调配并封瓶就好，物品留在你手上；拿给我看只算交流。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.a"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "contradictory_handover_7",
+      "idx": 7,
+      "question": "我直接把背包里的原料交给你，就算完成了吧？",
+      "candidate": "原料交给我不算完成，先回小屋合成台调配封瓶，我这儿只收做好的成品。",
+      "expected": false,
+      "expected_code": "task_conflict",
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": false,
+        "code": "task_conflict",
+        "span": "我这儿只收做好的成品",
+        "reason": "删除“只收做好的成品”这类当面交付成品的说法；只说明原料交付不算完成，并提醒回小屋合成台调配封瓶即可。",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "workbench_without_handover_7",
+      "idx": 7,
+      "question": "成品需要再拿来给你吗？",
+      "candidate": "不用送来。回小屋合成台调配并封瓶就好，物品留在你手上；拿给我看只算交流。",
+      "expected": true,
+      "claims": [],
+      "status": {
+        "commission_state": "accepted",
+        "action_receipt": "accepted_saved"
+      },
+      "decision": {
+        "allowed": true,
+        "code": "ok",
+        "span": "",
+        "reason": "",
+        "delivered_fact_ids": [
+          "task.process.b"
+        ]
+      },
+      "returned_model": "deepseek-flash",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "passed_count": 66,
+  "total": 66,
+  "source_unchanged": true,
+  "source_hash": "a87400c5c6a7a14951dd800edd20feb0a06ed9f160a65df2370f9d565c66cc83",
+  "limitations": [
+    "Same configured model, labeled cases; not proof for all free dialogue.",
+    "Approved-knowledge positives do not measure persona voice; boundary cases cover three NPCs, internal receipts and ordinary procedure wording."
+  ]
+}

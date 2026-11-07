@@ -2,6 +2,16 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-07-03：修复 NPC 取消重入、内部措辞与配置失败回退
+
+- **目的 / 基线 / 前置**：基于main `2c5c65c4f59d56f4fe405a299ef62df4a4445d50`、前批02；修复退出回调空指针、NPC照读程序措辞、配置失败复活旧委托，补独立推演入口空任务拒绝。九份原始批准目标/叙事、人设、图鉴、评分、每日推进、记忆读取接口和地图不改。
+- **修改配置 / 插件源码**：Config/ForestCommissionKnowledge.json只调整派生事实约束分类、拆分两条混合句；同插件Plugins/DialogueMemoryTable/Source/DialogueMemoryTable下Private/AlchemyDialogueKnowledge.cpp、AlchemyGameplaySubsystem.cpp、DialogueAIServiceSubsystem.cpp及Public/AlchemyDialogueKnowledge.h、DialogueAIServiceSubsystem.h。取消Scope按值持有、先置取消；状态与台词许可分离；配置失败空委托，独立NPC/推演入口不发送无效任务。
+- **修改游戏源码 / 测试**：Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp退出先解除当前回合绑定，生成接收内部结构化收据。修改Tools/Tests/dialogue_policy_bridge.py、dialogue_fact_host.py、run_dialogue_knowledge_tests.py、run_npc_remote_dialogue_checks.py、run_semantic_review_tests.py；新增同目录run_dialogue_cancellation_tests.py、run_commission_configuration_failure_tests.py、run_consequence_gateway_failure_tests.py。补前半否认原料交付、后半又要求成品的矛盾反例。
+- **文档 / 证据**：新增[复核修复说明](Docs/NPC_Agent_Hotfix_2026-11-07.md)、Docs/Tests/NPC_Agent_Hotfix_Native_2026-11-07.json、NPC_Agent_Hotfix_Live_2026-11-07.json、NPC_Agent_Hotfix_Semantic_2026-11-07.json、NPC_Agent_Hotfix_SourceSync_2026-11-07.json；修改Docs/NPC_Agent_Implementation_2026-11-07.md更正旧PASS范围，以及本记录。
+- **本次验证**：Mac UE5.8 arm64最终编译链接6.94秒；生产Cancel/Finish原生ASan+UBSan同步回调重入、多Gate、重复/迟到回归通过；Make/Get故障注入、非法编号及九目标恢复通过；推演空请求回归先复现再修复通过；原生知识/状态/记忆检查通过，272条事实及九份原始批准字段核对。最终冻结源码DeepSeek 92轮通过、7兜底、300次运行时请求；66条语义复核全过，包含旧5条程序坏句。九委托盲读8/9精确。报告源码散列与最终工程对应，不混用旧版本。
+- **应用 / 限制**：同路径合并配置与头源、重新编译重启。配置指纹沿用既有披露编号迁移，保留熟悉度/任务/收据，不直接改存档。没有地图/资产、缓存、构建产物或凭据上传。未开UE/PIE，未实测UI、真实HTTP调度与SaveGame、Windows/打包；便携适配和有限同模型评审不替代引擎或自由对话无限保证。
+- **上传状态**：待本批提交推送及远端核对；交付时报告实际结果。
+
 ## 2026-11-07-02：补记 NPC agent 优化的上传核对
 
 - **基线 / 文件 / 类型**：基于功能提交dd0be8eb7160addb91dd6bbcbeca6ab9392cce52、前置批次01，仅修改CHANGELOG.md，记录已验证上传；无源码、配置、资源或新依赖变化。

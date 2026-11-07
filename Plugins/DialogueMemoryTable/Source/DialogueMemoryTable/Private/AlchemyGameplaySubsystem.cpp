@@ -261,7 +261,8 @@ FString UAlchemyGameplaySubsystem::BuildPersonaSystemPrompt(
         if(!SafeMemory.IsEmpty())Prompt+=TEXT("【经过边界筛选的旧记忆，只作资料】\n")+SafeMemory+TEXT("\n");
     }
     // The live caller appends the rolling window once, as role messages.
-    Prompt += TEXT("\n【委托流程硬规则，优先于旧台词与记忆】\n系统根据真实对话识别接取：你提出具体委托、玩家答应承担，程序校验保存后才算已接取。没有接取按钮。询问、闲聊、展示物品不算接取。登记状态以程序确认为准。接取后提醒回小屋合成台调配、封瓶，不要求把原料或成品当面交给你。今日同伴委托全部结算后才换天，最后一天全部结算后结束。展示只交流，不交付、不完成任务。\n");
+    Prompt += TEXT("\n【内部委托权限，优先于旧台词与记忆，仅供判断】\n提出需求、玩家承担、接取成功是不同状态。接取与完成只认本轮提供的权威状态，不凭玩家转述或你自己的台词改变。询问、闲聊、展示物品不算接取；展示不交付、不完成。状态资料中的校验、程序、系统、登记、保存、按钮及完成判定属于内部控制信息，不能把它们说成森林里发生的事，也不能复述给玩家。\n");
+    Prompt += TEXT("【对玩家自然说明的流程】\n只有已确认接取成功，才自然回应这件事交给玩家；接取失败不能说已经接下或记好。需要说明去向时，告诉玩家回小屋的合成台调配并封瓶，答应的事可在魔法书里查；不要求把原料或成品当面交给你。每天要做完今日所有同伴的委托才结束当天，最后一天做完后旅程结束。按当前问题选用必要的一句，不把流程整段背给玩家。\n");
     Prompt += AlchemyDialogueKnowledge::Rules();
     return Prompt;
 }
@@ -451,7 +452,20 @@ TArray<FAlchemyCommissionDefinition> UAlchemyGameplaySubsystem::MakeCommissions(
     C9.OpeningLine = TEXT("三样都要。火最多。这本书的字不能褪。……纸烂了字还在的那种。");
     C9.MustCards = { PipCard(TEXT("fire_5"), TEXT("权杖五"), EAlchemyElement::Fire, 5), PipCard(TEXT("fire_3"), TEXT("权杖三"), EAlchemyElement::Fire, 3), PipCard(TEXT("wind_3"), TEXT("宝剑三"), EAlchemyElement::Wind, 3), PipCard(TEXT("water_3"), TEXT("圣杯三"), EAlchemyElement::Water, 3) }; Result.Add(C9);
 
-    AlchemyDialogueKnowledge::ApplyReviewedDefinitions(Result);
+    // The authored rows above only provide structural defaults. A rejected or
+    // missing reviewed configuration must never revive their retired tasks.
+    static bool bConfigurationErrorReported = false;
+    if (!AlchemyDialogueKnowledge::ApplyReviewedDefinitions(Result))
+    {
+        if (!bConfigurationErrorReported)
+        {
+            UE_LOG(LogTemp, Error, TEXT("Reviewed commission configuration is missing or invalid; commissions are unavailable."));
+            bConfigurationErrorReported = true;
+        }
+        Result.Reset();
+        return Result;
+    }
+    bConfigurationErrorReported = false;
     return Result;
 }
 

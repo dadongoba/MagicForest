@@ -1,0 +1,105 @@
+{
+  "baseline": "2c5c65c4f59d56f4fe405a299ef62df4a4445d50",
+  "build": {
+    "target": "demo3_UE58Editor Mac Development arm64",
+    "result": "Succeeded",
+    "seconds": 26.62,
+    "editor_launched": false
+  },
+  "checks": [
+    {
+      "name": "cancellation_reentrancy",
+      "passed": true,
+      "production_methods": [
+        "FDialogueRequestScope::IsActive",
+        "FDialogueRequestScope::Cancel",
+        "UDialogueAIServiceSubsystem::CancelNpcTurns",
+        "UAlchemyDialogueReplyGate::Finish"
+      ],
+      "sanitizers": [
+        "address",
+        "undefined"
+      ],
+      "cases": [
+        "null scope",
+        "caller scope reset in synchronous callback",
+        "multiple gates and other scope isolation",
+        "recursive cancellation",
+        "synchronous HTTP cancellation",
+        "repeat cancellation",
+        "late completion"
+      ]
+    },
+    {
+      "name": "commission_configuration_failure",
+      "passed": true,
+      "production_methods": [
+        "MakeCommissions",
+        "GetCommissions",
+        "GetCommission"
+      ],
+      "cases": [
+        "validator false",
+        "partial mutation then false",
+        "invalid id",
+        "all nine targets on validator recovery",
+        "deduplicated error logging"
+      ]
+    },
+    {
+      "name": "knowledge_and_state_regression",
+      "passed": true,
+      "facts": 272,
+      "approved_commissions": 9,
+      "memory_read_preserved": true
+    },
+    {
+      "name": "public_consequence_gateway",
+      "passed": true,
+      "production_methods": [
+        "UDialogueAIServiceSubsystem::RequestWorldConsequence"
+      ],
+      "cases": [
+        "missing GameInstance",
+        "missing gameplay subsystem",
+        "invalid config/empty task",
+        "missing commission",
+        "valid task dispatch"
+      ]
+    }
+  ],
+  "source_hashes": {
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueAIServiceSubsystem.cpp": "df83fb204a19251015a19a6be72a67b3a6c408a25ed4ea9c72141b34af929689",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueAIServiceSubsystem.h": "0e4517a0cf07adb29b4e48068fa7d5656349ee4a7caaf6529f76a654a276b54c",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyGameplaySubsystem.cpp": "8d95495475cc4aa7a075cb883fa14a3b8a3bbf16e7e522e54fa8dbb1e02dcfd6",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyDialogueKnowledge.cpp": "a87400c5c6a7a14951dd800edd20feb0a06ed9f160a65df2370f9d565c66cc83",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueKnowledge.h": "1ae747f17e4c88236dc1e25febbcff9823c2c4ef1c3163d75e55f7db1d49ee41",
+    "Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp": "9880f8a62d4be7fb3ee763a439a717909e5234b748308beb483b6706c3fc9d4a",
+    "Tools/Tests/run_dialogue_cancellation_tests.py": "cf7b25c9e9ed4a0660b5d0bf24dedfe0cdcb7ac0075c7ed0d0a6db08dc66a66d",
+    "Tools/Tests/run_commission_configuration_failure_tests.py": "c16a01e0973d1a93c253845399872267332c1e57f3d662895f29210a4fda5de0",
+    "Tools/Tests/run_consequence_gateway_failure_tests.py": "2537fbd434c56332ec00832843c3859b79261f6f7641611b94e4bc375e5fe4c1",
+    "Config/ForestCommissionKnowledge.json": "ed2579b8ebff7051aed0bd94517cba890dec2c30aeaeb7750b8df2f9ac8ddd21",
+    "Tools/Tests/run_dialogue_knowledge_tests.py": "d38ab42cdd45e18426989e366ccf8bb0032a133e0cac9032325910f41356b280",
+    "Tools/Tests/run_semantic_review_tests.py": "bb3d4cc8b25402399c319da5eefc9aa444eaaf700161496da98175a6acd012bb"
+  },
+  "unchanged_files": [
+    "Config/ForestPersonaFacts.json",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyPersonaProfiles.inl",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueTurnPolicy.h",
+    "Source/demo3_UE58/ForestCommissionAcceptance.h",
+    "Source/demo3_UE58/ForestAlchemy.cpp",
+    "Config/ForestElementCodex.json (parsed content)"
+  ],
+  "limitations": [
+    "Portable cancellation harness executes production method bodies with synchronous HTTP/delegate/container doubles; not UE HTTP scheduler or PIE.",
+    "Configuration regression injects validator results; does not exercise Unreal JSON/file IO.",
+    "No editor, PIE, real SaveGame/UI, Windows or packaging validation."
+  ],
+  "final_build": {
+    "result": "Succeeded",
+    "seconds": 6.94,
+    "editor_launched": false
+  },
+  "approved_original_fields_unchanged": true,
+  "facts_metadata_changes": "Two implementation clauses reclassified as constraints; two mixed clauses split into existing world fact and internal constraint. Approved targets, purposes, topics, private briefs and settlement reveals unchanged."
+}

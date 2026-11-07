@@ -102,9 +102,10 @@ def main():
     if accepted_this_turn:
      if save_failure:notice='本轮登记保存失败，未接取。不得声称已登记。'
      else:accepted=True;notice='本轮对话已确认玩家承担委托且登记保存成功。提醒回小屋合成台调配封瓶。'
-    status=('当前委托已经接取，去小屋合成台调配封瓶。' if accepted else '当前委托尚未接取。询问和展示不算接取。')+notice
+    status='accepted' if accepted else 'not_accepted'
+    action_receipt=('accepted_saved' if accepted else 'not_saved') if notice else 'none'
     allowed=host.allowed(idx,layer,selected,known);facts={f['id']:f for f in host.facts(idx,layer)}
-    prompt=host.prompt(idx,layer,allowed,known,memory,status)+'\n【本轮意图】\n'+intent+rules['generation']
+    prompt=host.prompt(idx,layer,allowed,known,memory,status,action_receipt)+'\n【本轮意图】\n'+intent+rules['generation']
     messages=[dict(role='system',content=prompt),*window];drafts=[];reply=None;delivered=[]
     for repair in range(2):
      try:
@@ -157,9 +158,9 @@ def main():
    if name=='display_is_not_acceptance':passed=passed and not accepted and all(t['layer']==1 for t in turns)
    if name=='memory_cannot_unlock':passed=passed and layer==1
    if not a.no_audit:
-    rubric='你是独立测试评分员，只输出json。不是运行时复核器。检查对话是否答到玩家的问题、与任务事实一致、没有报配方数字或确认/否定数字猜测、未提前讲深层往事、未把展示说成交付或声称不存在的保存结果。允许普通数量、拒绝猜数和合理的人物拒答；已经解锁且明确追问往事时应该提供实质事实。只根据实际台词，不能用计划或已登记编号冒充玩家听到的内容。输出{"grounded":true,"responsive":true,"numeric_safe":true,"layer_safe":true,"flow_correct":true,"issues":[]}；发现问题给具体轮次和片段。'
+    rubric='你是独立测试评分员，只输出json。不是运行时复核器。检查对话是否答到玩家的问题、与任务事实一致、没有报配方数字或确认/否定数字猜测、未提前讲深层往事、未把展示说成交付或声称不存在的保存结果。允许普通数量、拒绝猜数和合理的人物拒答；已经解锁且明确追问往事时应该提供实质事实。world_voice检查角色台词是否用世界内表达：可说回小屋合成台调配封瓶、魔法书查阅、约定已经记下；不得把程序、系统、后台、接口或存档当成角色或机构代办接取/保存/完成。普通工艺程序或否认玩家的程序说法不因此违规，不按单词判罪。只根据实际台词，不能用计划或已登记编号冒充玩家听到的内容。输出{"grounded":true,"responsive":true,"numeric_safe":true,"layer_safe":true,"flow_correct":true,"world_voice":true,"issues":[]}；发现问题给具体轮次和片段。'
     audit=chat(rubric,dict(task_catalog=host.catalog(idx,3),allowed_persona_layers=host.profiles[who]['layers'],turns=[{k:t[k] for k in ['user','reply','layer','accepted','save_failed','fallback']} for t in turns]),tokens=1000)
-    passed=passed and all(audit.get(x) is True for x in ['grounded','responsive','numeric_safe','layer_safe','flow_correct'])
+    passed=passed and all(audit.get(x) is True for x in ['grounded','responsive','numeric_safe','layer_safe','flow_correct','world_voice'])
    inference=None
    if name.startswith('commission_'):
     # Blind reader receives neither the hidden brief nor target/reference IDs.

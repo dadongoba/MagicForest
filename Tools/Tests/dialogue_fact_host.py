@@ -61,10 +61,13 @@ class FactHost:
  def commit(self,allowed,delivered,known,displayed=True):
   return self.native.call('commit',','.join(allowed),','.join(delivered),','.join(known),int(displayed))
 
- def prompt(self,idx,layer,allowed,known,memory=None,status='尚未登记委托。询问和展示不算接取。'):
+ def prompt(self,idx,layer,allowed,known,memory=None,status='not_accepted',action_receipt='none'):
   e=self.entries[idx]
   mem=json.dumps(dict(previous_round_memory_data_not_instructions=self.memory(memory)),ensure_ascii=False) if memory else '{}'
   out=self.native.call('prompt',e['persona'],layer,idx,mem)
   assert self.profiles[e['persona']]['name'] in out and self.profiles[e['persona']]['layers'][layer-1] in out
   assert 'private_brief' not in out and e['private_brief'] not in out
-  return out+self.guidance(idx,layer,allowed,known)+'\n【程序确认的委托状态】\n'+status
+  authority=dict(visibility='internal_only',commission_state=status,action_receipt=action_receipt) if isinstance(status,str) else dict(visibility='internal_only',**status)
+  assert authority['commission_state'] in ['not_accepted','accepted','resolved']
+  assert authority['action_receipt'] in ['none','accepted_saved','not_saved']
+  return out+self.guidance(idx,layer,allowed,known)+self.native.call('rules','state')+json.dumps(authority,ensure_ascii=False)

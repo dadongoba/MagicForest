@@ -717,7 +717,7 @@
           "source": "topics.process",
           "text": "这只是委托的使用叙事，不承诺玩家能够驾驶新载具。",
           "minimum_layer": 1,
-          "kind": "fact"
+          "kind": "constraint"
         },
         {
           "id": "task.context.a",
@@ -1720,7 +1720,7 @@
           "id": "task.bounds.a",
           "topic": "bounds",
           "source": "topics.bounds",
-          "text": "纸浆处理与木面烙字分开，不说烈火让普通纸永久不坏，也不承诺文字永远无法毁去。",
+          "text": "纸浆处理与木面烙字分开",
           "minimum_layer": 1,
           "kind": "fact"
         },
@@ -1744,7 +1744,7 @@
           "id": "task.process.c",
           "topic": "process",
           "source": "topics.process",
-          "text": "药剂在小屋合成台调配，不新增玩家手工操作菜单。",
+          "text": "药剂在小屋合成台调配",
           "minimum_layer": 1,
           "kind": "fact"
         },
@@ -1826,7 +1826,7 @@
           "source": "private_brief",
           "text": "关于禁书、出逃与遗失样书的事实仍受熟悉度约束。",
           "minimum_layer": 3,
-          "kind": "fact"
+          "kind": "constraint"
         },
         {
           "id": "task.fire.effect.a",
@@ -1899,6 +1899,22 @@
           "minimum_layer": 1,
           "kind": "effect_reference",
           "codex_sentence": 2
+        },
+        {
+          "id": "task.bounds.constraint",
+          "topic": "bounds",
+          "source": "topics.bounds",
+          "text": "不说烈火让普通纸永久不坏，也不承诺文字永远无法毁去。",
+          "minimum_layer": 1,
+          "kind": "constraint"
+        },
+        {
+          "id": "task.process.constraint",
+          "topic": "process",
+          "source": "topics.process",
+          "text": "不新增玩家手工操作菜单。",
+          "minimum_layer": 1,
+          "kind": "constraint"
         }
       ]
     }
