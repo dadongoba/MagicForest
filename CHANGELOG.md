@@ -2,6 +2,14 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-08-03：切分 22 张透特风格大牌图，准备 UE 导入
+
+- **目的 / 基线 / 前置**：基于main 1801abf8ac43dbacaf0ddd498c4710bfb1fd0b06、前批02；将用户最新下载的1536×1024双排拼版切成22张独立大牌图，按现有`MakeMajorCards()`的0、I至XXI排序，供后续绑定游戏大牌。
+- **新增资源**：`ArtSource/ThothMajorArcana/Source/森林科技塔罗牌阵列.png`原图；`ArtSource/ThothMajorArcana/Cards/Major_*.png`共22张RGB PNG，每张142×512；`ArtSource/ThothMajorArcana/Preview/contact_sheet.png`核对图；`ArtSource/ThothMajorArcana/major_arcana_manifest.json`编号、名称、来源裁切坐标与SHA-256；`ArtSource/ThothMajorArcana/split_cards.py`可复现切图脚本、`ArtSource/ThothMajorArcana/README.md`导入说明。修改根`README.md`解释ArtSource。
+- **应用 / 依赖**：在完整Air工程按相同相对路径保留资源；后续将`Cards/`下22张导入UE的`/Game/Forest/MajorArcana/`，建议用于UI纹理组并关闭mipmap，再依清单`game_id`接入大牌显示映射。只含PNG导入源，不含`.uasset`、UI绑定或关卡变化；复现脚本依赖Pillow。
+- **本次验证**：逐张人工核对接触图，牌框、编号和牌名完整；脚本检查22个唯一游戏ID与当前源码顺序一致、所有切图142×512、图像区像素与原图逐字节一致、清单哈希一致。未打开UE或验证导入/游戏画面；源图单张有效宽度约136像素，放大全屏可能模糊。
+- **上传状态**：待本批提交推送并核对远端SHA。
+
 ## 2026-11-08-02：核对轻量记忆接入上传结果
 
 - **基线 / 文件 / 类型**：基于功能提交95e71ffe4f84079bceb4d4dd0bc9fff2ef7fe89a、前批01，仅修改CHANGELOG.md补记上传核对；无源码、配置、资源或应用步骤变化。

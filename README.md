@@ -15,6 +15,7 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 | 目录 / 文件 | 用途 |
 |---|---|
 | `Content/` | 本次纳入的蓝图等二进制资产，保留工程相对路径 |
+| `ArtSource/` | 待导入 UE 的原始图像和切分后的 PNG；不是 `.uasset`，不会自动出现在游戏里 |
 | `Config/` | 本次纳入的工程配置；应用时应审查差异 |
 | `Source/` | 首批模块参考文件，以及批次 2026-10-07-01 的 NPC 原生功能源码 |
 | `Plugins/` | 自批次 `2026-10-06-05` 起收录第三方插件源码（`DialogueMemoryTable`）；是否应用取决于该批记录 |

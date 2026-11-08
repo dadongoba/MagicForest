@@ -1,0 +1,324 @@
+{
+  "source_file": "Source/森林科技塔罗牌阵列.png",
+  "source_sha256": "30234c6130577a7d22d74a6a66f49549f1efa5288a006db10625314100bbf377",
+  "source_size": [
+    1536,
+    1024
+  ],
+  "card_size": [
+    142,
+    512
+  ],
+  "format": "RGB PNG, sRGB source, unchanged crop with black gutter padding",
+  "game_id_reference": "UAlchemyGameplaySubsystem::MakeMajorCards",
+  "cards": [
+    {
+      "index": 0,
+      "game_id": "0",
+      "name_zh": "愚者",
+      "printed_name_en": "THE FOOL",
+      "file": "Cards/Major_00_Fool.png",
+      "source_box_xyxy": [
+        0,
+        0,
+        139,
+        512
+      ],
+      "sha256": "0a4b3e4f50781d3d22237ab90851f194ccc9e8794680ac2966f7edadd1a6c55a"
+    },
+    {
+      "index": 1,
+      "game_id": "I",
+      "name_zh": "魔术师",
+      "printed_name_en": "THE MAGICIAN",
+      "file": "Cards/Major_01_Magician.png",
+      "source_box_xyxy": [
+        139,
+        0,
+        277,
+        512
+      ],
+      "sha256": "1ba0aa1eb87aa247415443844cb7655b239c7a2b462a931562d09753d6348f9a"
+    },
+    {
+      "index": 2,
+      "game_id": "II",
+      "name_zh": "女祭司",
+      "printed_name_en": "THE HIGH PRIESTESS",
+      "file": "Cards/Major_02_HighPriestess.png",
+      "source_box_xyxy": [
+        277,
+        0,
+        417,
+        512
+      ],
+      "sha256": "f4d0cfe1c815e412904f8dd86d02796c5144d34bec4eddee645e22ce44dd5512"
+    },
+    {
+      "index": 3,
+      "game_id": "III",
+      "name_zh": "女皇",
+      "printed_name_en": "THE EMPRESS",
+      "file": "Cards/Major_03_Empress.png",
+      "source_box_xyxy": [
+        417,
+        0,
+        556,
+        512
+      ],
+      "sha256": "543a021331ca0f08971a7c5d0d2f0fd85f8d5e42f907e10c74d674ba33d88931"
+    },
+    {
+      "index": 4,
+      "game_id": "IV",
+      "name_zh": "皇帝",
+      "printed_name_en": "THE EMPEROR",
+      "file": "Cards/Major_04_Emperor.png",
+      "source_box_xyxy": [
+        556,
+        0,
+        698,
+        512
+      ],
+      "sha256": "26f0187d53139a6041c1677c1159acad8ba8ace59875f90a44eef1d6bf2bd8d5"
+    },
+    {
+      "index": 5,
+      "game_id": "V",
+      "name_zh": "教皇",
+      "printed_name_en": "THE HIEROPHANT",
+      "file": "Cards/Major_05_Hierophant.png",
+      "source_box_xyxy": [
+        698,
+        0,
+        838,
+        512
+      ],
+      "sha256": "69f7b077bf3ca9be3acffa27ef62caef4419ce7faa5541f5f63b65e74bcd677c"
+    },
+    {
+      "index": 6,
+      "game_id": "VI",
+      "name_zh": "恋人",
+      "printed_name_en": "THE LOVERS",
+      "file": "Cards/Major_06_Lovers.png",
+      "source_box_xyxy": [
+        838,
+        0,
+        978,
+        512
+      ],
+      "sha256": "d897b88aa8af6836ea4910147f87985042bd4f0dd837a6fbac9519eb397b99b7"
+    },
+    {
+      "index": 7,
+      "game_id": "VII",
+      "name_zh": "战车",
+      "printed_name_en": "THE CHARIOT",
+      "file": "Cards/Major_07_Chariot.png",
+      "source_box_xyxy": [
+        978,
+        0,
+        1120,
+        512
+      ],
+      "sha256": "4b1bdd7dec414b2b0df5552d7b3a13207e769e3f52dee63085e971210d542e3b"
+    },
+    {
+      "index": 8,
+      "game_id": "VIII",
+      "name_zh": "调整",
+      "printed_name_en": "ADJUSTMENT",
+      "file": "Cards/Major_08_Adjustment.png",
+      "source_box_xyxy": [
+        1120,
+        0,
+        1260,
+        512
+      ],
+      "sha256": "cdb7bec3737166c6951c94e6e9ab1d722fc14198b398970c425e01b5cc2987a9"
+    },
+    {
+      "index": 9,
+      "game_id": "IX",
+      "name_zh": "隐者",
+      "printed_name_en": "THE HERMIT",
+      "file": "Cards/Major_09_Hermit.png",
+      "source_box_xyxy": [
+        1260,
+        0,
+        1400,
+        512
+      ],
+      "sha256": "711b6f5a605a76e250380346e03ec6d1c4aa83bff7a01797f6f753e90c5d0309"
+    },
+    {
+      "index": 10,
+      "game_id": "X",
+      "name_zh": "命运之轮",
+      "printed_name_en": "FORTUNE",
+      "file": "Cards/Major_10_Fortune.png",
+      "source_box_xyxy": [
+        1400,
+        0,
+        1536,
+        512
+      ],
+      "sha256": "9d7fa92dc901b7bb6e76ae47ec12dfa4f7712fd28a896644dfaaf65d45a242f5"
+    },
+    {
+      "index": 11,
+      "game_id": "XI",
+      "name_zh": "欲望",
+      "printed_name_en": "LUST",
+      "file": "Cards/Major_11_Lust.png",
+      "source_box_xyxy": [
+        0,
+        512,
+        139,
+        1024
+      ],
+      "sha256": "6f1a694efe323e7a8849a96ff9caccb87a53f0072498f7c85bd988a65c173048"
+    },
+    {
+      "index": 12,
+      "game_id": "XII",
+      "name_zh": "倒吊人",
+      "printed_name_en": "THE HANGED MAN",
+      "file": "Cards/Major_12_HangedMan.png",
+      "source_box_xyxy": [
+        139,
+        512,
+        277,
+        1024
+      ],
+      "sha256": "80d93bf9712763cca147f50a9f12f65e80a7ad54a755d58792e67c12a262ee97"
+    },
+    {
+      "index": 13,
+      "game_id": "XIII",
+      "name_zh": "死神",
+      "printed_name_en": "DEATH",
+      "file": "Cards/Major_13_Death.png",
+      "source_box_xyxy": [
+        277,
+        512,
+        417,
+        1024
+      ],
+      "sha256": "c49984c5c9ee6cfda044ef7f2f07734f872b6320eeebb5930ff5cdaf0e4f2955"
+    },
+    {
+      "index": 14,
+      "game_id": "XIV",
+      "name_zh": "艺术",
+      "printed_name_en": "ART",
+      "file": "Cards/Major_14_Art.png",
+      "source_box_xyxy": [
+        417,
+        512,
+        556,
+        1024
+      ],
+      "sha256": "941be96a476b95ece688a46d417aaab565cb0c1d335566045eee07caa118fc36"
+    },
+    {
+      "index": 15,
+      "game_id": "XV",
+      "name_zh": "恶魔",
+      "printed_name_en": "THE DEVIL",
+      "file": "Cards/Major_15_Devil.png",
+      "source_box_xyxy": [
+        556,
+        512,
+        698,
+        1024
+      ],
+      "sha256": "3a8566134acbe5d44c92d14d5896a41f71389c5fecf47d6983c5ae43b5ca82bc"
+    },
+    {
+      "index": 16,
+      "game_id": "XVI",
+      "name_zh": "塔",
+      "printed_name_en": "THE TOWER",
+      "file": "Cards/Major_16_Tower.png",
+      "source_box_xyxy": [
+        698,
+        512,
+        838,
+        1024
+      ],
+      "sha256": "1a4acad6b5d5eb76496929b670b8e7a8258508cfbf8d17833664d87d53e3f5e5"
+    },
+    {
+      "index": 17,
+      "game_id": "XVII",
+      "name_zh": "星",
+      "printed_name_en": "THE STAR",
+      "file": "Cards/Major_17_Star.png",
+      "source_box_xyxy": [
+        838,
+        512,
+        978,
+        1024
+      ],
+      "sha256": "66943fa88949d85ebae64cd1a3a9f589d76a22fbc43cc4785ea2eceeaedde03a"
+    },
+    {
+      "index": 18,
+      "game_id": "XVIII",
+      "name_zh": "月",
+      "printed_name_en": "THE MOON",
+      "file": "Cards/Major_18_Moon.png",
+      "source_box_xyxy": [
+        978,
+        512,
+        1120,
+        1024
+      ],
+      "sha256": "e8b4b23cac8d9bcaef943703d8d8166f51a867a000ad50129f82672bbc8bbe53"
+    },
+    {
+      "index": 19,
+      "game_id": "XIX",
+      "name_zh": "太阳",
+      "printed_name_en": "THE SUN",
+      "file": "Cards/Major_19_Sun.png",
+      "source_box_xyxy": [
+        1120,
+        512,
+        1260,
+        1024
+      ],
+      "sha256": "38a2c1cd3624cbbe9c359994d4cc1ac4eaa9fdaf740f361cb7768c193e1641dc"
+    },
+    {
+      "index": 20,
+      "game_id": "XX",
+      "name_zh": "永劫",
+      "printed_name_en": "THE AEON",
+      "file": "Cards/Major_20_Aeon.png",
+      "source_box_xyxy": [
+        1260,
+        512,
+        1400,
+        1024
+      ],
+      "sha256": "4fe2b0dec126e43491fc0616336fd0004db1146f813868d8bd825a87472de42f"
+    },
+    {
+      "index": 21,
+      "game_id": "XXI",
+      "name_zh": "宇宙",
+      "printed_name_en": "THE UNIVERSE",
+      "file": "Cards/Major_21_Universe.png",
+      "source_box_xyxy": [
+        1400,
+        512,
+        1536,
+        1024
+      ],
+      "sha256": "86370c819240889b0d812aacd512301c6f3de6213a9a262aa5d3d3015881d8e8"
+    }
+  ]
+}
