@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "DialogueMemoryTypes.h"
+#include "DialogueCompactMemoryPolicy.h"
 #include "DialogueMemoryTableSubsystem.generated.h"
 
 UCLASS()
@@ -56,7 +57,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Dialogue Memory|Debug")
     bool ExportLedgerToCsv(const FString& Directory, FString& OutError) const;
 
+    bool ApplyCompactTurn(const DialogueCompactMemory::Delta& Delta,FString& OutError);
+    bool RetryCompactSaves(FString& OutError);
+
 private:
+    bool MigrateCompactLedger(FString& OutError);
+    TArray<DialogueCompactMemory::Delta> PendingCompactUpdates;
+
     UPROPERTY(Transient)
     TObjectPtr<UDialogueMemorySaveGame> Ledger;
 

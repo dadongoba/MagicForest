@@ -24,6 +24,7 @@ struct DIALOGUEMEMORYTABLE_API FAlchemyDialogueTurnResult
  UPROPERTY() FString Error;
  UPROPERTY() FString ReviewCode;
  UPROPERTY() TArray<FName> DeliveredFacts;
+ UPROPERTY() FString MemoryPatchJson;
 };
 DECLARE_DYNAMIC_DELEGATE_OneParam(FAlchemyNpcReplyCompletion,const FAlchemyDialogueTurnResult&,Reply);
 

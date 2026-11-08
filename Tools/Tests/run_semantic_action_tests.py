@@ -5,10 +5,11 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from dialogue_policy_bridge import NativePolicy,BASE
 from dialogue_fact_host import FactHost
+from compact_memory_bridge import NativeCompact
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--output',required=True);a=p.parse_args()
- n=NativePolicy();h=FactHost(n);rule=n.call('rules','analysis')
+ n=NativePolicy();h=FactHost(n);compact=NativeCompact();rule=n.call('rules','analysis')+compact.call('rules')['analysis'];compact.close()
  source=BASE/'Private/AlchemyDialogueKnowledge.cpp';frozen=hashlib.sha256(source.read_bytes()).hexdigest()
  offer='新炉壁得先烘干，才好开炉。我需要一份烘炉壁的药剂，你愿意帮我做吗？'
  # name, current layer, player text, allowed final layer range, accepted, display, offer
@@ -28,7 +29,7 @@ def main():
  key=os.environ['FOREST_DIALOGUE_API_KEY'];base=os.getenv('FOREST_DIALOGUE_BASE_URL','https://api.deepseek.com/v1').rstrip('/');assert base.startswith('https://');model=os.getenv('FOREST_DIALOGUE_MODEL','deepseek-chat')
  def check(c):
   name,layer,q,lo,hi,accepted,display,opening=c;messages=[dict(role='assistant',content=opening),dict(role='user',content=q)]
-  data=dict(task_catalog=h.catalog(1,layer),may_accept=not display,presentation=display,current_layer=layer,already_delivered_fact_ids=[],unlock_topics=[x for x in h.profiles['blacksmith']['unlocks'] if x['layer']>layer],messages=[dict(index=i,**m) for i,m in enumerate(messages)])
+  data=dict(memory_catalog=dict(facts=[],loops=[]),task_catalog=h.catalog(1,layer),may_accept=not display,presentation=display,current_layer=layer,already_delivered_fact_ids=[],unlock_topics=[x for x in h.profiles['blacksmith']['unlocks'] if x['layer']>layer],messages=[dict(index=i,**m) for i,m in enumerate(messages)])
   payload=dict(model=model,messages=[dict(role='system',content=rule),dict(role='user',content=json.dumps(data,ensure_ascii=False))],temperature=0,max_tokens=850,response_format={'type':'json_object'})
   out=dict(name=name,question=q,expected_layer_range=[lo,hi],expected_accepted=accepted)
   try:

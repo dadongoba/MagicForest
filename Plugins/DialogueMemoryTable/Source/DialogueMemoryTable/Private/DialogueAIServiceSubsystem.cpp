@@ -161,11 +161,11 @@ void UDialogueAIServiceSubsystem::RequestReviewedNpcMessages(FName PersonaId,con
     NpcReplyGates.Add(Gate);Gate->Send();
 }
 
-void UDialogueAIServiceSubsystem::RequestNpcTurn(FName PersonaId,const TArray<FDialogueMessage>& Messages,const FString& Catalog,const TArray<FName>& Allowed,FName FallbackFact,const FString& FallbackText,FAlchemyNpcReplyCompletion Callback,const TSharedPtr<FDialogueRequestScope>& Scope)
+void UDialogueAIServiceSubsystem::RequestNpcTurn(FName PersonaId,const TArray<FDialogueMessage>& Messages,const FString& Catalog,const TArray<FName>& Allowed,FName FallbackFact,const FString& FallbackText,FAlchemyNpcReplyCompletion Callback,const TSharedPtr<FDialogueRequestScope>& Scope,const FString& ProposedPlayerMemory)
 {
  if(Messages.IsEmpty() || Messages[0].Role!=TEXT("system")){FAlchemyDialogueTurnResult R;R.Error=TEXT("npc_prompt_missing");Callback.ExecuteIfBound(R);return;}
  auto* Gate=NewObject<UAlchemyDialogueReplyGate>(this);Gate->Service=this;Gate->Result=Callback;Gate->Messages=Messages;Gate->Messages[0].Content+=AlchemyDialogueKnowledge::GenerationRules();Gate->PersonaId=PersonaId;
- Gate->CommissionFacts=Catalog;Gate->AllowedFacts=Allowed;Gate->FallbackFact=FallbackFact;Gate->PurposeFallback=FallbackText;Gate->Scope=Scope;Gate->bStructured=true;
+ Gate->ProposedPlayerMemory=ProposedPlayerMemory;Gate->CommissionFacts=Catalog;Gate->AllowedFacts=Allowed;Gate->FallbackFact=FallbackFact;Gate->PurposeFallback=FallbackText;Gate->Scope=Scope;Gate->bStructured=true;
  for(int32 I=Messages.Num()-1;I>=0;--I)if(Messages[I].Role==TEXT("user")){Gate->PlayerText=Messages[I].Content;break;}
  NpcReplyGates.Add(Gate);Gate->Send();
 }

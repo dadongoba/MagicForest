@@ -73,6 +73,7 @@ std::string array(const Ledger& a){std::string out="[";for(size_t i=0;i<a.size()
 int main(int argc,char** argv){
  UAlchemyGameplaySubsystem g;std::string mode=argc>1?argv[1]:"profiles";
  auto arg=[&](int n)->FString{return n<argc?cv.from_bytes(argv[n]):std::wstring();};
+ if(mode=="memoryprofile"){FDialoguePersonaProfile p;assert(g.GetPersonaProfile(arg(2),p));std::cout<<"{\"voice\":"<<q(p.VoiceTone)<<",\"daily\":"<<q(p.DailyState)<<",\"layer\":"<<q(p.Layers[0].Prompt)<<"}";return 0;}
  if(mode=="rules"){std::cout<<q(arg(2)==TEXT("analysis")?AlchemyDialogueKnowledge::AnalysisRules():arg(2)==TEXT("review")?AlchemyDialogueKnowledge::ReviewRules():arg(2)==TEXT("state")?AlchemyDialogueKnowledge::StateRules():AlchemyDialogueKnowledge::GenerationRules());return 0;}
  if(mode=="memory_string"){std::cout<<(!AlchemyDialogueKnowledge::HasNumericDisclosure(arg(2))?"true":"false");return 0;}
  if(mode=="memory_key"){std::cout<<(AlchemyDialogueKnowledge::IsMemoryFieldAllowed(arg(2))?"true":"false");return 0;}

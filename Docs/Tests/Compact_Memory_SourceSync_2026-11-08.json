@@ -1,0 +1,93 @@
+{
+  "baseline": "5bc2016b35745d76814ac3776f7d8c6c5929defe",
+  "files": {
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueCompactMemoryPolicy.h": {
+      "full_sha256": "e9d16831e286f64080b817f3b25d710b3fce21a31a08ad71aaf5d26fdf927e7f",
+      "incremental_sha256": "e9d16831e286f64080b817f3b25d710b3fce21a31a08ad71aaf5d26fdf927e7f"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueCompactMemory.h": {
+      "full_sha256": "b9192d66fafc4e21d42da4e4284124579c96bfb33582a1baae4b5f21d6930360",
+      "incremental_sha256": "b9192d66fafc4e21d42da4e4284124579c96bfb33582a1baae4b5f21d6930360"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueCompactMemory.cpp": {
+      "full_sha256": "d0d05a61a87d0eedd5b05007ee82d17706cf481f28a07a65597592458e7bc3ff",
+      "incremental_sha256": "d0d05a61a87d0eedd5b05007ee82d17706cf481f28a07a65597592458e7bc3ff"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueMemoryTypes.h": {
+      "full_sha256": "24c01a87d367dfd92a583f6d874a0d59d17a7bd949abd9785079d138a794a3d9",
+      "incremental_sha256": "24c01a87d367dfd92a583f6d874a0d59d17a7bd949abd9785079d138a794a3d9"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueMemoryTableSubsystem.h": {
+      "full_sha256": "b914511b045ace5b8c90bd5966352ec293afdc3d66c7bcf01317f5514e814c07",
+      "incremental_sha256": "b914511b045ace5b8c90bd5966352ec293afdc3d66c7bcf01317f5514e814c07"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueMemoryTableSubsystem.cpp": {
+      "full_sha256": "6d904302481348e5e983a50f47a0fcf32776b75bec5a701294642a63ca9d5cde",
+      "incremental_sha256": "6d904302481348e5e983a50f47a0fcf32776b75bec5a701294642a63ca9d5cde"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueTurn.h": {
+      "full_sha256": "925c69660fea014524b9829333475d13b5c4b15d19eaa23f6a7257b0c7edfd67",
+      "incremental_sha256": "925c69660fea014524b9829333475d13b5c4b15d19eaa23f6a7257b0c7edfd67"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/AlchemyDialogueReplyGate.h": {
+      "full_sha256": "f65b394c0d9cf831980cf51a11e6458a9da3ba04bf423409791877c7e55b40d9",
+      "incremental_sha256": "f65b394c0d9cf831980cf51a11e6458a9da3ba04bf423409791877c7e55b40d9"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/AlchemyDialogueReplyGate.cpp": {
+      "full_sha256": "2d9b6c4c6a955f634d2a56ea04d8bc59c5e682500dca1cd5cedc1f391779f0a9",
+      "incremental_sha256": "2d9b6c4c6a955f634d2a56ea04d8bc59c5e682500dca1cd5cedc1f391779f0a9"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueAIServiceSubsystem.h": {
+      "full_sha256": "7aecb1ca35921e6031416ce83a30d3988dde1ce1c4cf26710159a90606d43adb",
+      "incremental_sha256": "7aecb1ca35921e6031416ce83a30d3988dde1ce1c4cf26710159a90606d43adb"
+    },
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueAIServiceSubsystem.cpp": {
+      "full_sha256": "b379bd93f461f3a61ba47fb905e901d34eca45e1b9af976eb97b71a2fa3d9ce7",
+      "incremental_sha256": "b379bd93f461f3a61ba47fb905e901d34eca45e1b9af976eb97b71a2fa3d9ce7"
+    },
+    "Source/demo3_UE58/ForestNPCDialogueSubsystem.h": {
+      "full_sha256": "e76a1cd7d262403bd3a3684b194ee6f21dd846db839349b9aa8e7aa405553805",
+      "incremental_sha256": "e76a1cd7d262403bd3a3684b194ee6f21dd846db839349b9aa8e7aa405553805"
+    },
+    "Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp": {
+      "full_sha256": "56cd959c3ba4e0f860c6b814d896a82604a9261db704dd46f1e84ad8a4bdc8bf",
+      "incremental_sha256": "56cd959c3ba4e0f860c6b814d896a82604a9261db704dd46f1e84ad8a4bdc8bf"
+    },
+    "Tools/Tests/compact_memory_bridge.py": {
+      "full_sha256": "f5fb2366f26454d63c6dd5e22cf69eea34152687a95bdc2508699af4726962f9",
+      "incremental_sha256": "f5fb2366f26454d63c6dd5e22cf69eea34152687a95bdc2508699af4726962f9"
+    },
+    "Tools/Tests/run_compact_memory_tests.py": {
+      "full_sha256": "fe845fc594cdcfcb70d4c4e87ab26361cfb001efdfd9cc6a0b6aab9a5cb8c152",
+      "incremental_sha256": "fe845fc594cdcfcb70d4c4e87ab26361cfb001efdfd9cc6a0b6aab9a5cb8c152"
+    },
+    "Tools/Tests/compact_memory_transaction_tests.py": {
+      "full_sha256": "8d5b35fd24cc14d233eb1c29f717d5c074d5cdc73528713e3c9fcdf697063c28",
+      "incremental_sha256": "8d5b35fd24cc14d233eb1c29f717d5c074d5cdc73528713e3c9fcdf697063c28"
+    },
+    "Tools/Tests/run_compact_memory_live.py": {
+      "full_sha256": "d4671586da4077b05a631208a48d96a768a04e80af56a37ad18652dd029d98f6",
+      "incremental_sha256": "d4671586da4077b05a631208a48d96a768a04e80af56a37ad18652dd029d98f6"
+    },
+    "Tools/Tests/run_compact_memory_cost_checks.py": {
+      "full_sha256": "412bb103a332c91ba55f549345b0933d8d3fd9f7c1591be17594b2aa48263bc1",
+      "incremental_sha256": "412bb103a332c91ba55f549345b0933d8d3fd9f7c1591be17594b2aa48263bc1"
+    },
+    "Tools/Tests/run_dialogue_cancellation_tests.py": {
+      "full_sha256": "3979fbbc7a71e7302baac25ecc785348d782680650721374332693b6562df46a",
+      "incremental_sha256": "3979fbbc7a71e7302baac25ecc785348d782680650721374332693b6562df46a"
+    },
+    "Tools/Tests/run_semantic_action_tests.py": {
+      "full_sha256": "0740f7450d81486f9ee75239ca28397c572f4a7d9fd097ccc47ea49960a5c75f",
+      "incremental_sha256": "0740f7450d81486f9ee75239ca28397c572f4a7d9fd097ccc47ea49960a5c75f"
+    },
+    "Tools/Tests/dialogue_policy_bridge.py": {
+      "full_sha256": "089625cedd050496ee38fe8a727c9e357111f301c8fa77b3b7c338992493d055",
+      "incremental_sha256": "089625cedd050496ee38fe8a727c9e357111f301c8fa77b3b7c338992493d055"
+    }
+  },
+  "notes": [
+    "Only listed source/tests copied; no maps/assets, credentials, SaveGames, build outputs or caches.",
+    "No unrelated HUD or harvest files copied."
+  ]
+}

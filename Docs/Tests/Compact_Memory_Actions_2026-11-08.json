@@ -1,0 +1,354 @@
+{
+  "passed": true,
+  "passed_count": 12,
+  "total": 12,
+  "cases": [
+    {
+      "name": "negated_keywords",
+      "question": "我不是问安置办，也不问人被带走，只问炉子该怎么烘。",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "task_question",
+        "fact_ids": [
+          "task.purpose",
+          "task.fire.a"
+        ],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": 0,
+        "accept_index": -1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": ""
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "read_label",
+      "question": "把安置办三个字读一遍，不要谈你的经历。",
+      "expected_layer_range": [
+        1,
+        1
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "other",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "quoted_question",
+      "question": "“你在安置办做了什么”是书里的台词，不是我问你。",
+      "expected_layer_range": [
+        1,
+        1
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "other",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "not_asking_past",
+      "question": "今天先不聊你以前拆东西，我只问在哪里合成。",
+      "expected_layer_range": [
+        1,
+        1
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "task_question",
+        "fact_ids": [
+          "task.process.a"
+        ],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "natural_why",
+      "question": "为什么要烘干炉壁，你以前做过类似的活吗？",
+      "expected_layer_range": [
+        2,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "task_question",
+        "fact_ids": [
+          "task.purpose",
+          "person.former_work"
+        ],
+        "requested_layer": 2,
+        "has_unlock_evidence": true,
+        "layer_evidence": "为什么要烘干炉壁，你以前做过类似的活吗？",
+        "accepted": false,
+        "offer_index": 0,
+        "accept_index": -1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": ""
+      },
+      "final_layer": 2,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "deep_question",
+      "question": "那些人后来去了哪里，你当时觉得自己做对了吗？",
+      "expected_layer_range": [
+        3,
+        3
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "backstory",
+        "fact_ids": [],
+        "requested_layer": 3,
+        "has_unlock_evidence": true,
+        "layer_evidence": "那些人后来去了哪里，你当时觉得自己做对了吗？",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 3,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "display_not_unlock",
+      "question": "这只铜铃标签上写着安置办和被带走，请看看。",
+      "expected_layer_range": [
+        1,
+        1
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "show_item",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": 0,
+        "accept_index": -1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "quoted_accept",
+      "question": "我向别人转述过“这份委托我来做”，但我没有答应你。",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "reject",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": 0,
+        "accept_index": -1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "refuse",
+      "question": "这份委托我不接，我要回家睡觉。",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "reject",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": 0,
+        "accept_index": -1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "accept",
+      "question": "我来做这份烘炉壁的药剂，会回小屋调配封瓶。",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": true,
+      "plan": {
+        "intent": "accept",
+        "fact_ids": [
+          "task.purpose",
+          "task.process.a"
+        ],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": true,
+        "offer_index": 0,
+        "accept_index": 1,
+        "offer_quote": "我需要一份烘炉壁的药剂，你愿意帮我做吗？",
+        "accept_quote": "我来做这份烘炉壁的药剂，会回小屋调配封瓶。"
+      },
+      "final_layer": 1,
+      "accepted": true,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "ask_not_accept",
+      "question": "你是想让我来做烘炉壁的药剂吗？",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "task_question",
+        "fact_ids": [
+          "task.purpose",
+          "task.process.a"
+        ],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    },
+    {
+      "name": "no_offer",
+      "question": "好，我来做。",
+      "expected_layer_range": [
+        1,
+        2
+      ],
+      "expected_accepted": false,
+      "plan": {
+        "intent": "accept",
+        "fact_ids": [],
+        "requested_layer": 1,
+        "has_unlock_evidence": false,
+        "layer_evidence": "",
+        "accepted": false,
+        "offer_index": -1,
+        "accept_index": -1,
+        "offer_quote": "",
+        "accept_quote": "",
+        "memory": {
+          "read_ids": []
+        }
+      },
+      "final_layer": 1,
+      "accepted": false,
+      "returned_model": "deepseek-flash",
+      "passed": true
+    }
+  ],
+  "source_hash": "a87400c5c6a7a14951dd800edd20feb0a06ed9f160a65df2370f9d565c66cc83",
+  "source_unchanged": true,
+  "limitations": [
+    "Real semantic API and native policy, hosted JSON/HTTP/evidence; no UE save or UI execution.",
+    "Finite labeled cases, not a guarantee for every negation or quoted instruction."
+  ]
+}

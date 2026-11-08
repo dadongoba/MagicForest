@@ -11,11 +11,13 @@ struct FForestConversationRow
 {
  GENERATED_BODY()
  UPROPERTY() FName NpcId;
- UPROPERTY() TArray<FDialogueMessage> History;
+ UPROPERTY(Transient) TArray<FDialogueMessage> History;
  UPROPERTY() int32 HistoryDay=0;
  UPROPERTY() int32 OfferDay=0;
  UPROPERTY() int32 OfferCommissionId=0;
- UPROPERTY() FString OfferText;
+ UPROPERTY(Transient) FString OfferText;
+ UPROPERTY() TArray<FName> OfferFactIds;
+ UPROPERTY() FString OfferQuote;
  UPROPERTY() int32 PersonaRevision=0;
  UPROPERTY() int32 KnowledgeRevision=0;
  UPROPERTY() int32 KnowledgeDay=0;
@@ -27,11 +29,11 @@ struct FForestConversationRow
  UPROPERTY() FString LastReplyError;
  UPROPERTY() FString LastActionReceipt;
  UPROPERTY() bool bLastReplyFallback=false;
- UPROPERTY() TArray<FDialogueMessage> ArchivedKnowledgeHistory;
- UPROPERTY() TArray<FDialogueMessage> ArchivedPersonaHistory;
+ UPROPERTY(Transient) TArray<FDialogueMessage> ArchivedKnowledgeHistory;
+ UPROPERTY(Transient) TArray<FDialogueMessage> ArchivedPersonaHistory;
  UPROPERTY() int64 NextSession=1;
  UPROPERTY() int64 PendingSession=0;
- UPROPERTY() TArray<FDialogueMessage> PendingTranscript;
+ UPROPERTY(Transient) TArray<FDialogueMessage> PendingTranscript;
 };
 UCLASS()
 class DEMO3_UE58_API UForestConversationSave : public USaveGame
@@ -60,6 +62,8 @@ public:
  bool bPresentation=false,bVerifiedReply=false;
  FString Intent;
  FString KnowledgeFingerprint;
+ FString MemoryCatalog,MemoryAnalysis,MemoryView;
+ FString PlayerMemorySource;
  TArray<FName> SelectedFacts,AllowedFacts;
  FAlchemyDialogueTurnResult VerifiedReply;
  TSharedPtr<FDialogueRequestScope> Scope;
@@ -101,17 +105,17 @@ private:
  UPROPERTY(Transient) TMap<FName,FString> RoundMemoryContexts;
  FName ActiveNpc;
  FString Slot=TEXT("ForestNPCConversations"),Status;
- TArray<FDialogueMessage> SessionTranscript;
+
  int32 Generation=0;
  TSharedPtr<FDialogueRequestScope> ActiveTurnScope;
  bool bWaiting=false,bOfflineTest=false,bPersistenceReady=false;
  FForestConversationRow& Row(FName Id);
  bool Persist();
  void RegisterForestPersonas();
- void RequestSummary(FForestConversationRow& Record);
+ void CommitTurnMemory(UForestDialogueRequestContext* Context,const FString& Spoken,const FString& Review);
  bool SendPlayerMessageInternal(const FString& Text,bool bPresentation);
  void RequestAcceptanceCheck(UForestDialogueRequestContext* Context);
  void RequestNpcReply(UForestDialogueRequestContext* Context);
  FString OfflineReply(const FString& Text) const;
- FString OfflinePatch(const FForestConversationRow& Record) const;
+
 };

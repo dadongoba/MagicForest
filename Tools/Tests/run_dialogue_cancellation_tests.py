@@ -46,7 +46,7 @@ template<class T>struct TArray:std::vector<T>{using std::vector<T>::vector;void 
 struct FPlatformTime{static double Seconds(){return 10.;}};
 struct Request{int CancelCount=0;std::function<void()> Callback;void CancelRequest(){++CancelCount;if(Callback)Callback();}};
 struct FDialogueRequestScope{bool bCancelled=false;double Deadline=100.;TArray<TSharedPtr<Request>> Requests;bool IsActive()const;void Cancel();};
-struct FAlchemyDialogueTurnResult{bool bSuccess=false,bFallback=false;FString Text,Error,ReviewCode;TArray<FName> DeliveredFacts;};
+struct FAlchemyDialogueTurnResult{bool bSuccess=false,bFallback=false;FString Text,Error,ReviewCode,MemoryPatchJson;TArray<FName> DeliveredFacts;};
 struct ReplyCallback{std::function<void(const FAlchemyDialogueTurnResult&)> Fn;void ExecuteIfBound(const FAlchemyDialogueTurnResult& R)const{if(Fn)Fn(R);}};
 struct LegacyCallback{std::function<void(bool,const FString&)> Fn;void ExecuteIfBound(bool S,const FString& T)const{if(Fn)Fn(S,T);}};
 class UAlchemyDialogueReplyGate;
@@ -57,7 +57,7 @@ class UDialogueAIServiceSubsystem{
 };
 struct ServiceRef{UDialogueAIServiceSubsystem* Ptr=nullptr;bool IsValid()const{return Ptr!=nullptr;}UDialogueAIServiceSubsystem* operator->()const{return Ptr;}};
 class UAlchemyDialogueReplyGate{
- public:bool bFinished=false;FString LastReviewCode;ServiceRef Service;ReplyCallback Result;LegacyCallback LegacyResult;TSharedPtr<FDialogueRequestScope> Scope;
+ public:bool bFinished=false;FString LastReviewCode,MemoryPatchJson;ServiceRef Service;ReplyCallback Result;LegacyCallback LegacyResult;TSharedPtr<FDialogueRequestScope> Scope;
  void Finish(bool Success,const FString& Text,bool Fallback=false,const TArray<FName>& Delivered={});
 };
 '''

@@ -1,5 +1,6 @@
 #include "DialogueMemoryTableSubsystem.h"
 #include "AlchemyGameplaySubsystem.h"
+#include "DialogueCompactMemory.h"
 
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
@@ -559,6 +560,7 @@ void UDialogueMemoryTableSubsystem::EnsureLedger()
 bool UDialogueMemoryTableSubsystem::LoadLedger(FString& OutError)
 {
     OutError.Reset();
+    PendingCompactUpdates.Reset();
 
     if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, SaveUserIndex))
     {
@@ -569,7 +571,7 @@ bool UDialogueMemoryTableSubsystem::LoadLedger(FString& OutError)
             OutError = TEXT("The save slot exists but is not a DialogueMemorySaveGame.");
             return false;
         }
-        return true;
+        return MigrateCompactLedger(OutError);
     }
 
     Ledger = Cast<UDialogueMemorySaveGame>(
@@ -580,7 +582,7 @@ bool UDialogueMemoryTableSubsystem::LoadLedger(FString& OutError)
         return false;
     }
 
-    return true;
+    return MigrateCompactLedger(OutError);
 }
 
 bool UDialogueMemoryTableSubsystem::SaveLedger(FString& OutError)
@@ -605,6 +607,8 @@ FDialogueMemoryApplyResult UDialogueMemoryTableSubsystem::ApplyMemoryPatchJson(
     const bool bSaveImmediately)
 {
     using namespace DialogueMemoryTable;
+    EnsureLedger();
+    if(Ledger && Ledger->SchemaVersion>=2)return ErrorResult(TEXT("legacy_patch_retired"),TEXT("Use validated compact turn updates; raw summary patches are retired."));
 
     if (ExpectedNpcId.IsNone() || ExpectedSessionId < 1)
     {
@@ -979,7 +983,7 @@ FDialogueMemoryApplyResult UDialogueMemoryTableSubsystem::ApplyMemoryPatchJson(
     for (const FDialogueMemoryFactRow& Incoming : ParsedFacts)
     {
         FDialogueMemoryFactRow* Existing = Working->CharacterFacts.FindByPredicate(
-            [&Incoming](const FDialogueMemoryFactRow& Row) { return Row.FactKey == Incoming.FactKey; });
+            [&Incoming](const FDialogueMemoryFactRow& Row) { return Row.NpcId == Incoming.NpcId && Row.FactKey == Incoming.FactKey; });
 
         if (!Existing)
         {
@@ -1017,7 +1021,7 @@ FDialogueMemoryApplyResult UDialogueMemoryTableSubsystem::ApplyMemoryPatchJson(
     for (const FDialogueMemoryOpenLoopRow& Incoming : ParsedLoops)
     {
         FDialogueMemoryOpenLoopRow* Existing = Working->OpenLoops.FindByPredicate(
-            [&Incoming](const FDialogueMemoryOpenLoopRow& Row) { return Row.LoopKey == Incoming.LoopKey; });
+            [&Incoming](const FDialogueMemoryOpenLoopRow& Row) { return Row.NpcId == Incoming.NpcId && Row.LoopKey == Incoming.LoopKey; });
 
         if (Existing)
         {
@@ -1301,4 +1305,41 @@ bool UDialogueMemoryTableSubsystem::ExportLedgerToCsv(const FString& Directory, 
     }
 
     return true;
+}
+
+
+bool UDialogueMemoryTableSubsystem::MigrateCompactLedger(FString& Error)
+{
+ if(!Ledger){Error=TEXT("ledger_unavailable");return false;}
+ if(Ledger->SchemaVersion==2)return true;
+ if(Ledger->SchemaVersion>2){Error=TEXT("unsupported_memory_schema");return false;}
+ auto* Before=Ledger.Get();auto* Work=DuplicateObject<UDialogueMemorySaveGame>(Before,this);
+ // Old model summaries have no verifiable source. Preserve authority/progress,
+ // not guessed free-form history. Existing delivered IDs live in the conversation save.
+ Work->CharacterFacts.RemoveAll([](const auto& F){return F.Authority!=EDialogueMemoryAuthority::GameEvent;});
+ Work->WorldStates.RemoveAll([](const auto& W){return W.Authority!=EDialogueMemoryAuthority::GameEvent;});
+ Work->OpenLoops.Reset();
+ for(auto& N:Work->NpcStates){N.RelationshipSummary.Reset();N.LastExchangeSummary.Reset();N.LastQuote.Reset();N.TopicTags.Reset();N.MemoryRevision.Reset();}
+ Work->SchemaVersion=2;Ledger=Work;
+ if(!SaveLedger(Error)){Ledger=Before;return false;}return true;
+}
+bool UDialogueMemoryTableSubsystem::ApplyCompactTurn(const DialogueCompactMemory::Delta& Delta,FString& Error)
+{
+ EnsureLedger();if(!Ledger||Ledger->SchemaVersion!=2){Error=TEXT("compact_memory_not_ready");return false;}
+ auto Store=DialogueCompactMemoryRuntime::Read(GetLedgerSnapshot());
+ for(const auto& Pending:PendingCompactUpdates)DialogueCompactMemory::Apply(Store,Pending);
+ DialogueCompactMemory::Apply(Store,Delta);
+ auto* Before=Ledger.Get();auto* Work=DuplicateObject<UDialogueMemorySaveGame>(Before,this);
+ DialogueCompactMemoryRuntime::Write(Store,*Work);Ledger=Work;
+ if(SaveLedger(Error)){PendingCompactUpdates.Reset();return true;}
+ Ledger=Before;
+ if(!PendingCompactUpdates.ContainsByPredicate([&](const auto& D){return D.owner==Delta.owner&&D.turn==Delta.turn;}))PendingCompactUpdates.Add(Delta);
+ // Only structured patches are retained in RAM, never raw chat transcripts.
+ int32 Count=0;for(int32 I=PendingCompactUpdates.Num()-1;I>=0;--I)if(PendingCompactUpdates[I].owner==Delta.owner&&++Count>3)PendingCompactUpdates.RemoveAt(I);
+ return false;
+}
+bool UDialogueMemoryTableSubsystem::RetryCompactSaves(FString& Error)
+{
+ if(PendingCompactUpdates.IsEmpty())return true;
+ const auto Last=PendingCompactUpdates.Last();return ApplyCompactTurn(Last,Error);
 }

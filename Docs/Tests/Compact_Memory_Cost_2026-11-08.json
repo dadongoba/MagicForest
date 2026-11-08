@@ -1,0 +1,495 @@
+{
+  "cases": [
+    {
+      "npc": "natta",
+      "previous": {
+        "review_allowed": true,
+        "requests": 4,
+        "input_tokens": 8808,
+        "output_tokens": 306,
+        "seconds": 8.503,
+        "metrics": [
+          {
+            "seconds": 2.533,
+            "usage": {
+              "prompt_tokens": 1566,
+              "completion_tokens": 59,
+              "total_tokens": 1625,
+              "prompt_tokens_details": {
+                "cached_tokens": 1408
+              },
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 158
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.915,
+            "usage": {
+              "prompt_tokens": 1821,
+              "completion_tokens": 32,
+              "total_tokens": 1853,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 157
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.629,
+            "usage": {
+              "prompt_tokens": 3414,
+              "completion_tokens": 23,
+              "total_tokens": 3437,
+              "prompt_tokens_details": {
+                "cached_tokens": 2432
+              },
+              "prompt_cache_hit_tokens": 2432,
+              "prompt_cache_miss_tokens": 982
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.35,
+            "usage": {
+              "prompt_tokens": 2007,
+              "completion_tokens": 192,
+              "total_tokens": 2199,
+              "prompt_tokens_details": {
+                "cached_tokens": 1792
+              },
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 215
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "compact": {
+        "review_allowed": true,
+        "requests": 3,
+        "input_tokens": 7737,
+        "output_tokens": 247,
+        "seconds": 5.699,
+        "metrics": [
+          {
+            "seconds": 1.558,
+            "usage": {
+              "prompt_tokens": 1909,
+              "completion_tokens": 102,
+              "total_tokens": 2011,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 245
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.848,
+            "usage": {
+              "prompt_tokens": 1850,
+              "completion_tokens": 33,
+              "total_tokens": 1883,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 186
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.27,
+            "usage": {
+              "prompt_tokens": 3978,
+              "completion_tokens": 112,
+              "total_tokens": 4090,
+              "prompt_tokens_details": {
+                "cached_tokens": 2816
+              },
+              "prompt_cache_hit_tokens": 2816,
+              "prompt_cache_miss_tokens": 1162
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "last_line": {
+        "passed": true,
+        "review": {
+          "allowed": true,
+          "code": "ok",
+          "span": "",
+          "reason": "",
+          "delivered_fact_ids": [],
+          "memory": {
+            "player_change_allowed": false,
+            "note": "玩家表示怕水、暂不展开，约定下次再聊；拆弹手简短应下。",
+            "note_quote": "好，下次我们再聊你怕水的事。",
+            "change": {
+              "op": "add",
+              "id": "",
+              "kind": "dialogue_promise",
+              "text": "下次再聊玩家怕水的事",
+              "quote": "下次我们再聊你怕水的事",
+              "explicit": true,
+              "scope": "personal"
+            }
+          }
+        },
+        "metrics": {
+          "seconds": 2.086,
+          "usage": {
+            "prompt_tokens": 3818,
+            "completion_tokens": 117,
+            "total_tokens": 3935,
+            "prompt_tokens_details": {
+              "cached_tokens": 2688
+            },
+            "prompt_cache_hit_tokens": 2688,
+            "prompt_cache_miss_tokens": 1130
+          },
+          "model": "deepseek-flash"
+        }
+      }
+    },
+    {
+      "npc": "fawnia",
+      "previous": {
+        "review_allowed": true,
+        "requests": 4,
+        "input_tokens": 9207,
+        "output_tokens": 503,
+        "seconds": 9.425,
+        "metrics": [
+          {
+            "seconds": 1.875,
+            "usage": {
+              "prompt_tokens": 1637,
+              "completion_tokens": 59,
+              "total_tokens": 1696,
+              "prompt_tokens_details": {
+                "cached_tokens": 1408
+              },
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 229
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.477,
+            "usage": {
+              "prompt_tokens": 1874,
+              "completion_tokens": 102,
+              "total_tokens": 1976,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 210
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.743,
+            "usage": {
+              "prompt_tokens": 3602,
+              "completion_tokens": 26,
+              "total_tokens": 3628,
+              "prompt_tokens_details": {
+                "cached_tokens": 2432
+              },
+              "prompt_cache_hit_tokens": 2432,
+              "prompt_cache_miss_tokens": 1170
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 3.249,
+            "usage": {
+              "prompt_tokens": 2094,
+              "completion_tokens": 316,
+              "total_tokens": 2410,
+              "prompt_tokens_details": {
+                "cached_tokens": 1792
+              },
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 302
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "compact": {
+        "review_allowed": true,
+        "requests": 3,
+        "input_tokens": 8029,
+        "output_tokens": 311,
+        "seconds": 7.047,
+        "metrics": [
+          {
+            "seconds": 2.075,
+            "usage": {
+              "prompt_tokens": 1980,
+              "completion_tokens": 102,
+              "total_tokens": 2082,
+              "prompt_tokens_details": {
+                "cached_tokens": 1792
+              },
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 188
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.675,
+            "usage": {
+              "prompt_tokens": 1903,
+              "completion_tokens": 83,
+              "total_tokens": 1986,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 239
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.278,
+            "usage": {
+              "prompt_tokens": 4146,
+              "completion_tokens": 126,
+              "total_tokens": 4272,
+              "prompt_tokens_details": {
+                "cached_tokens": 2816
+              },
+              "prompt_cache_hit_tokens": 2816,
+              "prompt_cache_miss_tokens": 1330
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "last_line": {
+        "passed": true,
+        "review": {
+          "allowed": true,
+          "code": "ok",
+          "span": "",
+          "reason": "",
+          "delivered_fact_ids": [],
+          "memory": {
+            "player_change_allowed": false,
+            "note": "玩家表示怕水、暂不展开，约定下次再聊；接线员应下。",
+            "note_quote": "好，下次我们再聊你怕水的事。",
+            "change": {
+              "op": "add",
+              "id": "",
+              "kind": "dialogue_promise",
+              "text": "下次再聊玩家怕水的事",
+              "quote": "下次我们再聊你怕水的事",
+              "explicit": true,
+              "scope": "personal"
+            }
+          }
+        },
+        "metrics": {
+          "seconds": 2.311,
+          "usage": {
+            "prompt_tokens": 3942,
+            "completion_tokens": 115,
+            "total_tokens": 4057,
+            "prompt_tokens_details": {
+              "cached_tokens": 2816
+            },
+            "prompt_cache_hit_tokens": 2816,
+            "prompt_cache_miss_tokens": 1126
+          },
+          "model": "deepseek-flash"
+        }
+      }
+    },
+    {
+      "npc": "forest_witch",
+      "previous": {
+        "review_allowed": true,
+        "requests": 4,
+        "input_tokens": 9075,
+        "output_tokens": 346,
+        "seconds": 7.779,
+        "metrics": [
+          {
+            "seconds": 1.482,
+            "usage": {
+              "prompt_tokens": 1622,
+              "completion_tokens": 59,
+              "total_tokens": 1681,
+              "prompt_tokens_details": {
+                "cached_tokens": 1408
+              },
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 214
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.946,
+            "usage": {
+              "prompt_tokens": 1857,
+              "completion_tokens": 65,
+              "total_tokens": 1922,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 193
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 1.937,
+            "usage": {
+              "prompt_tokens": 3529,
+              "completion_tokens": 23,
+              "total_tokens": 3552,
+              "prompt_tokens_details": {
+                "cached_tokens": 2432
+              },
+              "prompt_cache_hit_tokens": 2432,
+              "prompt_cache_miss_tokens": 1097
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.334,
+            "usage": {
+              "prompt_tokens": 2067,
+              "completion_tokens": 199,
+              "total_tokens": 2266,
+              "prompt_tokens_details": {
+                "cached_tokens": 1792
+              },
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 275
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "compact": {
+        "review_allowed": true,
+        "requests": 3,
+        "input_tokens": 7949,
+        "output_tokens": 287,
+        "seconds": 6.693,
+        "metrics": [
+          {
+            "seconds": 1.959,
+            "usage": {
+              "prompt_tokens": 1965,
+              "completion_tokens": 102,
+              "total_tokens": 2067,
+              "prompt_tokens_details": {
+                "cached_tokens": 1792
+              },
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 173
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.082,
+            "usage": {
+              "prompt_tokens": 1886,
+              "completion_tokens": 71,
+              "total_tokens": 1957,
+              "prompt_tokens_details": {
+                "cached_tokens": 1664
+              },
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 222
+            },
+            "model": "deepseek-flash"
+          },
+          {
+            "seconds": 2.627,
+            "usage": {
+              "prompt_tokens": 4098,
+              "completion_tokens": 114,
+              "total_tokens": 4212,
+              "prompt_tokens_details": {
+                "cached_tokens": 2816
+              },
+              "prompt_cache_hit_tokens": 2816,
+              "prompt_cache_miss_tokens": 1282
+            },
+            "model": "deepseek-flash"
+          }
+        ]
+      },
+      "last_line": {
+        "passed": true,
+        "review": {
+          "allowed": true,
+          "code": "ok",
+          "span": "",
+          "reason": "",
+          "delivered_fact_ids": [],
+          "memory": {
+            "player_change_allowed": false,
+            "note": "玩家表示怕水、想下次再聊，candidate答应下次再聊此事。",
+            "note_quote": "好，下次我们再聊你怕水的事。",
+            "change": {
+              "op": "add",
+              "id": "",
+              "kind": "dialogue_promise",
+              "text": "下次再聊玩家怕水的事",
+              "quote": "下次我们再聊你怕水的事",
+              "explicit": true,
+              "scope": "personal"
+            }
+          }
+        },
+        "metrics": {
+          "seconds": 2.721,
+          "usage": {
+            "prompt_tokens": 3895,
+            "completion_tokens": 114,
+            "total_tokens": 4009,
+            "prompt_tokens_details": {
+              "cached_tokens": 2688
+            },
+            "prompt_cache_hit_tokens": 2688,
+            "prompt_cache_miss_tokens": 1207
+          },
+          "model": "deepseek-flash"
+        }
+      }
+    }
+  ],
+  "passed": true,
+  "limitations": [
+    "Three single-turn synthetic conversations per flow, no UE/UI or true engine save.",
+    "Previous-flow source contracts and summarizer resource are hosted, not an old engine binary.",
+    "No repair path exercised; benchmark is small, unpaired random generations and cache effects may change latency/tokens.",
+    "Provider usage is recorded; no monetary or general savings claim.",
+    "Last-line review uses a fixed candidate rather than a live generated promise."
+  ],
+  "previous": {
+    "requests": 12,
+    "input_tokens": 27090,
+    "output_tokens": 1155,
+    "seconds": 25.707
+  },
+  "compact": {
+    "requests": 9,
+    "input_tokens": 23715,
+    "output_tokens": 845,
+    "seconds": 19.439
+  }
+}

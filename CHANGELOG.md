@@ -2,6 +2,17 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-08-01：有限小表记忆接入对话分析与回复复核
+
+- **目的 / 基线 / 前置**：基于main 5bc2016b35745d76814ac3776f7d8c6c5929defe、前批2026-11-07-06，执行用户批准的轻量方案。人设、九委托、图鉴、数值、评分、三日流程、地图/采集/UI不改。
+- **新增插件源码**：Plugins/DialogueMemoryTable/Source/DialogueMemoryTable下Public/DialogueCompactMemoryPolicy.h、DialogueCompactMemory.h与Private/DialogueCompactMemory.cpp。修改同插件Public/DialogueMemoryTypes.h、DialogueMemoryTableSubsystem.h、AlchemyDialogueTurn.h、AlchemyDialogueReplyGate.h、DialogueAIServiceSubsystem.h及Private/DialogueMemoryTableSubsystem.cpp、AlchemyDialogueReplyGate.cpp、DialogueAIServiceSubsystem.cpp。
+- **游戏源码**：修改Source/demo3_UE58/ForestNPCDialogueSubsystem.h/.cpp；原文属性Transient，仅留内存窗口；复用分析选取/玩家候选与复核最后一句事项/摘要，取消独立结束总结，保留受限委托提出证据和外部白名单接口。
+- **新增测试**：Tools/Tests/compact_memory_bridge.py、run_compact_memory_tests.py、compact_memory_transaction_tests.py、run_compact_memory_live.py、run_compact_memory_cost_checks.py。修改同目录dialogue_policy_bridge.py、run_dialogue_cancellation_tests.py、run_semantic_action_tests.py以跟随新返回字段并测附加记忆规则。
+- **文档 / 证据**：新增[实施记录](Docs/NPC_Compact_Memory_2026-11-08.md)、批准方案Docs/NPC_Compact_Memory_Plan_2026-11-08.md；新增Docs/Tests/Compact_Memory_{Native,Live,Cost,Actions,SourceSync}_2026-11-08.json；修改README.md与本记录。
+- **验证**：最终UE5.8 Mac arm64编译链接通过47.10秒；新29项生产解析/合并/选择回归及保存事务适配回归、旧知识272事实与人物/取消回归通过。三NPC最终18轮线上测试及12项分层/接取测试通过；3项最后一句约定复核通过。3段单轮开销对比请求12→9，输入27090→23715、输出1155→845 tokens；非普遍节省保证，详细宿主/源码边界见实施记录。
+- **迁移 / 限制 / 应用**：同路径合并并重编译；Schema2保留权威进度/披露，旧无来源自由摘要不升级为事实，旧任意总结补丁退役。每人1摘要/12事实/4活跃+4结束事项；可选错误不阻断台词。未开UE/PIE，未验真实SaveGame/窗口/重启、Windows与打包；适配器不冒充引擎实测。没有存档、地图、素材、缓存、编译产物或密钥上传。
+- **上传状态**：待提交推送和远端SHA核对，交付时报告。
+
 ## 2026-11-07-06：核对采集数值与物品涌现修复的上传
 
 - **基线 / 文件 / 类型**：基于功能提交5459d1a2e8cbbf3f5f7844eb01727c3e11d0fce4、前批05，仅修改CHANGELOG.md补记上传核对；无源码、配置、资源或应用步骤变化。

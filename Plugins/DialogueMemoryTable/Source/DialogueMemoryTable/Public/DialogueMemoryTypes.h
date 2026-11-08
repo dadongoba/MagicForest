@@ -104,6 +104,12 @@ struct DIALOGUEMEMORYTABLE_API FDialogueMemoryNpcStateRow
 
     UPROPERTY(BlueprintReadOnly)
     int64 LastSessionId = 0;
+
+    UPROPERTY()
+    FString MemoryRevision;
+
+    UPROPERTY()
+    int32 MemoryDay = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -125,6 +131,12 @@ struct DIALOGUEMEMORYTABLE_API FDialogueMemoryFactRow
 
     UPROPERTY(BlueprintReadOnly)
     FString ObjectText;
+
+    UPROPERTY()
+    FName MemoryKind;
+
+    UPROPERTY()
+    FString Evidence;
 
     UPROPERTY(BlueprintReadOnly)
     EDialogueMemoryVisibility Visibility = EDialogueMemoryVisibility::NpcPrivate;
@@ -194,6 +206,15 @@ struct DIALOGUEMEMORYTABLE_API FDialogueMemoryOpenLoopRow
 
     UPROPERTY(BlueprintReadOnly)
     FString Summary;
+
+    UPROPERTY()
+    FString Evidence;
+
+    UPROPERTY()
+    int32 CommissionId = 0;
+
+    UPROPERTY()
+    FName SourceRole;
 
     UPROPERTY(BlueprintReadOnly)
     EDialogueMemoryLoopStatus Status = EDialogueMemoryLoopStatus::Open;

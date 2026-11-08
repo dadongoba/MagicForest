@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "checks": [
+    "extract_player_preference",
+    "replay_idempotent",
+    "same_local_id_different_npc",
+    "fixed_slot_correction",
+    "unreviewed",
+    "rejected",
+    "not_boolean",
+    "wrong_quote",
+    "wrong_kind",
+    "numeric_guess",
+    "oversized",
+    "foreign_update",
+    "last_npc_line_without_next_turn",
+    "resolve_existing_only",
+    "cannot_fabricate_closed_row",
+    "facts_bounded_and_roundtrip",
+    "open_capacity_does_not_block_note",
+    "next_day_expires_task",
+    "selected_view_status_preserved",
+    "external_whitelist",
+    "raw_History_transient",
+    "raw_PendingTranscript_transient",
+    "raw_ArchivedKnowledgeHistory_transient",
+    "raw_ArchivedPersonaHistory_transient",
+    "no_end_summary_request",
+    "same_catalog_analysis_and_generation",
+    "memory_optional_not_core_claims",
+    "failed_save_keeps_old_and_bounded_patches",
+    "loop_owner_isolation"
+  ],
+  "check_count": 29,
+  "source_hashes": {
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Public/DialogueCompactMemoryPolicy.h": "e9d16831e286f64080b817f3b25d710b3fce21a31a08ad71aaf5d26fdf927e7f",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueCompactMemory.cpp": "d0d05a61a87d0eedd5b05007ee82d17706cf481f28a07a65597592458e7bc3ff",
+    "Plugins/DialogueMemoryTable/Source/DialogueMemoryTable/Private/DialogueMemoryTableSubsystem.cpp": "6d904302481348e5e983a50f47a0fcf32776b75bec5a701294642a63ca9d5cde",
+    "Source/demo3_UE58/ForestNPCDialogueSubsystem.cpp": "56cd959c3ba4e0f860c6b814d896a82604a9261db704dd46f1e84ad8a4bdc8bf"
+  },
+  "limitations": [
+    "Production parser/merge/selection compiled; Foundation JSON and portable string/container adapters, not UE reflection/SaveGame/UI.",
+    "JSON roundtrip verifies bounded row representation, not engine persistence.",
+    "No network or model calls."
+  ],
+  "transaction_regression": {
+    "passed": true,
+    "result": "save rollback, structured bounded retry, fresh authority, idempotence passed",
+    "production_methods": [
+      "ApplyCompactTurn",
+      "RetryCompactSaves"
+    ],
+    "limitations": [
+      "SaveGame disk writes and UObject copies use deterministic adapters; not engine serialization."
+    ]
+  }
+}

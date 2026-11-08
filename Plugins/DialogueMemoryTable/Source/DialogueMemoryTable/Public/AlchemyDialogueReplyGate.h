@@ -16,6 +16,8 @@ public:
  FName PersonaId;
  FString PlayerText;
  FString PendingReply;
+ FString MemoryPatchJson;
+ FString ProposedPlayerMemory;
  FString CommissionFacts;
  FString PurposeFallback;
  FName FallbackFact;

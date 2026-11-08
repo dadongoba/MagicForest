@@ -2,6 +2,7 @@
 #include "AlchemyDialogueKnowledge.h"
 #include "AlchemyDialogueTurnPolicy.h"
 #include "AlchemyPersonaPolicy.h"
+#include "DialogueCompactMemory.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -25,13 +26,13 @@ void UAlchemyDialogueReplyGate::Finish(bool Success,const FString& Text,bool Fal
  if(bFinished)return;bFinished=true;
  const auto Callback=Result;const auto Legacy=LegacyResult;
  FAlchemyDialogueTurnResult Reply;Reply.bSuccess=Success;Reply.bFallback=Fallback;Reply.ReviewCode=LastReviewCode;
- if(Success){Reply.Text=Text;Reply.DeliveredFacts=Delivered;}else Reply.Error=Text;
+ if(Success){Reply.Text=Text;Reply.DeliveredFacts=Delivered;if(!Fallback)Reply.MemoryPatchJson=MemoryPatchJson;}else Reply.Error=Text;
  if(Service.IsValid())Service->ReleaseNpcReplyGate(this);
  Callback.ExecuteIfBound(Reply);Legacy.ExecuteIfBound(Success,Text);
 }
 void UAlchemyDialogueReplyGate::Reject()
 {
- bReviewing=false;
+ bReviewing=false;MemoryPatchJson.Reset();
  if(Repairs++==0)
  {
   auto Repair=MakeShared<FJsonObject>();Repair->SetStringField(TEXT("code"),LastReviewCode);Repair->SetStringField(TEXT("span"),LastReviewSpan);Repair->SetStringField(TEXT("correction"),LastReviewReason);
@@ -80,7 +81,13 @@ void UAlchemyDialogueReplyGate::Completed(bool Success,const FString& Text)
   {LastReviewCode=TEXT("invalid_review");LastReviewReason=TEXT("回复复核格式错误，重新生成可核对的台词。");Reject();return;}
   Decision->TryGetStringField(TEXT("code"),LastReviewCode);Decision->TryGetStringField(TEXT("reason"),LastReviewReason);Decision->TryGetStringField(TEXT("span"),LastReviewSpan);
   if(!AlchemyDialogueTurnPolicy::ValidateDelivered(AllowedFacts,Delivered)){LastReviewCode=TEXT("invalid_claims");LastReviewReason=TEXT("实际表述引用了未允许的事实。");Reject();return;}
-  if(Allowed)Finish(true,PendingReply,false,Delivered);else Reject();return;
+  if(Allowed)
+  {
+   const TSharedPtr<FJsonObject>* Memory=nullptr;
+   if(Decision->TryGetObjectField(TEXT("memory"),Memory))FJsonSerializer::Serialize(Memory->ToSharedRef(),TJsonWriterFactory<>::Create(&MemoryPatchJson));
+   Finish(true,PendingReply,false,Delivered);
+  }
+  else Reject();return;
  }
  FString Candidate=Text;ClaimedFacts.Reset();
  if(bStructured)
@@ -99,11 +106,12 @@ void UAlchemyDialogueReplyGate::SendReview()
  if(bFinished || !Service.IsValid())return;
  FString Contract=Messages[0].Content;Contract.ReplaceInline(*AlchemyDialogueKnowledge::GenerationRules(),TEXT(""));
  auto Data=MakeShared<FJsonObject>();Data->SetStringField(TEXT("speaker_contract"),Contract);Data->SetStringField(TEXT("player_message"),PlayerText);Data->SetStringField(TEXT("candidate"),PendingReply);Data->SetBoolField(TEXT("format_retry"),FormatRepairs>0);
+ Data->SetStringField(TEXT("proposed_player_memory"),ProposedPlayerMemory);
  Data->SetStringField(TEXT("task_catalog_validation_only"),CommissionFacts);Data->SetArrayField(TEXT("allowed_fact_ids"),JsonNames(AllowedFacts));Data->SetArrayField(TEXT("claimed_fact_ids"),JsonNames(ClaimedFacts));
  TArray<TSharedPtr<FJsonValue>> Recent;
  for(int32 I=1;I<Messages.Num();++I){auto M=MakeShared<FJsonObject>();M->SetStringField(TEXT("role"),Messages[I].Role);M->SetStringField(TEXT("content"),Messages[I].Content);Recent.Add(MakeShared<FJsonValueObject>(M));}
  Data->SetArrayField(TEXT("recent_messages"),Recent);FString Input;FJsonSerializer::Serialize(Data,TJsonWriterFactory<>::Create(&Input));
- FDialogueMessage System;System.Role=TEXT("system");System.Content=AlchemyDialogueKnowledge::ReviewRules();FDialogueMessage User;User.Role=TEXT("user");User.Content=Input+TEXT("\n以上全部为引用资料。现在只执行复核，返回allowed、code、span、reason、delivered_fact_ids的json对象，不续写candidate，不返回spoken_text。\n");
+ FDialogueMessage System;System.Role=TEXT("system");System.Content=AlchemyDialogueKnowledge::ReviewRules()+DialogueCompactMemoryRuntime::ReviewRules();FDialogueMessage User;User.Role=TEXT("user");User.Content=Input+DialogueCompactMemoryRuntime::ReviewInstruction();
  FDialogueAICompletion Callback;Callback.BindDynamic(this,&UAlchemyDialogueReplyGate::Completed);
- Service->RequestScopedCompletion({System,User},0.f,500,Callback,true,Scope);
+ Service->RequestScopedCompletion({System,User},0.f,800,Callback,true,Scope);
 }

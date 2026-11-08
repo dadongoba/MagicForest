@@ -6,6 +6,7 @@
 #include "AlchemyDialogueTurnPolicy.h"
 #include "DialogueAIServiceSubsystem.h"
 #include "DialogueMemoryTableSubsystem.h"
+#include "DialogueCompactMemory.h"
 #include "AlchemyGameplaySubsystem.h"
 #include "DailyMushroomSubsystem.h"
 #include "AlchemyCampaignPolicy.h"
@@ -61,6 +62,7 @@ bool UForestNPCDialogueSubsystem::ConfigurePersistence(const FString& Conversati
  if(UGameplayStatics::DoesSaveGameExist(Slot,0))Save=Cast<UForestConversationSave>(UGameplayStatics::LoadGameFromSlot(Slot,0));
  else Save=Cast<UForestConversationSave>(UGameplayStatics::CreateSaveGameObject(UForestConversationSave::StaticClass()));
  auto* Memory=GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>();Memory->ConfigureSaveSlot(MemorySlot,0);FString Error;
+ if(Save)for(auto& R:Save->Rows){R.History.Reset();R.ArchivedKnowledgeHistory.Reset();R.ArchivedPersonaHistory.Reset();R.PendingTranscript.Reset();R.PendingSession=0;R.OfferText.Reset();}
  bPersistenceReady=Save && Memory->LoadLedger(Error);if(!bPersistenceReady)Status=TEXT("存档读取失败，请检查存档槽：")+Error;
  return bPersistenceReady;
 }
@@ -70,7 +72,7 @@ FForestConversationRow& UForestNPCDialogueSubsystem::Row(FName Id)
  FForestConversationRow New;New.NpcId=Id;Save->Rows.Add(New);return Save->Rows.Last();
 }
 bool UForestNPCDialogueSubsystem::Persist()
-{const bool Ok=Save && UGameplayStatics::SaveGameToSlot(Save,Slot,0);if(!Ok)Status=TEXT("会话存档失败；本次记录仍在内存中");return Ok;}
+{FString MemoryError;GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->RetryCompactSaves(MemoryError);const bool Ok=Save && UGameplayStatics::SaveGameToSlot(Save,Slot,0);if(!Ok)Status=TEXT("会话存档失败；本次记录仍在内存中");return Ok;}
 bool UForestNPCDialogueSubsystem::BeginConversation(FName Id)
 {
  if(!bPersistenceReady || !ActiveNpc.IsNone())return false;
@@ -95,7 +97,7 @@ bool UForestNPCDialogueSubsystem::BeginConversation(FName Id)
   if(!Persist()){R=Before;return false;}
  }
  if(R.HistoryDay!=WorldDay){R.History.Reset();R.HistoryDay=WorldDay;}R.NextSession=FMath::Max(R.NextSession,Last+1);
- ActiveNpc=Id;SessionTranscript.Reset();bWaiting=false;++Generation;
+ ActiveNpc=Id;bWaiting=false;++Generation;
  Status=bOfflineTest?TEXT("离线联调：模拟回复，不调用 AI"):TEXT("输入内容，按 Enter 发送");
  OnConversationUpdated.Broadcast();RetryPendingSummaries();return true;
 }
@@ -110,7 +112,7 @@ bool UForestNPCDialogueSubsystem::BeginFirstDayMessengerTutorial()
  if(!IsFirstDayMessengerTutorialPending() || !BeginConversation(TEXT("fawnia")))return false;
  const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；接到的委托会记在魔法书的委托手札里。收齐材料后回小屋，在合成台选好委托、调配并封瓶，不用把原料拿给我们。我们三人的今日委托都结算完，才会迎来下一天。路和人我熟，下一步找不着就来问我。");
  auto& R=Row(TEXT("fawnia"));const auto Message=ForestDialogue::Message(TEXT("assistant"),Opening);
- R.History.Add(Message);SessionTranscript.Add(Message);while(R.History.Num()>16)R.History.RemoveAt(0);
+ R.History.Add(Message);while(R.History.Num()>8)R.History.RemoveAt(0);
  Save->bFirstDayMessengerTutorialDelivered=true;Status=TEXT("Fawnia 找到了你。可以继续问她，或按 Esc 结束交谈。");
  Persist();OnConversationUpdated.Broadcast();return true;
 }
@@ -123,20 +125,13 @@ FString UForestNPCDialogueSubsystem::GetTranscript() const
 }
 FString UForestNPCDialogueSubsystem::GetCompactMemoryJson(FName Id) const
 {
- auto* Memory=GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>();const auto Snapshot=Memory->GetLedgerSnapshot();auto Root=MakeShared<FJsonObject>();
- for(const auto& S:Snapshot.NpcStates)if(S.NpcId==Id)
- {Root->SetStringField(TEXT("relationship"),AlchemyDialogueKnowledge::SafeContext(AlchemyPersonaPolicy::ContextText(Id,S.RelationshipSummary)));Root->SetStringField(TEXT("last_exchange"),AlchemyDialogueKnowledge::SafeContext(AlchemyPersonaPolicy::ContextText(Id,S.LastExchangeSummary)));}
- TArray<TSharedPtr<FJsonValue>> Facts,Loops,World;
- for(const auto& F:Snapshot.CharacterFacts)if(F.NpcId==Id && AlchemyDialogueKnowledge::IsSafeReply(F.ObjectText) && F.Status!=EDialogueMemoryFactStatus::Contradicted && F.Visibility!=EDialogueMemoryVisibility::NpcPrivate && !AlchemyPersonaPolicy::ContainsRetiredBinding(Id,F.FactKey.ToString()+TEXT(" ")+F.ObjectText))
- {auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("key"),F.FactKey.ToString());O->SetStringField(TEXT("subject"),F.Subject.ToString());O->SetStringField(TEXT("predicate"),F.Predicate.ToString());O->SetStringField(TEXT("text"),F.ObjectText);O->SetStringField(TEXT("authority"),F.Authority==EDialogueMemoryAuthority::GameEvent?TEXT("game_event"):F.Authority==EDialogueMemoryAuthority::NpcDisclosure?TEXT("npc_disclosure"):TEXT("uncertain_report"));O->SetNumberField(TEXT("source_day"),F.LastSeenDay);Facts.Add(MakeShared<FJsonValueObject>(O));}
- for(const auto& L:Snapshot.OpenLoops)if(L.NpcId==Id && AlchemyDialogueKnowledge::IsSafeReply(L.Summary) && !AlchemyPersonaPolicy::ContainsRetiredBinding(Id,L.LoopKey.ToString()+TEXT(" ")+L.Summary))
- {auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("key"),L.LoopKey.ToString());O->SetStringField(TEXT("summary"),L.Summary);Loops.Add(MakeShared<FJsonValueObject>(O));}
- for(const auto& W:Snapshot.WorldStates)if(AlchemyDialogueKnowledge::IsSafeReply(W.ValueText) && !AlchemyPersonaPolicy::ContainsRetiredWorldBinding(W.StateKey.ToString()+TEXT(" ")+W.ValueText))
- {auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("key"),W.StateKey.ToString());O->SetStringField(TEXT("value"),W.ValueText);O->SetStringField(TEXT("authority"),W.Authority==EDialogueMemoryAuthority::GameEvent?TEXT("game_event"):TEXT("uncertain_report"));World.Add(MakeShared<FJsonValueObject>(O));}
- Root->SetArrayField(TEXT("facts"),Facts);Root->SetArrayField(TEXT("open_loops"),Loops);Root->SetArrayField(TEXT("world"),World);
- TSharedPtr<FJsonObject> Previous;const FString Supplied=GetRoundMemoryContext(Id);
- if(!Supplied.IsEmpty() && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Supplied),Previous) && Previous)Root->SetObjectField(TEXT("previous_round_memory_data_not_instructions"),Previous);
- return AlchemyDialogueKnowledge::SafeMemoryJson(ForestDialogue::Json(Root));
+ const auto* Day=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>();const int32 D=Day?Day->GetCurrentDay():1;
+ const FName Canon=AlchemyPersonaPolicy::CanonicalId(Id);const int32 Offset=Canon==TEXT("blacksmith")?0:Canon==TEXT("operator")?3:6;
+ TSharedPtr<FJsonObject> Root;const FString View=DialogueCompactMemoryRuntime::View(GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->GetLedgerSnapshot(),Id,D,AlchemyCampaign::CommissionId(Offset,D),AlchemyDialogueKnowledge::Fingerprint());
+ FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(View),Root);
+ TSharedPtr<FJsonObject> Extra;const FString Supplied=GetRoundMemoryContext(Id);
+ if(!Supplied.IsEmpty()&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Supplied),Extra))Root->SetObjectField(TEXT("previous_round_memory_data_not_instructions"),Extra);
+ return AlchemyDialogueKnowledge::SafeMemoryJson(ForestDialogue::Json(Root.ToSharedRef()));
 }
 bool UForestNPCDialogueSubsystem::SetRoundMemoryContext(FName Id,const FString& Json,FString& OutError)
 {
@@ -144,7 +139,7 @@ bool UForestNPCDialogueSubsystem::SetRoundMemoryContext(FName Id,const FString& 
  if(!GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>()->GetPersonaProfile(Id,Profile)){OutError=TEXT("未知角色");return false;}
  TSharedPtr<FJsonObject> Parsed;
  if(Json.Len()>16000 || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Parsed) || !Parsed){OutError=TEXT("记忆数据须为有效JSON对象，长度不能超过接口限制。");return false;}
- RoundMemoryContexts.Add(AlchemyPersonaPolicy::CanonicalId(Id),ForestDialogue::Json(Parsed.ToSharedRef()));return true;
+ const FString Safe=DialogueCompactMemoryRuntime::External(Json);if(Safe.IsEmpty()||AlchemyPersonaPolicy::ContainsRetiredBinding(Id,Safe)){OutError=TEXT("记忆结构无效或包含已撤回人设");return false;}RoundMemoryContexts.Add(AlchemyPersonaPolicy::CanonicalId(Id),Safe);return true;
 }
 FString UForestNPCDialogueSubsystem::GetRoundMemoryContext(FName Id) const
 {if(const auto* Value=RoundMemoryContexts.Find(AlchemyPersonaPolicy::CanonicalId(Id)))return *Value;return FString();}
@@ -164,7 +159,7 @@ bool UForestNPCDialogueSubsystem::SendPlayerMessageInternal(const FString& Raw,b
  // Online progression is proposed by semantic analysis, then validated below.
  if(bOfflineTest)
  {int32 L=1,T=0;FString E;if(!Gameplay->AdvancePersonaFromPlayerText(ActiveNpc,Text,0,WorldDay,true,L,T,E))return false;}
- auto& R=Row(ActiveNpc);const auto M=ForestDialogue::Message(TEXT("user"),Text);R.History.Add(M);SessionTranscript.Add(M);bWaiting=true;Status=TEXT("对方正在回答…");Persist();OnConversationUpdated.Broadcast();
+ auto& R=Row(ActiveNpc);const auto M=ForestDialogue::Message(TEXT("user"),Text);R.History.Add(M);while(R.History.Num()>8)R.History.RemoveAt(0);bWaiting=true;Status=TEXT("对方正在回答…");Persist();OnConversationUpdated.Broadcast();
  if(bOfflineTest)
  {auto* Context=NewObject<UForestDialogueRequestContext>(this);Context->Owner=this;Context->NpcId=ActiveNpc;Context->Generation=Generation;Context->Day=WorldDay;Requests.Add(Context);HandleResponse(Context,true,OfflineReply(Text));return true;}
  int32 Level=1;for(const auto& S:GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->GetLedgerSnapshot().NpcStates)if(S.NpcId==ActiveNpc)Level=S.Familiarity;
@@ -172,8 +167,10 @@ bool UForestNPCDialogueSubsystem::SendPlayerMessageInternal(const FString& Raw,b
  const int32 PersonaOffset=CommissionPersona==TEXT("operator")?3:CommissionPersona==TEXT("novelist")?6:CommissionPersona==TEXT("blacksmith")?0:-1;
  const int32 CommissionOrderIndex=AlchemyCampaign::CommissionId(PersonaOffset,WorldDay);
  auto* Context=NewObject<UForestDialogueRequestContext>(this);Context->Owner=this;Context->NpcId=ActiveNpc;Context->Generation=Generation;Context->Day=WorldDay;Context->CommissionId=CommissionOrderIndex;Context->Familiarity=Level;Context->bPresentation=bPresentation;Context->KnowledgeFingerprint=AlchemyDialogueKnowledge::Fingerprint();
+ Context->Session=R.NextSession++;Context->PlayerMemorySource=bPresentation?FString():Text;Context->MemoryCatalog=GetCompactMemoryJson(ActiveNpc);Context->MemoryView=DialogueCompactMemoryRuntime::Select(Context->MemoryCatalog,TEXT("{}"));Persist();
  Context->Scope=MakeShared<FDialogueRequestScope>();Context->Scope->Deadline=FPlatformTime::Seconds()+45.;ActiveTurnScope=Context->Scope;
- if(R.KnowledgeFingerprint!=Context->KnowledgeFingerprint){R.DeliveredTaskFacts.Reset();R.DeliveredPersonaFacts.Reset();R.KnowledgeFingerprint=Context->KnowledgeFingerprint;}
+ if(R.KnowledgeFingerprint!=Context->KnowledgeFingerprint){R.DeliveredTaskFacts.Reset();R.DeliveredPersonaFacts.Reset();R.KnowledgeFingerprint=Context->KnowledgeFingerprint;R.OfferText.Reset();R.OfferQuote.Reset();R.OfferFactIds.Reset();R.OfferDay=0;R.OfferCommissionId=0;}
+ if(R.OfferText.IsEmpty()&&R.OfferDay==WorldDay&&R.OfferCommissionId==CommissionOrderIndex&&R.OfferQuote.Len()<=40)R.OfferText=R.OfferQuote;
  bool OfferInRecent=false;for(int32 I=FMath::Max(0,R.History.Num()-8);I<R.History.Num();++I)if(R.History[I].Role==TEXT("assistant") && R.History[I].Content==R.OfferText)OfferInRecent=true;
  if(!OfferInRecent && R.OfferDay==WorldDay && R.OfferCommissionId==CommissionOrderIndex && !R.OfferText.IsEmpty())Context->Evidence.Add(ForestDialogue::Message(TEXT("assistant"),R.OfferText));
  for(int32 I=FMath::Max(0,R.History.Num()-8);I<R.History.Num();++I)Context->Evidence.Add(R.History[I]);
@@ -190,6 +187,7 @@ void UForestNPCDialogueSubsystem::RequestAcceptanceCheck(UForestDialogueRequestC
  FAlchemyCommissionDefinition C;auto* G=GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>();
  if(!G || !G->GetCommission(Context->CommissionId,C)){HandleResponse(Context,false,TEXT("commission_missing"));return;}
  auto Data=MakeShared<FJsonObject>();Data->SetStringField(TEXT("task_catalog"),AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity));
+ TSharedPtr<FJsonObject> MemoryCatalog;FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Context->MemoryCatalog),MemoryCatalog);if(MemoryCatalog)Data->SetObjectField(TEXT("memory_catalog"),MemoryCatalog);
  Data->SetBoolField(TEXT("may_accept"),Context->bAllowAcceptance);Data->SetBoolField(TEXT("presentation"),Context->bPresentation);Data->SetNumberField(TEXT("current_layer"),Context->Familiarity);
  Data->SetBoolField(TEXT("format_retry"),Context->PlanRepairs>0);
  if(!Context->PlanRepairNotice.IsEmpty())Data->SetStringField(TEXT("plan_validation_error"),Context->PlanRepairNotice);
@@ -206,7 +204,7 @@ void UForestNPCDialogueSubsystem::RequestAcceptanceCheck(UForestDialogueRequestC
  for(int32 I=0;I<Context->Evidence.Num();++I){auto M=MakeShared<FJsonObject>();M->SetNumberField(TEXT("index"),I);M->SetStringField(TEXT("role"),Context->Evidence[I].Role);M->SetStringField(TEXT("content"),Context->Evidence[I].Content);Evidence.Add(MakeShared<FJsonValueObject>(M));}
  Data->SetArrayField(TEXT("messages"),Evidence);
  FDialogueAICompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::Completed);
- GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>()->RequestScopedCompletion({ForestDialogue::Message(TEXT("system"),AlchemyDialogueKnowledge::AnalysisRules()),ForestDialogue::Message(TEXT("user"),ForestDialogue::Json(Data))},0.f,850,Callback,true,Context->Scope);
+ GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>()->RequestScopedCompletion({ForestDialogue::Message(TEXT("system"),AlchemyDialogueKnowledge::AnalysisRules()+DialogueCompactMemoryRuntime::AnalysisRules()),ForestDialogue::Message(TEXT("user"),ForestDialogue::Json(Data))},0.f,1150,Callback,true,Context->Scope);
 }
 void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext* Context)
 {
@@ -215,8 +213,9 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
  FAlchemyCommissionDefinition C;if(!G || !AI || !G->GetCommission(Context->CommissionId,C)){HandleResponse(Context,false,TEXT("dialogue_service_missing"));return;}
  TArray<FName> Known=Row(Context->NpcId).DeliveredTaskFacts;for(const auto& Id:Row(Context->NpcId).DeliveredPersonaFacts)Known.AddUnique(Id);
  Context->AllowedFacts=AlchemyDialogueKnowledge::AllowedFacts(C,Context->Familiarity,Context->SelectedFacts,Known);
- FString Prompt=G->BuildPersonaSystemPrompt(Context->NpcId,Context->Familiarity,Context->CommissionId,GetCompactMemoryJson(Context->NpcId),{});
+ FString Prompt=G->BuildPersonaSystemPrompt(Context->NpcId,Context->Familiarity,Context->CommissionId,Context->MemoryView,{});
  Prompt+=AlchemyDialogueKnowledge::FactGuidance(C,Context->Familiarity,Context->AllowedFacts,Known);
+ Prompt+=DialogueCompactMemoryRuntime::ContextRules();
  Prompt+=TEXT("\n【本轮意图】\n")+Context->Intent;
  // Action receipts constrain what has happened; they are not dialogue to quote.
  auto Authority=MakeShared<FJsonObject>();
@@ -236,7 +235,7 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
  if(!Context->AcceptanceNotice.IsEmpty())FallbackText=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("这份委托记下了。回小屋合成台调配并封瓶，接到的事可以在魔法书里查。"):TEXT("这次还没记下委托，稍后再确认。回小屋合成台调配，不用把原料交给我。");
  if(!Context->AcceptanceNotice.IsEmpty())Fallback=NAME_None;
  FAlchemyNpcReplyCompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::ReplyCompleted);
- AI->RequestNpcTurn(Context->NpcId,Messages,AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity),Context->AllowedFacts,Fallback,FallbackText,Callback,Context->Scope);
+ AI->RequestNpcTurn(Context->NpcId,Messages,AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity),Context->AllowedFacts,Fallback,FallbackText,Callback,Context->Scope,Context->MemoryAnalysis);
 }
 FString UForestNPCDialogueSubsystem::OfflineReply(const FString& Text) const
 {
@@ -252,19 +251,6 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
 {
  Requests.Remove(Context);if(!Save)return;
  auto& R=Row(Context->NpcId);
- if(Context->bSummary)
- {
-  if(R.PendingSession!=Context->Session){RequestSummary(R);return;}
-  if(Success)
-  {
-   const int32 WorldDay=GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>()->GetCurrentDay();
-   const auto Result=GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->ApplyMemoryPatchJson(AlchemyPersonaPolicy::FilterMemoryPatch(R.NpcId,ForestDialogue::CleanJson(Text)),R.NpcId,R.PendingSession,WorldDay,true);
-   Success=Result.bSuccess;if(!Success)Status=TEXT("记忆校验失败，已保留待重试会话：")+Result.ErrorCode.ToString();
-  }
-  else Status=TEXT("记忆总结暂不可用，会话已保存，稍后可重试");
-  if(Success){R.PendingSession=0;R.PendingTranscript.Reset();Status=bOfflineTest?TEXT("离线联调记忆已保存"):TEXT("对话记忆已保存");}
-  Persist();OnConversationUpdated.Broadcast();return;
- }
  if(!GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>() || !AlchemyDialogueTurnPolicy::IsFresh(Context->Generation,Generation,Context->Day,GetGameInstance()->GetSubsystem<UDailyMushroomSubsystem>()->GetCurrentDay(),Context->NpcId==ActiveNpc,!ActiveNpc.IsNone()) || (!bOfflineTest && Context->KnowledgeFingerprint!=AlchemyDialogueKnowledge::Fingerprint()))
  {
   if(ActiveTurnScope && ActiveTurnScope==Context->Scope)
@@ -302,6 +288,9 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
    if(Text!=TEXT("response_empty") && Text!=TEXT("response_truncated")){Context->bAcceptanceCheck=false;HandleResponse(Context,false,Text);return;}
   }
   if(!PlanValid && Context->PlanRepairs++==0){RequestAcceptanceCheck(Context);return;}
+  if(PlanValid&&Decision)
+  {const TSharedPtr<FJsonObject>* Memory=nullptr;if(Decision->TryGetObjectField(TEXT("memory"),Memory))Context->MemoryAnalysis=ForestDialogue::Json(Memory->ToSharedRef());}
+  Context->MemoryView=DialogueCompactMemoryRuntime::Select(Context->MemoryCatalog,Context->MemoryAnalysis);
   Context->Intent=PlanValid?Intent:TEXT("other");Context->SelectedFacts=PlanValid?Selected:TArray<FName>();
   // Invalid action/plan sections never authorize side effects. Valid smalltalk is
   // still answerable without accepting a task or opening fresh knowledge.
@@ -326,7 +315,7 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
   {
    const auto& Offered=Context->Evidence[static_cast<int32>(OfferOnly)];
    if(Offered.Role==TEXT("assistant") && Offered.Content.Contains(QuoteOnly))
-   {R.OfferDay=Context->Day;R.OfferCommissionId=Context->CommissionId;R.OfferText=Offered.Content;Persist();}
+   {R.OfferDay=Context->Day;R.OfferCommissionId=Context->CommissionId;R.OfferText=Offered.Content;R.OfferQuote=QuoteOnly.Left(40);R.OfferFactIds=R.DeliveredTaskFacts;Persist();}
   }
   if(Valid)
   {
@@ -354,62 +343,41 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
    AlchemyDialogueTurnPolicy::CommitDelivered(Context->AllowedFacts,Persona,R.DeliveredPersonaFacts,true);
    R.bLastReplyFallback=Context->VerifiedReply.bFallback;
   }
-  const auto M=ForestDialogue::Message(TEXT("assistant"),Text);R.History.Add(M);SessionTranscript.Add(M);while(R.History.Num()>16)R.History.RemoveAt(0);
+  const auto M=ForestDialogue::Message(TEXT("assistant"),Text);R.History.Add(M);while(R.History.Num()>8)R.History.RemoveAt(0);
+  if(Context->bVerifiedReply&&!Context->VerifiedReply.bFallback&&Context->bAllowAcceptance&&!Context->bPresentation)
+  {TSharedPtr<FJsonObject> Mem;FString Quote;
+   if(FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Context->VerifiedReply.MemoryPatchJson),Mem)&&Mem&&Mem->TryGetStringField(TEXT("offer_quote"),Quote)&&Quote.Len()>=2&&Quote.Len()<=40&&Text.Contains(Quote)&&Context->VerifiedReply.DeliveredFacts.Contains(TEXT("task.purpose")))
+   {R.OfferDay=Context->Day;R.OfferCommissionId=Context->CommissionId;R.OfferQuote=Quote;R.OfferText=Quote;R.OfferFactIds=Context->VerifiedReply.DeliveredFacts;}
+  }
+  CommitTurnMemory(Context,Text,Context->bVerifiedReply&&!Context->VerifiedReply.bFallback?Context->VerifiedReply.MemoryPatchJson:FString());
   R.LastReplyError.Reset();Status=bOfflineTest?TEXT("离线联调回复，不判定接取"):Context->AcceptanceNotice.IsEmpty()?TEXT("Enter 发送 · Esc 结束"):R.LastActionReceipt;
  }
  else
  {
   // The player's actual statement and any committed task receipt survive failure.
+  CommitTurnMemory(Context,FString(),FString());
   R.LastReplyError=Text;Status=TEXT("暂时没能收到答复，请稍后重试。");
   if(!Context->AcceptanceNotice.IsEmpty())Status+=TEXT("\n")+R.LastActionReceipt;
  }
  ActiveTurnScope.Reset();Persist();OnConversationUpdated.Broadcast();
 }
-FString UForestNPCDialogueSubsystem::OfflinePatch(const FForestConversationRow& R) const
+void UForestNPCDialogueSubsystem::CommitTurnMemory(UForestDialogueRequestContext* Context,const FString& Spoken,const FString& Review)
 {
- auto Root=MakeShared<FJsonObject>();Root->SetNumberField(TEXT("schema_version"),1);Root->SetStringField(TEXT("npc_id"),R.NpcId.ToString());Root->SetNumberField(TEXT("session_id"),R.PendingSession);
- FString Last;for(const auto& M:R.PendingTranscript)if(M.Role==TEXT("user"))Last=M.Content.Left(140);
- auto Patch=MakeShared<FJsonObject>();Patch->SetStringField(TEXT("attitude"),TEXT("neutral"));Patch->SetStringField(TEXT("relationship_summary"),TEXT("离线联调：玩家与该角色完成了交谈。"));Patch->SetStringField(TEXT("last_exchange_summary"),Last.IsEmpty()?TEXT("离线测试交谈"):Last);Patch->SetArrayField(TEXT("topic_tags"),{});Root->SetObjectField(TEXT("npc_patch"),Patch);
- Root->SetArrayField(TEXT("fact_upserts"),{});Root->SetArrayField(TEXT("world_suggestions"),{});Root->SetArrayField(TEXT("open_loop_upserts"),{});return ForestDialogue::Json(Root);
-}
-void UForestNPCDialogueSubsystem::RequestSummary(FForestConversationRow& R)
-{
- if(R.PendingSession<1 || R.PendingTranscript.IsEmpty())return;
- for(auto C:Requests)if(C->bSummary && C->NpcId==R.NpcId)return;
- auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();if(!bOfflineTest && !AI->HasApiKey())return;
- auto* C=NewObject<UForestDialogueRequestContext>(this);C->Owner=this;C->NpcId=R.NpcId;C->Session=R.PendingSession;C->bSummary=true;Requests.Add(C);
- if(bOfflineTest){HandleResponse(C,true,OfflinePatch(R));return;}
- FString Prompt;auto Plugin=IPluginManager::Get().FindPlugin(TEXT("DialogueMemoryTable"));
- if(!Plugin.IsValid() || !FFileHelper::LoadFileToString(Prompt,*(Plugin->GetBaseDir()/TEXT("Resources/DialogueMemorySummarizerPrompt.md"))))
- {HandleResponse(C,false,TEXT("记忆提示词资源缺失"));return;}
- auto* Gameplay=GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>();FDialoguePersonaProfile Profile;
- int32 Familiarity=1;for(const auto& S:GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->GetLedgerSnapshot().NpcStates)if(S.NpcId==R.NpcId)Familiarity=S.Familiarity;
- if(!Gameplay || !Gameplay->GetPersonaProfile(R.NpcId,Profile)){HandleResponse(C,false,TEXT("人物设定读取失败"));return;}
- Prompt+=TEXT("\n【当前权威人物设定与可披露范围】\n")+Profile.VoiceTone+TEXT("\n")+Profile.DailyState+TEXT("\n")+Profile.Layers[FMath::Clamp(Familiarity,1,3)-1].Prompt;
- FString Transcript;for(const auto& M:R.PendingTranscript)if(M.Role!=TEXT("assistant") || !AlchemyPersonaPolicy::ContainsRetiredBinding(R.NpcId,M.Content))Transcript+=M.Role+TEXT(": ")+M.Content+TEXT("\n");
- FString Input=FString::Printf(TEXT("npc_id=%s\nsession_id=%lld\n当前记忆=%s\n本次对话：\n%s\n严格只输出 JSON 对象。"),*R.NpcId.ToString(),R.PendingSession,*GetCompactMemoryJson(R.NpcId),*Transcript);
- FDialogueAICompletion Callback;Callback.BindDynamic(C,&UForestDialogueRequestContext::Completed);
- AI->RequestChatCompletion({ForestDialogue::Message(TEXT("system"),Prompt),ForestDialogue::Message(TEXT("user"),Input)},0.1f,1400,Callback);
+ if(bOfflineTest||Context->Session<1)return;
+ const auto Delta=DialogueCompactMemoryRuntime::Parse(Context->NpcId,Context->Day,Context->CommissionId,Context->Session,Context->KnowledgeFingerprint,Context->PlayerMemorySource,Spoken,Context->MemoryAnalysis,Review,Context->MemoryCatalog);
+ FString Error;GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->ApplyCompactTurn(Delta,Error);
 }
 void UForestNPCDialogueSubsystem::EndConversation()
 {
- if(ActiveNpc.IsNone() || !Save)return;
- auto& R=Row(ActiveNpc);
- ++Generation;bWaiting=false;
- const auto ClosingScope=ActiveTurnScope;
- ActiveTurnScope.Reset();
+ if(ActiveNpc.IsNone()||!Save)return;
+ ++Generation;bWaiting=false;const auto ClosingScope=ActiveTurnScope;ActiveTurnScope.Reset();
  if(auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>())AI->CancelNpcTurns(ClosingScope);
- if(!SessionTranscript.IsEmpty())
- {
-  // A failed earlier summary is retained and included in the next attempt.
-  R.PendingTranscript.Append(SessionTranscript);while(R.PendingTranscript.Num()>32)R.PendingTranscript.RemoveAt(0);
-  R.PendingSession=R.NextSession++;Persist();
- }
- ActiveNpc=NAME_None;SessionTranscript.Reset();RequestSummary(R);Persist();OnConversationUpdated.Broadcast();
+ auto& R=Row(ActiveNpc);R.History.Reset();R.PendingTranscript.Reset();R.PendingSession=0;
+ ActiveNpc=NAME_None;Persist();OnConversationUpdated.Broadcast();
 }
 void UForestNPCDialogueSubsystem::RetryPendingSummaries()
-{if(!Save)return;for(auto& R:Save->Rows)RequestSummary(R);}
+{FString Error;GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->RetryCompactSaves(Error);}
 int32 UForestNPCDialogueSubsystem::GetPendingSummaryCount() const
-{int32 Count=0;if(Save)for(const auto& R:Save->Rows)if(R.PendingSession>0)++Count;return Count;}
+{return 0;} // Compatibility: the end-of-session summarizer has been retired.
 void UForestNPCDialogueSubsystem::Deinitialize()
 {EndConversation();Persist();for(auto R:Requests)R->Owner.Reset();Requests.Reset();Super::Deinitialize();}
