@@ -67,7 +67,14 @@ void UForestMajorDrawWidget::Refresh()
     const int32 SafeLimit = FMath::Max(1, ShownLimit);
     const int32 Left = FMath::Max(0, SafeLimit - ShownDrawn);
     Body->AddSlot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 12.0f)
-        [DrawText(FString::Printf(TEXT("第 %d 天 · 抽到一张日运"), ShownDay), 18, true, ForestTheme::Moss)];
+        [DrawText(FString::Printf(TEXT("第 %d 天 · 药瓶里显出一张日运牌"), ShownDay), 18, true, ForestTheme::Moss)];
+
+    if (bShowFirstDrawGuide)
+    {
+        Body->AddSlot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 14.0f)
+            [DrawText(TEXT("蘑菇提炼出的火、风、水是药剂的材料；「日运」是今天从药瓶借来的调药手法，会改变材料入锅后的结果。白天听委托、采元素，夜里再决定怎么用这张牌。"),
+                18, false, ForestTheme::Ink)];
+    }
 
     const float CardHeight = bCompact ? 340.0f : 450.0f;
     const float CardWidth = CardHeight * ForestMajorArt::AspectRatio;
@@ -97,25 +104,27 @@ void UForestMajorDrawWidget::Refresh()
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 12.0f)
         [DrawText(ShownCardId.ToString() + TEXT(" · ") + ShownName, 27, true)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 5.0f)
-        [DrawText(TEXT("这张牌在合成中会做什么"), 15, true, ForestTheme::Moss)]
+        [DrawText(TEXT("这张牌会怎样改变锅里的药性"), 16, true, ForestTheme::Moss)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 16.0f)
         [DrawText(ShownEffect.IsEmpty() ? TEXT("用法请在魔法书中查看。") : ShownEffect, 19)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 16.0f)
-        [DrawText(FString::Printf(TEXT("夜间合成：占 1 个位置 · 消耗 %d 点大牌额度"),
-            ShownCost), 15)]
+        [DrawText(FString::Printf(TEXT("夜间使用时占 1 个槽位、花 %d 点额度；每份配方最多可花 5 点。"),
+            ShownCost), 16)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 12.0f)
-        [DrawText(FString::Printf(TEXT("今日已抽 %d / %d 张 · 还可抽 %d 张"),
+        [DrawText(FString::Printf(TEXT("今天已抽 %d / %d 张 · 还可抽 %d 张"),
             ShownDrawn, SafeLimit, Left), 17, true, ForestTheme::Moss)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 13.0f)
-        [DrawText(TEXT("牌已收进背包「今日大牌」。按 B 可再看牌图；按 J 可查完整用法。"), 15)]
+        [DrawText(TEXT("牌已收进背包「今日大牌」。按 B 看牌图，按 J 翻魔法书查用法。"), 16)]
         + SVerticalBox::Slot().AutoHeight().Padding(0.0f, 0.0f, 0.0f, 12.0f)
-        [DrawText(TEXT("进入下一天后，今天剩余的大牌会失效。"), 15, true, ForestTheme::Fire)];
+        [DrawText(TEXT("今天结束后，没用过的牌也会失效。"), 16, true, ForestTheme::Fire)];
 
     if (bShowFirstDrawGuide)
     {
         Details->AddSlot().AutoHeight().Padding(0.0f, 2.0f, 0.0f, 8.0f)
-            [DrawText(FString::Printf(TEXT("每天最多从药瓶中抽 %d 张日运。它们供当天三份委托共用；用掉一张也不会补回抽取次数。夜间回小屋，在合成台与采集的元素一起使用。"),
-                SafeLimit), 15)];
+            [DrawText(TEXT("有的牌让锅里的火更旺，有的把一种元素换成另一种。每张牌的作用不同；把元素小物和牌按顺序放上合成台，放在哪里也会影响结果。"), 17)];
+        Details->AddSlot().AutoHeight().Padding(0.0f, 2.0f, 0.0f, 8.0f)
+            [DrawText(FString::Printf(TEXT("每天最多抽 %d 张，供当天三份委托共用。确认封瓶才会用掉牌；用过不补，今天结束后未用的也会失效。大牌不是每份药都必需。"),
+                SafeLimit), 17)];
     }
 
     TSharedRef<SWidget> Main = bCompact

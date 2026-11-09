@@ -1,5 +1,6 @@
 #include "ForestAlchemy.h"
 #include "ForestElementCodex.h"
+#include "ForestAlchemyGuide.h"
 #include "ForestHarvestMagic.h"
 #include "ForestNPCDialogueSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
@@ -139,7 +140,7 @@ void UForestAlchemy::StartInCabin()
  {
   PC->StopMovement();PC->SetControlRotation(Facing);bNeedsCabinSpawn=false;
   const FString Draws=GetMaxDailyDraws()>0?FString::Printf(TEXT("已抽 %d/%d"),GetTodayDrawCount(),GetMaxDailyDraws()):FString::Printf(TEXT("已抽 %d 张"),GetTodayDrawCount());
-  Tell(FString::Printf(TEXT("第 %d 天 · 在小屋醒来\n工作台的药瓶可抽今日大牌（%s）。三份委托共用，换天失效；按 B 查看。"),GetDay(),*Draws));
+  Tell(FString::Printf(TEXT("第 %d 天 · 在小屋醒来\n工作台药瓶会显出今天的「日运」牌：夜里调药时可借用的手法。靠近药瓶按 E 抽取（%s）。"),GetDay(),*Draws));
  }
 }
 bool UForestAlchemy::OtherMenuOpen() const
@@ -194,7 +195,7 @@ bool UForestAlchemy::TakeBottle(AActor* Actor)
  FForestDailyMajor Entry;Entry.InstanceId=FGuid::NewGuid().ToString();Entry.CardId=Card.Id;Entry.SourceBottle=B->Key;Entry.Day=GetDay();Save->Majors.Add(Entry);Save->ClaimedBottles.Add(B->Key);
  if(!Persist()){Save->Majors.Pop();Save->ClaimedBottles.Pop();Tell(TEXT("保存失败，药瓶没有被取走，请重试。"));return false;}
  ApplyBottleState(*B,true);
- Tell(FString::Printf(TEXT("获得今日大牌：%s · %s（已抽 %d/%d）。按 B 可再次查看牌图。"),*Card.Id.ToString(),*Card.Name,GetTodayDrawCount(),GetMaxDailyDraws()));
+ Tell(FString::Printf(TEXT("瓶中显出：%s · %s。已收进背包「今日大牌」（%d/%d）。"),*Card.Id.ToString(),*Card.Name,GetTodayDrawCount(),GetMaxDailyDraws()));
  OpenMajorDrawReveal(Card);
  return true;
 }
@@ -204,7 +205,9 @@ void UForestAlchemy::OpenMajorDrawReveal(const FAlchemyCardDefinition& Card)
  CloseMajorDrawReveal();
  DrawReveal=CreateWidget<UForestMajorDrawWidget>(PC);if(!DrawReveal)return;
  DrawReveal->Owner=this;
- DrawReveal->Configure(Card.Id,Card.Name,Card.Description,Card.Cost,GetDay(),GetTodayDrawCount(),GetMaxDailyDraws(),GetTodayDrawCount()==1);
+ FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();const auto* Gameplay=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
+ const FString Effect=ForestAlchemyGuide::Major(Gameplay,Card.Id,Guide)?Guide.HowToUse:Card.Description;
+ DrawReveal->Configure(Card.Id,Card.Name,Effect,Card.Cost,GetDay(),GetTodayDrawCount(),GetMaxDailyDraws(),GetTodayDrawCount()==1);
  bDrawOldCursor=PC->bShowMouseCursor;
  DrawReveal->AddToViewport(120);
  FInputModeUIOnly Mode;Mode.SetWidgetToFocus(DrawReveal->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
@@ -229,7 +232,7 @@ void UForestAlchemy::Tick(float DT)
  if(Notice && Notice->Text.IsValid())
  {
   FString Message;if(GetWorld()->GetTimeSeconds()<ToastUntil)Message=Toast;
-  else if(Focus.IsValid())Message=bFocusedBottle?(bAtLimit?FString::Printf(TEXT("今日已抽完 %d/%d · 按 B 查看"),GetTodayDrawCount(),GetMaxDailyDraws()):GetMaxDailyDraws()>0?FString::Printf(TEXT("E　抽取日运 · 已抽 %d/%d"),GetTodayDrawCount(),GetMaxDailyDraws()):FString::Printf(TEXT("E　抽取日运 · 今日已抽 %d 张"),GetTodayDrawCount())):TEXT("E　进入夜间合成台");
+  else if(Focus.IsValid())Message=bFocusedBottle?(bAtLimit?FString::Printf(TEXT("今日的日运已抽完 %d/%d · 按 B 查看"),GetTodayDrawCount(),GetMaxDailyDraws()):GetMaxDailyDraws()>0?FString::Printf(TEXT("E　从药瓶抽取日运 · %d/%d"),GetTodayDrawCount(),GetMaxDailyDraws()):FString::Printf(TEXT("E　从药瓶抽取日运 · 今日已抽 %d 张"),GetTodayDrawCount())):TEXT("E　进入夜间合成台");
   Notice->Text->SetText(FText::FromString(Message));Notice->SetVisibility(Message.IsEmpty() || OtherMenuOpen() || IsWorkbenchOpen()?ESlateVisibility::Collapsed:ESlateVisibility::HitTestInvisible);
  }
 }

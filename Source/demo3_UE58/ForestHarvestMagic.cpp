@@ -297,8 +297,8 @@ void UForestMagicInventoryWidget::Refresh()
    SelectedMajor.Reset();
    const int32 Drawn=A?A->GetTodayDrawCount():0,Limit=A?A->GetMaxDailyDraws():3;
    Detail->SetText(FText::FromString(A && A->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
-    Limit>0 && Drawn>=Limit?TEXT("今日大牌\n\n今天抽到的大牌已经用完。抽取次数不会因使用而补回；进入下一天后，工作台的药瓶会重新可用。"):
-    FString::Printf(TEXT("今日大牌\n\n已抽 %d/%d 张。回小屋从工作台药瓶中继续抽取；大牌供今天三份委托共用，进入下一天后失效。"),Drawn,Limit)));
+    Limit>0 && Drawn>=Limit?TEXT("今日大牌\n\n今天的日运牌已经用在药里，抽取次数不会补回。"):
+    FString::Printf(TEXT("今日大牌\n\n小屋药瓶里每天会显出不同的日运牌。它们是今天可借用的调药手法：白天采集元素、听清委托，夜里回小屋决定怎么用牌。已抽 %d/%d 张；靠近药瓶按 E 抽取。"),Drawn,Limit)));
   }
   else if(!Cards.ContainsByPredicate([this](const auto& C){return C.InstanceId==SelectedMajor;}))SelectMajor(Cards[0].InstanceId);else SelectMajor(SelectedMajor);
   return;
