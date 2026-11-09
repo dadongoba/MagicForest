@@ -1031,9 +1031,28 @@ FString UAlchemyGameplaySubsystem::BuildWorldConsequencePrompt(
     FDialoguePersonaProfile Profile;
     GetPersonaProfile(Commission.CharacterId, Profile);
 
-    FString Prompt = TEXT("你是冷峻奇幻流亡题材的故事叙述者。\n");
-    Prompt += FString::Printf(TEXT("刚刚女巫向【%s】（%s）交付了调配药剂。\n\n"), *Commission.Customer, *Profile.Name);
-    Prompt += FString::Printf(TEXT("【本单委托】\n- 愿望：%s\n- 情境：%s\n"), *Commission.Wish, *Commission.SensoryPrompt);
+    FString PresentIdentity, PastIdentity;
+    if (Commission.CharacterId == TEXT("blacksmith"))
+    {
+        PresentIdentity = TEXT("她现在是森林铁匠，修理工具与炉具；“拆弹手”是她的称呼，与铁匠是同一个人，不能另写一位铁匠。");
+        PastIdentity = TEXT("她以前参与过清理旧物和拆除的运动，曾亲手拆掉人们住处的东西；这不是当前委托中正在发生的事。");
+    }
+    else if (Commission.CharacterId == TEXT("operator"))
+    {
+        PresentIdentity = TEXT("他现在是森林里的接线员和跑腿人，传信、记路、运送东西；当前委托才决定他此刻要做什么。");
+        PastIdentity = TEXT("他以前在总局接线、监听并记录人们的谈话；这不是当前委托中正在发生的事。");
+    }
+    else if (Commission.CharacterId == TEXT("novelist"))
+    {
+        PresentIdentity = TEXT("她现在是森林里的小说家和代笔人，写字、处理纸页和书稿；当前委托才决定她此刻要做什么。");
+        PastIdentity = TEXT("她以前出版过书，作品被禁后离开；这不是当前委托中正在发生的事。");
+    }
+
+    FString Prompt = TEXT("你只推演这一份已完成委托的使用结果。\n");
+    Prompt += FString::Printf(TEXT("女巫刚刚向【%s】（%s）交付了调配药剂。\n\n"), *Commission.Customer, *Profile.Name);
+    Prompt += FString::Printf(TEXT("【人物身份】\n- 现在：%s\n- 过去：%s\n"), *PresentIdentity, *PastIdentity);
+    Prompt += TEXT("- 现在身份和本单委托是场景的主要约束。过去身份只可通过她或他对眼前工作的短暂停顿、态度或一句含蓄的话留下暗示，也可以完全不出现；不得直接交代往事、写过去的机构或受害者，更不得据此发动追查、监听、禁书等新事件。\n\n");
+    Prompt += FString::Printf(TEXT("【本单委托】\n- 愿望：%s\n- 工序：%s\n- 已审核的完整任务情境与效果依据：%s\n"), *Commission.Wish, *Commission.SensoryPrompt, *AlchemyDialogueKnowledge::Reveal(Commission));
     Prompt += FString::Printf(TEXT("- 目标向量：[%d, %d, %d]\n"), Commission.Target.Fire, Commission.Target.Wind, Commission.Target.Water);
     Prompt += FString::Printf(TEXT("- 实际向量：[%d, %d, %d]\n"), Evaluation.Actual.Fire, Evaluation.Actual.Wind, Evaluation.Actual.Water);
     Prompt += FString::Printf(TEXT("- 灵验度：%.2f\n- 代价垂线：%.2f\n- 剂量比：%.2f\n- 最终评级：%s\n- 判定依据：%s\n\n"),
@@ -1043,14 +1062,16 @@ FString UAlchemyGameplaySubsystem::BuildWorldConsequencePrompt(
         *Evaluation.Verdict,
         *Evaluation.Reason);
     Prompt += TEXT("【叙事要求】\n");
-    Prompt += TEXT("- 大功业：愿望精准达成，并在铁匠铺、哨卡或村落激起连锁反应。\n");
-    Prompt += TEXT("- 副作用：多余元素必须造成具体恶果，不能写成泛泛的坏结局。\n");
-    Prompt += TEXT("- 不足：药效不够，问题仍未解决。\n");
-    Prompt += TEXT("- 过量或反效果：必须写出药性失控或与愿望相反的后果。\n");
-    Prompt += TEXT("- 输出 200~300 字的次日破晓情节，分为使用现场和外界余波两段，纯 Markdown 正文。\n");
+    Prompt += TEXT("- 合成、封瓶和交付已经结束；故事发生在委托所述工作的使用现场，不回到女巫小屋或合成台，不再次调配、封瓶或交付。\n");
+    Prompt += TEXT("- 只写本委托情境已有的人物、地点、材料、工序，以及实际药效能直接造成的变化。不得新增哨卡、村民、学徒、商人、追查者、其他NPC或与本次工作无关的物品和事件；不能把当前人物拆成两个人。\n");
+    Prompt += TEXT("- 大功业：本次委托的用途准确达成，不添加与实际元素无关的损害；后续变化只在当前工作和当事人的直接范围内。\n");
+    Prompt += TEXT("- 副作用：本次工作得到部分效果，但多出的实际元素对同一工作造成具体妨碍；不扩大成远处的灾祸。\n");
+    Prompt += TEXT("- 不足：本次工作因药效不够而没有完成；不凭空补充其他失败原因。\n");
+    Prompt += TEXT("- 过量或反效果：只描写该工作现场内与实际药性相符的失控或相反后果。\n");
+    Prompt += TEXT("- 只采用最终评级对应的分支。正文不复述元素档位、判定名和公式，把数值转成具体的使用效果。写 200~300 字、两段纯文本：第一段是使用现场，第二段是当事人与同一现场的直接后续。\n");
     if (!CompactMemoryJson.IsEmpty())
     {
-        Prompt += TEXT("\n【已有世界记忆，只能承接不能覆盖】\n");
+        Prompt += TEXT("\n【过往对话记忆，仅供维持已知关系，不扩展本次场景】\n");
         Prompt += CompactMemoryJson;
     }
     return Prompt;
