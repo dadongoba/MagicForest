@@ -79,6 +79,8 @@ private:
  TSharedPtr<SBorder> Paper;
  bool bCompact=false;
  bool bGuideExpanded=true;
+ bool bShowSettlementDetails=false;
+ FString SettlementReceiptId;
  int32 GuidePage=0;
  int32 GuideCommission=0;
  bool bGuideSawMaterial=false,bGuideWasConfirming=false;

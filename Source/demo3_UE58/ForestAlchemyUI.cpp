@@ -18,6 +18,35 @@ namespace BrewUI
 {
  TSharedRef<STextBlock> Text(const FString& Value,int32 Size=12){return SNew(STextBlock).Text(FText::FromString(Value)).Font(ForestTheme::Font(FMath::Max(16,Size+4))).ColorAndOpacity(ForestTheme::Ink).AutoWrapText(true);}
  TSharedRef<SWidget> Button(const FString& Label,FOnClicked Click,bool Primary=false){return SNew(SButton).ButtonStyle(Primary?&ForestTheme::PrimaryButton():&ForestTheme::SecondaryButton()).ContentPadding(FMargin(12,10)).OnClicked(Click)[SNew(STextBlock).Text(FText::FromString(Label)).Font(ForestTheme::Font(16)).ColorAndOpacity(Primary?ForestTheme::OnMoss:ForestTheme::Ink).AutoWrapText(true)];}
+ FString Amount(int32 Value)
+ {
+  if(Value>0)return FString::Printf(TEXT("增加 %d 点"),Value);
+  if(Value<0)return FString::Printf(TEXT("取走 %d 点"),-Value);
+  return TEXT("不改变（0）");
+ }
+ FString Difference(const TCHAR* Element,int32 Target,int32 Actual)
+ {
+  if(Target==Actual)return Target==0?FString::Printf(TEXT("%s没有额外变化，正合这份委托的需要。"),Element):TEXT("正好达到这份委托需要的强度。");
+  if(Target==0)return FString::Printf(TEXT("这份委托不需要改变%s，成品却改变了它。"),Element);
+  if(Actual==0)return FString::Printf(TEXT("这份委托需要%s的作用，成品却没有留下。"),Element);
+  if((Target>0)!=(Actual>0))return FString::Printf(TEXT("%s的作用方向与委托相反。"),Element);
+  return FMath::Abs(Actual)<FMath::Abs(Target)?
+   FString::Printf(TEXT("%s的作用偏弱，没有达到需要的强度。"),Element):
+   FString::Printf(TEXT("%s的作用偏强，超过了需要的强度。"),Element);
+ }
+ FString VerdictExplanation(const FAlchemyEvaluationResult& Result)
+ {
+  const FString& Code=Result.VerdictCode;
+  if(Code==TEXT("caput_mortuum"))return TEXT("火、风、水的作用总量超过锅能承受的 24 点，整锅报废。");
+  if(Code==TEXT("empty_bottle"))return TEXT("成品没有留下可用的元素作用，无法完成委托。");
+  if(Code==TEXT("contract_breach"))return TEXT("这份委托要求的指定用料没有全部生效，客人不会收下。");
+  if(Code==TEXT("reversed_effect"))return TEXT("成品整体朝着与委托相反的方向起作用。");
+  if(Code==TEXT("under_dosed"))return TEXT("方向大致对了，但成品整体作用太弱。");
+  if(Code==TEXT("over_dosed"))return TEXT("成品整体作用过强，超过了这份委托能承受的程度。");
+  if(Code==TEXT("side_effect"))return TEXT("药剂有用，但多余的作用已经盖过了想要的效果。");
+  if(Code==TEXT("magnum_opus"))return TEXT("成品的作用方向与强度都贴合这份委托。");
+  return Result.Reason;
+ }
 }
 TSharedRef<SWidget> UForestArcanaNotice::RebuildWidget()
 {
@@ -49,19 +78,39 @@ void UForestBrewWidget::Refresh()
  if(!Body.IsValid() || !Owner.IsValid())return;Body->ClearChildren();auto* A=Owner.Get();int32 Cost=0;for(const auto& C:A->Sequence)Cost+=C.Card.Cost;
  if(const auto* R=A->PendingResult())
  {
+  if(SettlementReceiptId!=R->ReceiptId){SettlementReceiptId=R->ReceiptId;bShowSettlementDetails=false;}
   const auto& E=R->Result;
   Body->AddSlot().AutoHeight()[BrewUI::Text(R->Day==3?FString(TEXT("第三夜 · 最终合成结果")):FString::Printf(TEXT("次日破晓 · 第 %d 天的合成结果"),R->Day),23)];
-  Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(R->Customer+TEXT(" · 结局与世界余波"),13)];
+  Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(R->Customer+TEXT(" · 结果与推演"),13)];
   auto Scores=SNew(SVerticalBox);
-  Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("偏离与药性"),18)];
-  Scores->AddSlot().AutoHeight().Padding(0,16)[BrewUI::Text(FString::Printf(TEXT("目标　火 %d　风 %d　水 %d\n成品　火 %d　风 %d　水 %d\n\n总剂量　%.0f / 24\n灵验　%.2f\n偏离　%.2f\n方向吻合　%.1f%%\n剂量比　%.0f%%\n\n%s\n\n%s"),E.Target.Fire,E.Target.Wind,E.Target.Water,E.Actual.Fire,E.Actual.Wind,E.Actual.Water,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.Cosine*100,E.DoseRatio*100,*E.Verdict,*E.Reason),13)];
+  Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("这份药做得怎么样"),18)];
+  Scores->AddSlot().AutoHeight().Padding(0,8,0,4)[BrewUI::Text(E.Verdict,17)];
+  Scores->AddSlot().AutoHeight().Padding(0,0,0,18)[BrewUI::Text(BrewUI::VerdictExplanation(E),13)];
+  Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("标准与成品"),18)];
+  Scores->AddSlot().AutoHeight().Padding(0,5,0,14)[BrewUI::Text(TEXT("标准是委托真正需要的效果，成品是这锅药实际留下的效果。数字表示元素作用的强度，不是用了几件物品。"),12)];
+  auto AddElement=[&Scores](const TCHAR* Name,int32 Target,int32 Actual)
+  {
+   auto Row=SNew(SVerticalBox);
+   Row->AddSlot().AutoHeight()[BrewUI::Text(Name,16)];
+   Row->AddSlot().AutoHeight().Padding(0,5)[BrewUI::Text(FString::Printf(TEXT("标准：%s    成品：%s"),*BrewUI::Amount(Target),*BrewUI::Amount(Actual)),13)];
+   Row->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("相差 %d 点。%s"),FMath::Abs(Target-Actual),*BrewUI::Difference(Name,Target,Actual)),12)];
+   Scores->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(ForestTheme::InsetPaper).Padding(12)[Row]];
+  };
+  AddElement(TEXT("火"),E.Target.Fire,E.Actual.Fire);
+  AddElement(TEXT("风"),E.Target.Wind,E.Actual.Wind);
+  AddElement(TEXT("水"),E.Target.Water,E.Actual.Water);
+  FString Need;
   FAlchemyCommissionDefinition ResolvedCommission;
   if(auto* GI=GetWorld()->GetGameInstance())if(auto* Gameplay=GI->GetSubsystem<UAlchemyGameplaySubsystem>();Gameplay && Gameplay->GetCommission(R->CommissionId,ResolvedCommission))
   {
    const bool SameTarget=E.Target.Fire==ResolvedCommission.Target.Fire && E.Target.Wind==ResolvedCommission.Target.Wind && E.Target.Water==ResolvedCommission.Target.Water;
-   const FString Need=SameTarget?AlchemyDialogueKnowledge::Reveal(ResolvedCommission):FString();
-   if(!Need.IsEmpty())Scores->AddSlot().AutoHeight().Padding(0,20)[BrewUI::Text(TEXT("这份委托原本需要什么\n\n")+Need,16)];
+   if(SameTarget)Need=AlchemyDialogueKnowledge::Reveal(ResolvedCommission);
   }
+  Scores->AddSlot().AutoHeight().Padding(0,16,0,8)[BrewUI::Text(TEXT("为什么需要这些效果"),18)];
+  Scores->AddSlot().AutoHeight().Padding(0,0,0,16)[BrewUI::Text(Need.IsEmpty()?TEXT("这份委托的完整解释暂时无法读取；上方数值仍是封瓶时保存的结果。") : Need,14)];
+  Scores->AddSlot().AutoHeight().Padding(0,12,0,8)[BrewUI::Button(bShowSettlementDetails?TEXT("收起判定详情"):TEXT("查看判定详情"),FOnClicked::CreateLambda([this](){bShowSettlementDetails=!bShowSettlementDetails;Refresh();return FReply::Handled();}))];
+  if(bShowSettlementDetails)Scores->AddSlot().AutoHeight().Padding(0,0,0,12)
+   [BrewUI::Text(FString::Printf(TEXT("判定依据：%s\n\n元素作用总量 %.0f / 24\n灵验度 %.2f · 非目标方向偏离 %.2f\n方向吻合 %.1f%% · 剂量比 %.0f%%"),*E.Reason,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.Cosine*100,E.DoseRatio*100),12)];
   auto Story=SNew(SVerticalBox);
   Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 使用现场与森林余波"),18)];
   Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(A->bNarrativePending?TEXT("正在依据本次成品推演……"):R->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
@@ -69,8 +118,8 @@ void UForestBrewWidget::Refresh()
   if(bCompact)Body->AddSlot().FillHeight(1)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)
    +SScrollBox::Slot()[Scores]+SScrollBox::Slot().Padding(0,22,0,0)[Story]];
   else Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().FillWidth(.34f).Padding(0,0,32,0)[SNew(SScrollBox)+SScrollBox::Slot()[Scores]]
-   +SHorizontalBox::Slot().FillWidth(.66f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
+   +SHorizontalBox::Slot().FillWidth(.48f).Padding(0,0,24,0)[SNew(SScrollBox)+SScrollBox::Slot()[Scores]]
+   +SHorizontalBox::Slot().FillWidth(.52f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
   Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
   Body->AddSlot().AutoHeight()[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
    [BrewUI::Button(!A->IsDayResolved(R->Day)?TEXT("记下结果 · 继续今日委托"):R->Day==3?TEXT("完成今日委托 · 查看结局"):TEXT("今日委托已结算 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
