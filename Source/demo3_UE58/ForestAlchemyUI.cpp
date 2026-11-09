@@ -107,8 +107,8 @@ void UForestBrewWidget::Refresh()
   const FString Titles[]={TEXT("1 / 4 · 先想清楚为谁调药"),TEXT("2 / 4 · 用元素小物凑出药性"),TEXT("3 / 4 · 用日运牌改变药性"),TEXT("4 / 4 · 检查后，再封瓶交付")};
   const FString Copy[]={
    TEXT("先选已接取的委托对象。回想白天对话里提到的用途：需要热量、气流还是水分？需要多强？元素图鉴说明各个档位能做到什么，委托的标准值要等交付后才揭示。切换委托会清空本次选料。"),
-   TEXT("点击背包中的元素小物，依次放入槽位。物品名字不同，也可以贡献相同的点数：两件火3，在没有其他变换时会合成火6。火、风、水分别相加；不是把所有数字加成同一种元素。下方「当前试配」显示这套排列实际留下的药性。选料、移除都不会扣物品。"),
-   TEXT("白天从药瓶抽到的「日运」牌，是今天可借用的调药手法。元素小物决定药里有什么，牌改变它们怎样起作用。把两者按顺序放进槽位：火3 → 皇帝 → 火1得到火7；换成火3 → 火1 → 皇帝就得到火8。位置不同，结果也可能不同。有合适的元素时，可以不放大牌。想用牌就先翻魔法书看用法；大牌与通用修饰每份配方合计最多花5点额度。"),
+   TEXT("先从背包中选元素小物，放进槽位。它们提供火、风、水：两件火3，在没有其他变换时合成火6。下方「当前试配」会显示锅里的结果。选料、移除都不会扣物品；放好后再决定要不要加入日运牌。"),
+   TEXT("如果想使用日运牌，从「今日大牌」栏选一张放入。注意放牌顺序：有些牌只影响放牌前加入的元素。先点「查阅今日大牌」看这张牌的具体作用，再决定放在哪里。也可以不放牌。"),
    TEXT("查看当前试配，判断它是否符合客人描述的用途。正数表示给予，负数表示取走；0表示不额外改变这一种性质。三种元素的绝对值合计超过24会使药剂报废。第一次点「封瓶交付」只弹出确认提示，第二次确认才消耗槽内物品与大牌。之后揭示标准、成品和偏离，并显示推演；前两夜确认结算后换天，第三夜进入结局。")};
   GuidePage=FMath::Clamp(GuidePage,0,3);
   Guide->AddSlot().AutoHeight().Padding(0,12,0,8)[BrewUI::Text(Titles[GuidePage],15)];
@@ -173,7 +173,7 @@ void UForestBrewWidget::Refresh()
  }
  if(!HasPips)Materials->AddSlot().AutoHeight()[BrewUI::Text(TEXT("背包中还没有可用于炼药的元素小物。"))];
  if(!HasMajors)Majors->AddSlot().AutoHeight()[BrewUI::Text(A->GetMaxDailyDraws()>0 && A->GetTodayDrawCount()>=A->GetMaxDailyDraws()?TEXT("今天的日运牌已用在药里，抽取次数不会补回。"):
-  TEXT("还没有可用的日运牌。小屋工作台的药瓶里每天会显出不同的调药手法；靠近药瓶按 E 抽取。"))];
+  TEXT("还没有可用的日运牌。靠近小屋工作台的药瓶按 E 抽取；抽到后在这里选择。"))];
  Majors->AddSlot().AutoHeight().Padding(0,14,0,8)[BrewUI::Text(TEXT("通用修饰"),14)];
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];

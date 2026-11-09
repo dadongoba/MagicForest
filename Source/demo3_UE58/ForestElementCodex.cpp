@@ -225,7 +225,7 @@ void UForestElementCodexWidget::Refresh()
    const int32 Drawn=Alchemy?Alchemy->GetTodayDrawCount():0,Limit=Alchemy?Alchemy->GetMaxDailyDraws():3;
    const FString Empty=Alchemy && Alchemy->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
     Limit>0 && Drawn>=Limit?TEXT("今天的日运牌已经用在药里，抽取次数不会补回。"):
-    FString::Printf(TEXT("小屋药瓶里每天会显出不同的日运牌，供当天调药使用。今天已抽 %d/%d 张；靠近工作台药瓶按 E 抽取。"),Drawn,Limit);
+    FString::Printf(TEXT("工作台药瓶能抽出今天的日运牌。夜里合成时，它可以改变火、风、水的效果。靠近药瓶按 E 抽取；今天已抽 %d/%d 张。"),Drawn,Limit);
    Detail->AddSlot().AutoHeight().Padding(0,18)[ElementBook::Text(Empty,20)];
   }
  }

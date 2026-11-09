@@ -8,6 +8,8 @@
 #include "ForestUITheme.h"
 #include "ForestAlchemy.h"
 #include "ForestMajorArt.h"
+#include "ForestAlchemyGuide.h"
+#include "AlchemyGameplaySubsystem.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "DailyMushroomSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
@@ -298,7 +300,7 @@ void UForestMagicInventoryWidget::Refresh()
    const int32 Drawn=A?A->GetTodayDrawCount():0,Limit=A?A->GetMaxDailyDraws():3;
    Detail->SetText(FText::FromString(A && A->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
     Limit>0 && Drawn>=Limit?TEXT("今日大牌\n\n今天的日运牌已经用在药里，抽取次数不会补回。"):
-    FString::Printf(TEXT("今日大牌\n\n小屋药瓶里每天会显出不同的日运牌。它们是今天可借用的调药手法：白天采集元素、听清委托，夜里回小屋决定怎么用牌。已抽 %d/%d 张；靠近药瓶按 E 抽取。"),Drawn,Limit)));
+    FString::Printf(TEXT("今日大牌\n\n工作台药瓶能抽出今天的日运牌。晚上合成时，它可以改变火、风、水的效果。靠近药瓶按 E 抽取。今天已抽 %d/%d 张。"),Drawn,Limit)));
   }
   else if(!Cards.ContainsByPredicate([this](const auto& C){return C.InstanceId==SelectedMajor;}))SelectMajor(Cards[0].InstanceId);else SelectMajor(SelectedMajor);
   return;
@@ -333,7 +335,7 @@ void UForestMagicInventoryWidget::Refresh()
 void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
 {
  SelectedMajor=Id;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
- for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D))Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n今日大牌 · 第%d天\n额度开销：%d\n\n%s\n\n只在今日可用；放入夜间合成台后按顺序生效。"),*D.Id.ToString(),*D.Name,C.Day,D.Cost,*D.Description)));return;}
+ for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D)){FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* Gameplay=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;const FString Effect=ForestAlchemyGuide::Major(Gameplay,D.Id,Guide)?Guide.HowToUse:D.Description;Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n今日大牌 · 第%d天\n\n这张牌的作用：%s\n\n今晚合成时，从「今日大牌」栏选它放入一份委托。每张牌使用一次，今天结束后没用的牌也会消失。\n\n今日已抽 %d/%d 张 · 此牌占1个槽位、花%d点额度"),*D.Id.ToString(),*D.Name,C.Day,*Effect,A->GetTodayDrawCount(),A->GetMaxDailyDraws(),D.Cost)));}return;}
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
 {
