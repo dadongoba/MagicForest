@@ -3,6 +3,7 @@
 #include "ForestHarvestMagic.h"
 #include "ForestAlchemy.h"
 #include "ForestAlchemyGuide.h"
+#include "ForestMajorArt.h"
 #include "AlchemyGameplaySubsystem.h"
 #include "Engine/GameInstance.h"
 #include "ForestNPCInteraction.h"
@@ -205,6 +206,11 @@ void UForestElementCodexWidget::Refresh()
   {
    Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(D->Id.ToString()+TEXT(" · ")+D->Name,25,true)];
    Detail->AddSlot().AutoHeight().Padding(0,0,0,18)[ElementBook::Text(FString::Printf(TEXT("今日持有 %d 张 · 每张占1槽、花%d点额度"),A->DailyCount(D->Id),D->Cost),18)];
+   // The complete printed card remains visible while the explanation is read.
+   // The source art is 142×512; preserve that tall proportion on the page.
+   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D->Id))
+    Detail->AddSlot().AutoHeight().Padding(0,0,0,18)
+     [SNew(SBox).WidthOverride(112).HeightOverride(404).HAlign(HAlign_Left)[SNew(SImage).Image(Art)]];
    FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
    if(ForestAlchemyGuide::Major(G,D->Id,Guide))
    {
@@ -214,7 +220,14 @@ void UForestElementCodexWidget::Refresh()
    }
    else Detail->AddSlot().AutoHeight()[ElementBook::Text(TEXT("详细书页暂时无法读取。原有运算说明：\n")+D->Description,19)];
   }
-  else Detail->AddSlot().AutoHeight().Padding(0,18)[ElementBook::Text(TEXT("今天还没有可查阅的大牌。\n\n白天在小屋拿起药瓶，即可获得今日大牌；拿到后，这里会记下它们的用法。已经交付消耗的牌不会列在今日持有中。"),20)];
+  else
+  {
+   const int32 Drawn=Alchemy?Alchemy->GetTodayDrawCount():0,Limit=Alchemy?Alchemy->GetMaxDailyDraws():3;
+   const FString Empty=Alchemy && Alchemy->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
+    Limit>0 && Drawn>=Limit?TEXT("今天抽到的大牌已经用完。已使用的牌不会补回抽取次数，进入下一天才会重新抽取。"):
+    FString::Printf(TEXT("今天已抽 %d/%d 张。回小屋从工作台药瓶中抽取；牌会留在这里供查阅，进入下一天后失效。"),Drawn,Limit);
+   Detail->AddSlot().AutoHeight().Padding(0,18)[ElementBook::Text(Empty,20)];
+  }
  }
  else
  {

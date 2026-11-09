@@ -2,6 +2,16 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-09-01：抽牌和已存日运显示大牌图，限制每日三张
+
+- **目标 / 基线 / 前置**：基于 `864d82f41e3e87557bedc79912586f06a8d86557`、前批 2026-11-08-04；把前批 22 张牌图接入当日抽取、存档后的背包与魔法书，以及合成台。本批不改大牌种类/计算、九份委托、NPC、地图或评分。
+- **新增资源 / 源码**：`Content/UI/Textures/MajorArcana/Major_*.png` 共 22 张；`Source/demo3_UE58/ForestMajorArt.h/.cpp`、`ForestMajorDrawWidget.h/.cpp`。图片来自前批 `ArtSource/ThothMajorArcana/Cards/`，CardId 对照既有清单。
+- **修改配置 / 源码**：`Config/DefaultForestAlchemy.ini`；`Source/demo3_UE58/ForestAlchemy.h/.cpp`、`ForestAlchemyUI.cpp`、`ForestElementCodex.cpp`、`ForestHarvestMagic.cpp`、`demo3_UE58.Build.cs`。每日最多抽 3 张、只认已绑定的工作台瓶、当日不重复、使用不补次数、换天失效；抽牌保存成功后弹牌图，B/J/合成台显示已持有牌图。构建规则分发运行时 PNG。
+- **文档**：新增[接入说明](Docs/Major_Arcana_Draw_Integration_2026-11-09.md)；修改 `ArtSource/ThothMajorArcana/README.md`、根 `README.md` 与本记录。前批“只备切图、尚未接游戏”的状态为当时记录，当前接入方式以本批为准。
+- **应用 / 依赖**：在匹配的完整 Air 工程按相同相对路径合并上述 Content/、Source/ 与配置，重新编译重启。牌图是文件图片，不是 `.uasset`；需要与 Build.cs 的 NonUFS 分发设置一起保留。增量仓库既有 `ForestHarvestMagic.cpp` HUD 布局差异已保留，只合入本批牌图部分；未带地图、第三方素材、存档、缓存、编译产物或凭据。
+- **本次验证**：完整 Air 工程 UE 5.8 Mac arm64 编辑器模块源码编译链接通过；22/22 PNG 与源切图的字节、哈希、尺寸和 CardId 映射核对通过；Git 差异检查与秘密文本扫描通过。未打开 UE/PIE；真实画面、抽牌交互、存档重启、窗口自适应、Windows 和打包分发尚未实测。
+- **上传状态**：待本批功能文件与记录一同提交推送，并核对远端 SHA。
+
 ## 2026-11-08-04：核对大牌 PNG 资源上传
 
 - **基线 / 文件 / 类型**：基于资源提交a04d2c3e7728460adc820e7190dfa4e7e12f474b、前批03；只修改CHANGELOG.md补记远端状态，无牌图、映射、引擎资源或应用方式变化。

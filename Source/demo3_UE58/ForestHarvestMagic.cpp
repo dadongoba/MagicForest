@@ -7,6 +7,7 @@
 #include "ForestNPCInteraction.h"
 #include "ForestUITheme.h"
 #include "ForestAlchemy.h"
+#include "ForestMajorArt.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "DailyMushroomSubsystem.h"
 #include "DialogueAIServiceSubsystem.h"
@@ -95,6 +96,14 @@ namespace HarvestMagic
  using ForestTheme::Edge;using ForestTheme::Ink;using ForestTheme::Muted;using ForestTheme::Moss;
  using ForestTheme::Fire;using ForestTheme::Wind;using ForestTheme::Water;
  using ForestTheme::Font;using ForestTheme::Fill;
+
+ const FSlateBrush* DailyArt(UWorld* World,const FString& InstanceId)
+ {
+  const auto* Alchemy=World?World->GetSubsystem<UForestAlchemy>():nullptr;
+  if(Alchemy)for(const auto& Card:Alchemy->GetTodayMajors())
+   if(Card.InstanceId==InstanceId)return ForestMajorArt::BrushFor(Card.CardId);
+  return nullptr;
+ }
 
 }
 void UForestHarvestRequest::Completed(bool Success,const FString& Text){if(Owner.IsValid())Owner->HandleResponse(this,Success,Text);}
@@ -233,7 +242,7 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,4,42,0))
       [SNew(SHorizontalBox)
        +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
-       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日大牌 · 第%d天（%d）"),A?A->GetDay():1,A?A->GetTodayMajors().Num():0));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
+       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日大牌 · 可用%d张 · 已抽%d/%d"),A?A->GetTodayMajors().Num():0,A?A->GetTodayDrawCount():0,A?A->GetMaxDailyDraws():3));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
      +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(42,12,42,4))
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(.59f).Padding(0,0,12,0)
@@ -241,9 +250,17 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
        [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(List,SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,8))]]]
       +SHorizontalBox::Slot().FillWidth(.41f).Padding(12,0,0,0)
       [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(20,12))
-       [SNew(SVerticalBox)
+       [SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
         +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("物品记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
-        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]]
+        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)
+         [SNew(SBox).WidthOverride(100).HeightOverride(360).HAlign(HAlign_Left)
+          .Visibility_Lambda([this](){return bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
+          [SNew(SOverlay)
+           +SOverlay::Slot()[SNew(SImage).Image_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor);})]
+           +SOverlay::Slot().VAlign(VAlign_Center)
+            [SNew(STextBlock).Text(FText::FromString(TEXT("牌图暂不可用"))).Font(HarvestMagic::Font(12)).AutoWrapText(true)
+             .Visibility_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor)?EVisibility::Collapsed:EVisibility::HitTestInvisible;})]]]
+        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]]]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,0,42,35))
      [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(12,8))
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
@@ -259,15 +276,30 @@ void UForestMagicInventoryWidget::Refresh()
  {
   auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();const auto Cards=A?A->GetTodayMajors():TArray<FForestDailyMajor>();
   for(const auto& C:Cards){FAlchemyCardDefinition D;if(!A->GetMajorDefinition(C.CardId,D))continue;
-   List->AddSlot()[SNew(SBox).WidthOverride(110).HeightOverride(156)
+   auto ArtView=SNew(SOverlay);
+   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D.Id))
+    ArtView->AddSlot()[SNew(SBox).WidthOverride(40).HeightOverride(144)[SNew(SImage).Image(Art)]];
+   else ArtView->AddSlot()[SNew(SBox).WidthOverride(40).HeightOverride(144)
+    [SNew(STextBlock).Text(FText::FromString(TEXT("牌图暂不可用"))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted).AutoWrapText(true)]];
+   List->AddSlot()[SNew(SBox).WidthOverride(178).HeightOverride(170)
     [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity_Lambda([this,C](){return SelectedMajor==C.InstanceId?ForestTheme::SelectedPaper:FLinearColor::White;})
      .OnClicked_Lambda([this,C](){SelectMajor(C.InstanceId);return FReply::Handled();})
-     [SNew(SVerticalBox)
-      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromName(D.Id)).Font(HarvestMagic::Font(24)).ColorAndOpacity(HarvestMagic::Moss)]
-      +SVerticalBox::Slot().FillHeight(1).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(D.Name+TEXT("\n")+D.ShortExpression)).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true).Justification(ETextJustify::Center)]
-      +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("额度 %d"),D.Cost))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted)]]]];
+     [SNew(SHorizontalBox)
+      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)[ArtView]
+      +SHorizontalBox::Slot().FillWidth(1)
+       [SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromName(D.Id)).Font(HarvestMagic::Font(18)).ColorAndOpacity(HarvestMagic::Moss)]
+        +SVerticalBox::Slot().FillHeight(1).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(D.Name+TEXT("\n")+D.ShortExpression)).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("额度 %d"),D.Cost))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted)]]]]];
   }
-  if(Cards.IsEmpty())Detail->SetText(FText::FromString(TEXT("今日大牌\n\n拿起小屋里的药瓶，每瓶每天可抽取一张大牌。\n大牌只在当天可用，夜间放入合成台改变元素药性。")));
+  if(Cards.IsEmpty())
+  {
+   SelectedMajor.Reset();
+   const int32 Drawn=A?A->GetTodayDrawCount():0,Limit=A?A->GetMaxDailyDraws():3;
+   Detail->SetText(FText::FromString(A && A->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
+    Limit>0 && Drawn>=Limit?TEXT("今日大牌\n\n今天抽到的大牌已经用完。抽取次数不会因使用而补回；进入下一天后，工作台的药瓶会重新可用。"):
+    FString::Printf(TEXT("今日大牌\n\n已抽 %d/%d 张。回小屋从工作台药瓶中继续抽取；大牌供今天三份委托共用，进入下一天后失效。"),Drawn,Limit)));
+  }
   else if(!Cards.ContainsByPredicate([this](const auto& C){return C.InstanceId==SelectedMajor;}))SelectMajor(Cards[0].InstanceId);else SelectMajor(SelectedMajor);
   return;
  }

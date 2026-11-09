@@ -4,6 +4,7 @@
 #include "Widgets/Images/SImage.h"
 #include "ForestUITheme.h"
 #include "ForestAlchemyGuide.h"
+#include "ForestMajorArt.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
@@ -130,10 +131,16 @@ void UForestBrewWidget::Refresh()
  for(int32 I=0;I<(HasCommission?Comm.SlotCount:3);++I)
  {
   const bool Occupied=A->Sequence.IsValidIndex(I);const FString Label=Occupied?FString::Printf(TEXT("%d\n%s\n%s\n额度 %d"),I+1,*A->Sequence[I].Name,*A->Sequence[I].Description,A->Sequence[I].Card.Cost):FString::Printf(TEXT("%d\n空槽"),I+1);
+  auto SlotContents=SNew(SHorizontalBox);
+  if(Occupied && A->Sequence[I].Card.Type!=EAlchemyCardType::Pip)
+   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(A->Sequence[I].Card.CardId))
+    SlotContents->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,6,0)
+     [SNew(SBox).WidthOverride(27).HeightOverride(96)[SNew(SImage).Image(Art)]];
+  SlotContents->AddSlot().FillWidth(1)[SNew(SScrollBox)+SScrollBox::Slot()[BrewUI::Text(Label,10)]];
   Slots->AddSlot().AutoWidth().Padding(0,0,8,0)[SNew(SBox).WidthOverride(154).HeightOverride(132)
    [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity(A->SelectedSlot==I?ForestTheme::SelectedPaper:FLinearColor::White)
     .OnClicked_Lambda([this,I](){if(Owner.IsValid()){Owner->SelectedSlot=I;Owner->RefreshUI();}return FReply::Handled();})
-    [SNew(SScrollBox)+SScrollBox::Slot()[BrewUI::Text(Label,10)]]]];
+    [SlotContents]]];
  }
  Draft->AddSlot().AutoHeight().Padding(0,8)[SNew(SBox).HeightOverride(150)[SNew(SScrollBox).Orientation(Orient_Horizontal)+SScrollBox::Slot()[Slots]]];
  auto Tools=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(6,6));
@@ -143,7 +150,7 @@ void UForestBrewWidget::Refresh()
  Tools->AddSlot()[BrewUI::Button(TEXT("清空"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ClearSequence();return FReply::Handled();}))];Draft->AddSlot().AutoHeight()[Tools];
  auto Materials=SNew(SVerticalBox);auto Majors=SNew(SVerticalBox);auto Result=SNew(SVerticalBox);
  Materials->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("元素小物 · 来自背包"),16)];
- Majors->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(TEXT("今日大牌 · 来自药瓶"),16)];
+ Majors->AddSlot().AutoHeight().Padding(0,0,0,8)[BrewUI::Text(FString::Printf(TEXT("今日大牌 · 可用%d张 · 已抽%d/%d"),A->GetTodayMajors().Num(),A->GetTodayDrawCount(),A->GetMaxDailyDraws()),16)];
  Majors->AddSlot().AutoHeight().Padding(0,0,0,10)[BrewUI::Button(TEXT("翻书 · 查看今日大牌用法"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->OpenMajorGuide();return FReply::Handled();}))];
  const auto Choices=A->Choices();bool HasPips=false,HasMajors=false;
  for(const auto& C:Choices)
@@ -154,10 +161,19 @@ void UForestBrewWidget::Refresh()
    [SNew(SHorizontalBox)+SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)
     [SNew(SBox).WidthOverride(40).HeightOverride(40)[SNew(SImage).Image(ForestTheme::ElementIcon(C.Card.Element==EAlchemyElement::Fire?0:C.Card.Element==EAlchemyElement::Water?2:1))]]
     +SHorizontalBox::Slot().FillWidth(1)[ChoiceButton]];
-  else Majors->AddSlot().AutoHeight().Padding(0,0,0,7)[ChoiceButton];
+  else
+  {
+   auto MajorRow=SNew(SHorizontalBox);
+   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(C.Card.CardId))
+    MajorRow->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)
+     [SNew(SBox).WidthOverride(28).HeightOverride(100)[SNew(SImage).Image(Art)]];
+   MajorRow->AddSlot().FillWidth(1)[ChoiceButton];
+   Majors->AddSlot().AutoHeight().Padding(0,0,0,7)[MajorRow];
+  }
  }
  if(!HasPips)Materials->AddSlot().AutoHeight()[BrewUI::Text(TEXT("背包中还没有可用于炼药的元素小物。"))];
- if(!HasMajors)Majors->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今日还没有大牌。白天拿起小屋药瓶即可抽取。"))];
+ if(!HasMajors)Majors->AddSlot().AutoHeight()[BrewUI::Text(A->GetMaxDailyDraws()>0 && A->GetTodayDrawCount()>=A->GetMaxDailyDraws()?TEXT("今天抽到的大牌已用完；抽取次数不会补回。"):
+  TEXT("今天还没有可用大牌。回小屋从工作台药瓶中抽取。"))];
  Majors->AddSlot().AutoHeight().Padding(0,14,0,8)[BrewUI::Text(TEXT("通用修饰"),14)];
  for(const auto& C:Choices)if(C.Key.StartsWith(TEXT("court:")))Majors->AddSlot().AutoHeight().Padding(0,0,0,5)[BrewUI::Button(C.Name+FString::Printf(TEXT(" · 额度%d\n%s"),C.Card.Cost,*C.Description),FOnClicked::CreateLambda([this,C](){if(Owner.IsValid())Owner->AddChoice(C);return FReply::Handled();}))];
  Result->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今晚的委托"),16)];

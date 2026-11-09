@@ -5,17 +5,17 @@
 #include "Blueprint/UserWidget.h"
 #include "AlchemyGameplayTypes.h"
 #include "ForestAlchemy.generated.h"
-class UInputComponent;class APlayerController;class UStaticMeshComponent;class UForestAlchemy;
+class UInputComponent;class APlayerController;class UStaticMeshComponent;class UForestAlchemy;class UForestMajorDrawWidget;
 struct FForestMagicItem;
 class STextBlock;class SVerticalBox;class SBox;class SBorder;
 
-/** Future restrictions are data, not an LLM decision. Empty allowlists mean unrestricted. */
+/** Future restrictions are data, not an LLM decision. Empty allowlists accept any major and any of the seven bound workbench bottles. */
 UCLASS(Config=ForestAlchemy,DefaultConfig)
 class DEMO3_UE58_API UForestAlchemyRules : public UObject
 {
  GENERATED_BODY()
 public:
- UPROPERTY(Config,EditAnywhere,Category="Daily draw") int32 MaxDailyDraws=0;
+ UPROPERTY(Config,EditAnywhere,Category="Daily draw") int32 MaxDailyDraws=3;
  UPROPERTY(Config,EditAnywhere,Category="Daily draw") TArray<FName> AllowedMajorIds;
  UPROPERTY(Config,EditAnywhere,Category="Daily draw") TArray<FName> RequiredBottleTags;
  UPROPERTY(Config,EditAnywhere,Category="Daily draw") float InteractionDistance=280;
@@ -113,6 +113,8 @@ public:
  virtual TStatId GetStatId() const override;
  virtual bool IsTickableInEditor() const override{return false;}
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") TArray<FForestDailyMajor> GetTodayMajors() const;
+ UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetTodayDrawCount() const;
+ UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetMaxDailyDraws() const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") bool GetMajorDefinition(FName Id,FAlchemyCardDefinition& Out) const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetDay() const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Brews") TArray<FForestBrewRecord> GetBrewRecords() const;
@@ -123,6 +125,7 @@ public:
  void ExitJourney();
  bool IsWorkbenchOpen() const;
  void OpenMajorGuide();
+ void CloseMajorDrawReveal();
  void ResumeWorkbenchGuide();
  bool IsWorkbenchGuideSuspended() const{return bGuideSuspended;}
  bool PreviewDraft(FAlchemyVector& Out,int32& Cost) const;
@@ -157,12 +160,13 @@ private:
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  UPROPERTY() TObjectPtr<UForestBrewWidget> Workbench;
  UPROPERTY() TObjectPtr<UForestArcanaNotice> Notice;
+ UPROPERTY() TObjectPtr<UForestMajorDrawWidget> DrawReveal;
  TWeakObjectPtr<APlayerController> Player;
  struct FBottle {TWeakObjectPtr<AActor> Actor;TWeakObjectPtr<UStaticMeshComponent> Mesh;FString Key;FTransform Home;bool bHidden=false,bCollision=true;};
  TArray<FBottle> Bottles;
  TArray<TWeakObjectPtr<AActor>> Cauldrons;
  TWeakObjectPtr<AActor> Focus;
- bool bReady=false,bNeedsCabinSpawn=true,bOldCursor=false;
+ bool bReady=false,bNeedsCabinSpawn=true,bOldCursor=false,bDrawOldCursor=false;
  bool bGuideSuspended=false;
  int32 CommissionId=0;
  float ScanTime=1,SpawnTime=0,ToastUntil=0;
@@ -170,6 +174,8 @@ private:
  float ConsequenceStarted=0;
  void GenerateConsequence();
  void Setup();bool Persist();bool SyncDay();void Discover();void StartInCabin();void Interact();
+ void OpenMajorDrawReveal(const FAlchemyCardDefinition& Card);
+ void ApplyBottleState(FBottle& Bottle,bool bClaimed);
  bool OtherMenuOpen() const;
  AActor* FindFocus() const;
  TMap<FString,int32> ReadBag() const;

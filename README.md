@@ -14,8 +14,8 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 
 | 目录 / 文件 | 用途 |
 |---|---|
-| `Content/` | 本次纳入的蓝图等二进制资产，保留工程相对路径 |
-| `ArtSource/` | 待导入 UE 的原始图像和切分后的 PNG；不是 `.uasset`，不会自动出现在游戏里 |
+| `Content/` | 本次纳入的蓝图等二进制资产，以及运行时直接读取的 UI PNG；保留工程相对路径 |
+| `ArtSource/` | 原图、切分源 PNG 与清单；不是 `.uasset`，不直接作为游戏运行时图片读取 |
 | `Config/` | 本次纳入的工程配置；应用时应审查差异 |
 | `Source/` | 首批模块参考文件，以及批次 2026-10-07-01 的 NPC 原生功能源码 |
 | `Plugins/` | 自批次 `2026-10-06-05` 起收录第三方插件源码（`DialogueMemoryTable`）；是否应用取决于该批记录 |
@@ -70,6 +70,10 @@ GitHub 仓库：[daddongoba/MagicForest](https://github.com/daddongoba/MagicFore
 ## NPC 轻量记忆（2026-11-08）
 
 当前版本将对话原文限制在内存窗口，长期保存有来源、有上限的小表；复用既有分析/复核，不再结束后另做整段总结。SchemaVersion 2的迁移取舍、旧补丁接口退役、外部记忆白名单和验证边界见[接入记录](Docs/NPC_Compact_Memory_2026-11-08.md)。
+
+## 今日大牌图片与抽取（2026-11-09）
+
+22 张大牌已作为运行时 PNG 接入。当天从小屋工作台药瓶最多抽 3 张；抽取时显示整张牌面，保存后可在 B 背包、J 魔法书及夜间合成台查看牌图。已使用的大牌不补回抽取次数，换天失效。完整工程需同步 `Content/UI/Textures/MajorArcana/`、相关源码和 `Config/DefaultForestAlchemy.ini`，再编译。使用与验证边界见[接入说明](Docs/Major_Arcana_Draw_Integration_2026-11-09.md)。
 
 ## NPC 对话与记忆（2026-10-07-03，历史实现）
 

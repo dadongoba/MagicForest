@@ -5,6 +5,7 @@
 #include "DialogueAIServiceSubsystem.h"
 #include "ForestNPCInteraction.h"
 #include "ForestIsometricPlayer.h"
+#include "ForestMajorDrawWidget.h"
 #include "AlchemyGameplaySubsystem.h"
 #include "DailyMushroomSubsystem.h"
 #include "AlchemyCampaignPolicy.h"
@@ -42,7 +43,9 @@ bool UForestAlchemy::IsCampaignCompleted() const
 }
 void UForestAlchemy::ExitJourney(){if(IsCampaignCompleted() && !PendingResult())UKismetSystemLibrary::QuitGame(this,Player.Get(),EQuitPreference::Quit,false);}
 bool UForestAlchemy::Persist(){return Save && UGameplayStatics::SaveGameToSlot(Save,TEXT("ForestDailyArcana"),0);}
-TArray<FForestDailyMajor> UForestAlchemy::GetTodayMajors() const{return Save && Save->Day==GetDay()?Save->Majors:TArray<FForestDailyMajor>();}
+TArray<FForestDailyMajor> UForestAlchemy::GetTodayMajors() const{return Save && !IsCampaignCompleted() && Save->Day==GetDay()?Save->Majors:TArray<FForestDailyMajor>();}
+int32 UForestAlchemy::GetTodayDrawCount() const{return Save && !IsCampaignCompleted() && Save->Day==GetDay()?Save->ClaimedBottles.Num():0;}
+int32 UForestAlchemy::GetMaxDailyDraws() const{return FMath::Max(0,GetDefault<UForestAlchemyRules>()->MaxDailyDraws);}
 TArray<FForestBrewRecord> UForestAlchemy::GetBrewRecords() const{return Save?Save->Brews:TArray<FForestBrewRecord>();}
 bool UForestAlchemy::GetMajorDefinition(FName Id,FAlchemyCardDefinition& Out) const
 {
@@ -83,22 +86,43 @@ bool UForestAlchemy::SyncDay()
 {
  if(IsCampaignCompleted())return true;
  if(!Save || Save->Day==GetDay())return true;
+ CloseMajorDrawReveal();
  const int32 OldDay=Save->Day,OldSeed=Save->Seed;const auto OldCards=Save->Majors;const auto OldClaims=Save->ClaimedBottles;
  Save->Day=GetDay();Save->Seed=static_cast<int32>(FCrc::StrCrc32(*FGuid::NewGuid().ToString()));Save->Majors.Reset();Save->ClaimedBottles.Reset();
  if(!Persist()){Save->Day=OldDay;Save->Seed=OldSeed;Save->Majors=OldCards;Save->ClaimedBottles=OldClaims;Tell(TEXT("今日大牌记录保存失败，暂不能抽取。"));return false;}
- for(auto& B:Bottles)if(auto* Actor=B.Actor.Get()){Actor->Tags.Remove(ForestAlchemy::Collected);Actor->SetActorHiddenInGame(B.bHidden);Actor->SetActorEnableCollision(B.bCollision);Actor->SetActorTransform(B.Home);}
+ for(auto& B:Bottles)ApplyBottleState(B,false);
  if(IsWorkbenchOpen())CloseWorkbench();CommissionId=0;bNeedsCabinSpawn=true;ClearSequence();return true;
 }
 void UForestAlchemy::Discover()
 {
+ auto* Mimic=GetWorld()->GetSubsystem<UPotionMimicWorldSubsystem>();
+ if(!Mimic)return;
  for(TActorIterator<AActor> It(GetWorld());It;++It)
  {
   AActor* Actor=*It;auto* Mesh=Actor->FindComponentByClass<UStaticMeshComponent>();
   if(ForestAlchemy::IsCauldron(Mesh)){Cauldrons.AddUnique(Actor);continue;}
   if(!ForestAlchemy::IsBottle(Mesh) || Bottles.ContainsByPredicate([Actor](const FBottle& B){return B.Actor.Get()==Actor;}))continue;
-  FBottle B;B.Actor=Actor;B.Mesh=Mesh;B.Key=ForestAlchemy::StableId(Actor);B.Home=Actor->GetActorTransform();if(auto* Mimic=GetWorld()->GetSubsystem<UPotionMimicWorldSubsystem>())Mimic->GetWorkbenchPotionHomeTransform(Actor,B.Home);B.bHidden=Actor->IsHidden();B.bCollision=Actor->GetActorEnableCollision();Bottles.Add(B);
-  if(Save && Save->ClaimedBottles.Contains(B.Key)){Actor->Tags.AddUnique(ForestAlchemy::Collected);Actor->SetActorHiddenInGame(true);Actor->SetActorEnableCollision(false);}
+  FTransform Home;if(!Mimic->GetWorkbenchPotionHomeTransform(Actor,Home))continue;
+  FBottle B;B.Actor=Actor;B.Mesh=Mesh;B.Key=ForestAlchemy::StableId(Actor);B.Home=Home;B.bHidden=Actor->IsHidden();B.bCollision=Actor->GetActorEnableCollision();Bottles.Add(B);
+  if(Save && !IsCampaignCompleted() && Save->Day==GetDay() && Save->ClaimedBottles.Contains(B.Key))ApplyBottleState(Bottles.Last(),true);
  }
+}
+void UForestAlchemy::ApplyBottleState(FBottle& Bottle,bool bClaimed)
+{
+ auto* Actor=Bottle.Actor.Get();if(!Actor)return;
+ auto* Mimic=GetWorld()->GetSubsystem<UPotionMimicWorldSubsystem>();
+ Actor->Tags.Remove(ForestAlchemy::Collected);
+ if(bClaimed)
+ {
+  // The mimic subsystem needs the actor visible and untagged to bring it home
+  // and show its existing dark, still-liquid inactive appearance.
+  if(Mimic && Mimic->SetWorkbenchPotionActorInactive(Actor,true))
+  {Actor->SetActorHiddenInGame(Bottle.bHidden);Actor->SetActorEnableCollision(Bottle.bCollision);return;}
+  // A broken binding must not leave an apparently active, already spent bottle.
+  Actor->Tags.AddUnique(ForestAlchemy::Collected);Actor->SetActorHiddenInGame(true);Actor->SetActorEnableCollision(false);return;
+ }
+ if(Mimic)Mimic->SetWorkbenchPotionActorInactive(Actor,false);
+ Actor->SetActorHiddenInGame(Bottle.bHidden);Actor->SetActorEnableCollision(Bottle.bCollision);Actor->SetActorTransform(Bottle.Home);
 }
 void UForestAlchemy::StartInCabin()
 {
@@ -111,10 +135,16 @@ void UForestAlchemy::StartInCabin()
  // Level instances may have generated package names. Only accept a start in the same indoor level as a cauldron.
  if(!Start)for(TActorIterator<APlayerStart> It(GetWorld());It;++It)for(auto& Weak:Cauldrons)if(auto* C=Weak.Get())if(It->GetLevel()==C->GetLevel() && FVector::DistSquared(It->GetActorLocation(),C->GetActorLocation())<FMath::Square(1200.f))Start=*It;
  if(!Start)return;const FRotator Facing(0,Start->GetActorRotation().Yaw,0);
- if(Pawn->TeleportTo(Start->GetActorLocation(),Facing,false,false)){PC->StopMovement();PC->SetControlRotation(Facing);bNeedsCabinSpawn=false;Tell(FString::Printf(TEXT("第 %d 天 · 在小屋醒来\n拿起药瓶可获得今日大牌，按 B 查看。"),GetDay()));}
+ if(Pawn->TeleportTo(Start->GetActorLocation(),Facing,false,false))
+ {
+  PC->StopMovement();PC->SetControlRotation(Facing);bNeedsCabinSpawn=false;
+  const FString Draws=GetMaxDailyDraws()>0?FString::Printf(TEXT("已抽 %d/%d"),GetTodayDrawCount(),GetMaxDailyDraws()):FString::Printf(TEXT("已抽 %d 张"),GetTodayDrawCount());
+  Tell(FString::Printf(TEXT("第 %d 天 · 在小屋醒来\n工作台的药瓶可抽今日大牌（%s）。三份委托共用，换天失效；按 B 查看。"),GetDay(),*Draws));
+ }
 }
 bool UForestAlchemy::OtherMenuOpen() const
 {
+ if(DrawReveal && DrawReveal->IsInViewport())return true;
  if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>();Book && Book->IsOpen())return true;
  if(auto* H=GetWorld()->GetSubsystem<UForestHarvestMagic>();H && H->IsInventoryOpen())return true;
  if(auto* M=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(GetWorld(),AForestNPCInteraction::StaticClass()));M && (M->IsDialogueOpen() || M->IsFinderMenuOpen()))return true;
@@ -137,20 +167,54 @@ AActor* UForestAlchemy::FindFocus() const
   if(GetWorld()->LineTraceSingleByChannel(Hit,Eye,Mesh->Bounds.Origin,ECC_Visibility,Params))return;
   Best=Actor;BestDistance=Distance;
  };
- for(const auto& B:Bottles)Consider(B.Actor.Get(),B.Mesh.Get());for(const auto& C:Cauldrons)if(C.IsValid())Consider(C.Get(),C->FindComponentByClass<UStaticMeshComponent>());return Best;
+ const bool bAtLimit=GetMaxDailyDraws()>0 && GetTodayDrawCount()>=GetMaxDailyDraws();
+ if(bAtLimit)for(const auto& C:Cauldrons)if(C.IsValid())Consider(C.Get(),C->FindComponentByClass<UStaticMeshComponent>());
+ if(!bAtLimit || !Best)for(const auto& B:Bottles)if(!Save || !Save->ClaimedBottles.Contains(B.Key))Consider(B.Actor.Get(),B.Mesh.Get());
+ if(!bAtLimit)for(const auto& C:Cauldrons)if(C.IsValid())Consider(C.Get(),C->FindComponentByClass<UStaticMeshComponent>());
+ return Best;
 }
-void UForestAlchemy::Interact(){AActor* Actor=FindFocus();if(!Actor)return;if(ForestAlchemy::IsBottle(Actor->FindComponentByClass<UStaticMeshComponent>()))TakeBottle(Actor);else OpenWorkbench();}
+void UForestAlchemy::Interact(){AActor* Actor=FindFocus();if(!Actor)return;if(ForestAlchemy::IsBottle(Actor->FindComponentByClass<UStaticMeshComponent>())){if(GetMaxDailyDraws()==0 || GetTodayDrawCount()<GetMaxDailyDraws())TakeBottle(Actor);}else OpenWorkbench();}
 bool UForestAlchemy::TakeBottle(AActor* Actor)
 {
  if(IsCampaignCompleted() || !Save || PendingResult() || !SyncDay() || FindFocus()!=Actor)return false;auto* B=Bottles.FindByPredicate([Actor](const FBottle& Row){return Row.Actor.Get()==Actor;});if(!B || Save->ClaimedBottles.Contains(B->Key))return false;
- const auto* Rules=GetDefault<UForestAlchemyRules>();if(Rules->MaxDailyDraws>0 && Save->ClaimedBottles.Num()>=Rules->MaxDailyDraws){Tell(TEXT("今天可抽取的大牌已达到配置上限。"));return false;}
+ const auto* Rules=GetDefault<UForestAlchemyRules>();if(GetMaxDailyDraws()>0 && GetTodayDrawCount()>=GetMaxDailyDraws()){Tell(FString::Printf(TEXT("今天的日运已抽完（%d/%d）。按 B 查看已持有的大牌。"),GetTodayDrawCount(),GetMaxDailyDraws()));return false;}
  for(const FName Tag:Rules->RequiredBottleTags)if(!Actor->ActorHasTag(Tag)){Tell(TEXT("这瓶药剂尚不符合抽牌条件。"));return false;}
- auto Pool=GetWorld()->GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>()->GetMajorCards();if(!Rules->AllowedMajorIds.IsEmpty())Pool.RemoveAll([Rules](const auto& Card){return !Rules->AllowedMajorIds.Contains(Card.Id);});if(Pool.IsEmpty()){Tell(TEXT("当前没有配置可抽取的大牌。"));return false;}
+ auto* Gameplay=GetWorld()->GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>();if(!Gameplay)return false;
+ auto Pool=Gameplay->GetMajorCards();if(!Rules->AllowedMajorIds.IsEmpty())Pool.RemoveAll([Rules](const auto& Card){return !Rules->AllowedMajorIds.Contains(Card.Id);});if(Pool.IsEmpty()){Tell(TEXT("当前没有配置可抽取的大牌。"));return false;}
+ // Spent majors leave Majors during brewing; receipt sequences still remember
+ // which identities were drawn today, so the remaining pool stays unique.
+ Pool.RemoveAll([this](const auto& Card)
+ {
+  if(Save->Majors.ContainsByPredicate([&Card](const auto& Held){return Held.CardId==Card.Id;}))return true;
+  for(const auto& Brew:Save->Brews)if(Brew.Day==GetDay() && Brew.Sequence.ContainsByPredicate([&Card](const auto& Used){return Used.CardId==Card.Id && Used.Type==Card.Type;}))return true;
+  return false;
+ });
+ if(Pool.IsEmpty()){Tell(TEXT("今天可抽取的大牌都已出现。"));return false;}
  FRandomStream RNG(static_cast<int32>(HashCombine(static_cast<uint32>(Save->Seed),FCrc::StrCrc32(*B->Key))));const auto Card=Pool[RNG.RandRange(0,Pool.Num()-1)];
  FForestDailyMajor Entry;Entry.InstanceId=FGuid::NewGuid().ToString();Entry.CardId=Card.Id;Entry.SourceBottle=B->Key;Entry.Day=GetDay();Save->Majors.Add(Entry);Save->ClaimedBottles.Add(B->Key);
  if(!Persist()){Save->Majors.Pop();Save->ClaimedBottles.Pop();Tell(TEXT("保存失败，药瓶没有被取走，请重试。"));return false;}
- Actor->Tags.AddUnique(ForestAlchemy::Collected);Actor->SetActorHiddenInGame(true);Actor->SetActorEnableCollision(false);
- Tell(FString::Printf(TEXT("你拿起药瓶，瓶中浮出一张大牌。\n获得：%s · %s\n已放入背包「今日大牌」 · 按 B 查看"),*Card.Id.ToString(),*Card.Name));return true;
+ ApplyBottleState(*B,true);
+ Tell(FString::Printf(TEXT("获得今日大牌：%s · %s（已抽 %d/%d）。按 B 可再次查看牌图。"),*Card.Id.ToString(),*Card.Name,GetTodayDrawCount(),GetMaxDailyDraws()));
+ OpenMajorDrawReveal(Card);
+ return true;
+}
+void UForestAlchemy::OpenMajorDrawReveal(const FAlchemyCardDefinition& Card)
+{
+ auto* PC=Player.Get();if(!PC)return;
+ CloseMajorDrawReveal();
+ DrawReveal=CreateWidget<UForestMajorDrawWidget>(PC);if(!DrawReveal)return;
+ DrawReveal->Owner=this;
+ DrawReveal->Configure(Card.Id,Card.Name,Card.Description,Card.Cost,GetDay(),GetTodayDrawCount(),GetMaxDailyDraws(),GetTodayDrawCount()==1);
+ bDrawOldCursor=PC->bShowMouseCursor;
+ DrawReveal->AddToViewport(120);
+ FInputModeUIOnly Mode;Mode.SetWidgetToFocus(DrawReveal->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
+ if(Notice)Notice->SetVisibility(ESlateVisibility::Collapsed);
+}
+void UForestAlchemy::CloseMajorDrawReveal()
+{
+ if(!DrawReveal)return;
+ DrawReveal->RemoveFromParent();DrawReveal=nullptr;
+ if(auto* PC=Player.Get()){PC->SetInputMode(FInputModeGameOnly());PC->bShowMouseCursor=bDrawOldCursor;}
 }
 void UForestAlchemy::Tick(float DT)
 {
@@ -159,10 +223,13 @@ void UForestAlchemy::Tick(float DT)
  if(PendingResult()){if(!IsWorkbenchOpen())OpenWorkbench();return;}
  if(IsCampaignCompleted()){Focus.Reset();if(Notice)Notice->SetVisibility(ESlateVisibility::Collapsed);if(!IsWorkbenchOpen())OpenWorkbench();return;}
  if(!SyncDay())return;ScanTime+=DT;SpawnTime+=DT;if(ScanTime>=.75f){ScanTime=0;Discover();}if(bNeedsCabinSpawn && SpawnTime>=.5f){SpawnTime=0;StartInCabin();}
- Focus=FindFocus();if(Input && Input->KeyBindings.Num())Input->KeyBindings[0].bConsumeInput=Focus.IsValid();
+ Focus=FindFocus();const bool bFocusedBottle=Focus.IsValid() && ForestAlchemy::IsBottle(Focus->FindComponentByClass<UStaticMeshComponent>());
+ const bool bAtLimit=GetMaxDailyDraws()>0 && GetTodayDrawCount()>=GetMaxDailyDraws();
+ if(Input && Input->KeyBindings.Num())Input->KeyBindings[0].bConsumeInput=Focus.IsValid() && !(bFocusedBottle && bAtLimit);
  if(Notice && Notice->Text.IsValid())
  {
-  FString Message;if(GetWorld()->GetTimeSeconds()<ToastUntil)Message=Toast;else if(Focus.IsValid())Message=ForestAlchemy::IsBottle(Focus->FindComponentByClass<UStaticMeshComponent>())?TEXT("E　拿起药瓶 · 获得一张今日大牌"):TEXT("E　进入夜间合成台");
+  FString Message;if(GetWorld()->GetTimeSeconds()<ToastUntil)Message=Toast;
+  else if(Focus.IsValid())Message=bFocusedBottle?(bAtLimit?FString::Printf(TEXT("今日已抽完 %d/%d · 按 B 查看"),GetTodayDrawCount(),GetMaxDailyDraws()):GetMaxDailyDraws()>0?FString::Printf(TEXT("E　抽取日运 · 已抽 %d/%d"),GetTodayDrawCount(),GetMaxDailyDraws()):FString::Printf(TEXT("E　抽取日运 · 今日已抽 %d 张"),GetTodayDrawCount())):TEXT("E　进入夜间合成台");
   Notice->Text->SetText(FText::FromString(Message));Notice->SetVisibility(Message.IsEmpty() || OtherMenuOpen() || IsWorkbenchOpen()?ESlateVisibility::Collapsed:ESlateVisibility::HitTestInvisible);
  }
 }
@@ -318,7 +385,7 @@ void UForestAlchemy::ConfirmBrew()
  Sequence.Reset();SelectedSlot=INDEX_NONE;bConfirming=false;Status.Reset();GenerateConsequence();RefreshUI();
 }
 TStatId UForestAlchemy::GetStatId() const{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestAlchemy,STATGROUP_Tickables);}
-void UForestAlchemy::Deinitialize(){if(ConsequenceRequest)ConsequenceRequest->Owner.Reset();ConsequenceRequest=nullptr;if(Workbench)Workbench->RemoveFromParent();if(Player.IsValid() && Input)Player->PopInputComponent(Input);if(Notice)Notice->RemoveFromParent();Super::Deinitialize();}
+void UForestAlchemy::Deinitialize(){if(ConsequenceRequest)ConsequenceRequest->Owner.Reset();ConsequenceRequest=nullptr;CloseMajorDrawReveal();if(Workbench)Workbench->RemoveFromParent();if(Player.IsValid() && Input)Player->PopInputComponent(Input);if(Notice)Notice->RemoveFromParent();Super::Deinitialize();}
 
 const FForestBrewRecord* UForestAlchemy::PendingResult() const
 {
