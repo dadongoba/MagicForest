@@ -100,6 +100,7 @@ private:
  FString Selected;
  FString SelectedMajor;
  bool bMajorsTab=false;
+ bool bMajorArtExpanded=false;
 };
 
 /** Bridges confirmed legacy Blueprint harvests to named, immutable magic items. */

@@ -229,7 +229,7 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
  return SNew(SOverlay)
  +SOverlay::Slot().Padding(FMargin(24))
  [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
- [SNew(SBox).WidthOverride(940.f).HeightOverride(600.f)
+ [SNew(SBox).WidthOverride(1080.f).HeightOverride(740.f)
   [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(0.f)
    [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(0.f)
     [SNew(SVerticalBox)
@@ -243,33 +243,51 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
        +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("B / ESC 关闭"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Muted)]]]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,4,42,0))
       [SNew(SHorizontalBox)
-       +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
+       +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;bMajorArtExpanded=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
        +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日日运 · 可用%d张 · 已抽%d/%d"),A?A->GetTodayMajors().Num():0,A?A->GetTodayDrawCount():0,A?A->GetMaxDailyDraws():3));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
      +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(42,12,42,4))
      [SNew(SHorizontalBox)
-      +SHorizontalBox::Slot().FillWidth(.59f).Padding(0,0,12,0)
+      +SHorizontalBox::Slot().FillWidth(.52f).Padding(0,0,12,0)
       [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(0))
        [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(List,SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(8,8))]]]
-      +SHorizontalBox::Slot().FillWidth(.41f).Padding(12,0,0,0)
+      +SHorizontalBox::Slot().FillWidth(.48f).Padding(12,0,0,0)
       [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(20,12))
-       [SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
-        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("物品记录"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
-        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)
-         [SNew(SBox).WidthOverride(100).HeightOverride(360).HAlign(HAlign_Left)
-          .Visibility_Lambda([this](){return bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
-          [SNew(SOverlay)
-           +SOverlay::Slot()[SNew(SImage).Image_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor);})]
-           +SOverlay::Slot().VAlign(VAlign_Center)
-            [SNew(STextBlock).Text(FText::FromString(TEXT("牌图暂不可用"))).Font(HarvestMagic::Font(12)).AutoWrapText(true)
-             .Visibility_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor)?EVisibility::Collapsed:EVisibility::HitTestInvisible;})]]]
-        +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]]]
+       [SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this](){return FText::FromString(bMajorsTab?TEXT("日运牌面 · 点按牌图放大"):TEXT("物品记录"));}).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
+        +SVerticalBox::Slot().FillHeight(1.f).Padding(0,12,0,0)
+         [SNew(SHorizontalBox)
+          +SHorizontalBox::Slot().AutoWidth().Padding(0,0,16,0)
+           [SNew(SBox).WidthOverride(136).HeightOverride(490).HAlign(HAlign_Left)
+            .Visibility_Lambda([this](){return bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
+            [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(0)
+             .ToolTipText(FText::FromString(TEXT("点按查看完整牌面")))
+             .OnClicked_Lambda([this](){bMajorArtExpanded=true;return FReply::Handled();})
+             [SNew(SOverlay)
+              +SOverlay::Slot()[SNew(SImage).Image_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor);})]
+              +SOverlay::Slot().VAlign(VAlign_Center)
+               [SNew(STextBlock).Text(FText::FromString(TEXT("牌图暂不可用"))).Font(HarvestMagic::Font(12)).AutoWrapText(true)
+                .Visibility_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor)?EVisibility::Collapsed:EVisibility::HitTestInvisible;})]]]]
+          +SHorizontalBox::Slot().FillWidth(1.f)
+           [SNew(SScrollBox)+SScrollBox::Slot()[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]]]]
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,0,42,35))
      [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(12,8))
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
        [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){const bool Daily=bMajorsTab;Close();if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>()){if(Daily)Book->OpenTodayMajors();else {Book->ShowDailyMajors(false);Book->Open();}}return FReply::Handled();})
        [SNew(STextBlock).Text_Lambda([this](){return FText::FromString(bMajorsTab?TEXT("翻开魔法书 · 今日日运"):TEXT("翻开魔法书 · 元素图鉴"));}).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
-    ]]]]];
+    ]]]]]
+ +SOverlay::Slot()
+ [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor(.07f,.09f,.07f,.94f)).Padding(18.f)
+  .Visibility_Lambda([this](){return bMajorArtExpanded && bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
+  [SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right)
+    [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(18,9))
+     .OnClicked_Lambda([this](){bMajorArtExpanded=false;return FReply::Handled();})
+     [SNew(STextBlock).Text(FText::FromString(TEXT("返回背包"))).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Ink)]]
+   +SVerticalBox::Slot().FillHeight(1.f).HAlign(HAlign_Center).VAlign(VAlign_Center)
+    [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
+     [SNew(SBox).WidthOverride(190.f).HeightOverride(685.f)
+      [SNew(SImage).Image_Lambda([this](){return HarvestMagic::DailyArt(GetWorld(),SelectedMajor);})]]]]];
 }
 void UForestMagicInventoryWidget::Refresh()
 {
@@ -280,19 +298,18 @@ void UForestMagicInventoryWidget::Refresh()
   for(const auto& C:Cards){FAlchemyCardDefinition D;if(!A->GetMajorDefinition(C.CardId,D))continue;
    auto ArtView=SNew(SOverlay);
    if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D.Id))
-    ArtView->AddSlot()[SNew(SBox).WidthOverride(40).HeightOverride(144)[SNew(SImage).Image(Art)]];
-   else ArtView->AddSlot()[SNew(SBox).WidthOverride(40).HeightOverride(144)
+    ArtView->AddSlot()[SNew(SBox).WidthOverride(75).HeightOverride(270)[SNew(SImage).Image(Art)]];
+   else ArtView->AddSlot()[SNew(SBox).WidthOverride(75).HeightOverride(270)
     [SNew(STextBlock).Text(FText::FromString(TEXT("牌图暂不可用"))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted).AutoWrapText(true)]];
-   List->AddSlot()[SNew(SBox).WidthOverride(178).HeightOverride(170)
+   List->AddSlot()[SNew(SBox).WidthOverride(155).HeightOverride(324)
     [SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ButtonColorAndOpacity_Lambda([this,C](){return SelectedMajor==C.InstanceId?ForestTheme::SelectedPaper:FLinearColor::White;})
      .OnClicked_Lambda([this,C](){SelectMajor(C.InstanceId);return FReply::Handled();})
-     [SNew(SHorizontalBox)
-      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)[ArtView]
-      +SHorizontalBox::Slot().FillWidth(1)
-       [SNew(SVerticalBox)
-        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromName(D.Id)).Font(HarvestMagic::Font(18)).ColorAndOpacity(HarvestMagic::Moss)]
-        +SVerticalBox::Slot().FillHeight(1).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(D.Name+TEXT("\n")+D.ShortExpression)).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
-        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("额度 %d"),D.Cost))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted)]]]]];
+     [SNew(SVerticalBox)
+      +SVerticalBox::Slot().FillHeight(1.f).HAlign(HAlign_Center).VAlign(VAlign_Center)[ArtView]
+      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,7,0,0)
+       [SNew(STextBlock).Text(FText::FromString(D.Name)).Font(HarvestMagic::Font(13)).ColorAndOpacity(HarvestMagic::Ink)]
+      +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+       [SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("%s · 额度 %d"),*D.Id.ToString(),D.Cost))).Font(HarvestMagic::Font(10)).ColorAndOpacity(HarvestMagic::Muted)]]]];
   }
   if(Cards.IsEmpty())
   {
@@ -334,7 +351,7 @@ void UForestMagicInventoryWidget::Refresh()
 }
 void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
 {
- SelectedMajor=Id;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
+ SelectedMajor=Id;bMajorArtExpanded=false;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
  for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D)){FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* Gameplay=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;const FString Effect=ForestAlchemyGuide::Major(Gameplay,D.Id,Guide)?Guide.HowToUse:D.Description;Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n日运牌 · 第%d天\n\n这张牌的作用：%s\n\n今晚合成时，从「今日日运」栏选它放入一份委托。每张牌使用一次，今天结束后没用的牌也会消失。\n\n今日已抽 %d/%d 张 · 此牌占1个槽位、花%d点额度"),*D.Id.ToString(),*D.Name,C.Day,*Effect,A->GetTodayDrawCount(),A->GetMaxDailyDraws(),D.Cost)));}return;}
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
@@ -345,7 +362,7 @@ void UForestMagicInventoryWidget::Select(const FString& Key)
  Detail->SetText(FText::FromString(FString::Printf(TEXT("%s\n\n%s元素 · %d 点\n采集于第 %d 天\n\n%s"),*Item.Name,*UForestHarvestMagic::ElementText(Item.Element),Item.PipValue,Item.HarvestDay,*Item.Description)));
 }
 void UForestMagicInventoryWidget::Close(){if(Owner.IsValid())Owner->ToggleInventory();}
-FReply UForestMagicInventoryWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape || E.GetKey()==EKeys::B){Close();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
+FReply UForestMagicInventoryWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E){if(E.GetKey()==EKeys::Escape || E.GetKey()==EKeys::B){if(bMajorArtExpanded)bMajorArtExpanded=false;else Close();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
 TMap<FString,int32> UForestHarvestMagic::ReadBag() const
 {
  TMap<FString,int32> Result;auto* Pawn=BagOwner.Get();if(!Pawn)return Result;auto* Map=FindFProperty<FMapProperty>(Pawn->GetClass(),TEXT("Backpack"));auto* Key=Map?CastField<FStrProperty>(Map->KeyProp):nullptr;auto* Value=Map?CastField<FIntProperty>(Map->ValueProp):nullptr;if(!Key || !Value)return Result;FScriptMapHelper H(Map,Map->ContainerPtrToValuePtr<void>(Pawn));for(int I=0;I<H.GetMaxIndex();++I)if(H.IsValidIndex(I))Result.Add(Key->GetPropertyValue(H.GetKeyPtr(I)),Value->GetPropertyValue(H.GetValuePtr(I)));return Result;

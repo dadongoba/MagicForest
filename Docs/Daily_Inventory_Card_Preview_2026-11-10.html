@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>背包·今日日运预览</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#25281f;color:#28362b;font-family:"Songti SC","Noto Serif CJK SC",serif}
+.stage{min-height:100vh;display:grid;place-items:center;padding:16px;background:radial-gradient(circle at 50% 20%,#505948,#1f261f 75%)}
+.bag{width:min(1080px,calc(100vw - 32px));min-height:740px;background:#e9e1cc url('../Content/UI/Textures/WoodlandPaper.png') center/cover;border:2px solid #927f61;box-shadow:0 24px 70px #101510bb,inset 0 0 0 12px #ece3ce;padding:30px 42px 26px}
+.eyebrow{font:700 12px system-ui;color:#68775c;letter-spacing:3px}.head{display:flex;align-items:end;justify-content:space-between}.head h1{font-size:29px;margin:3px 0 0;font-weight:600}.head small{font:14px system-ui;color:#68715e}
+.tabs{display:flex;gap:12px;margin:17px 0 16px}.tab{background:#e4dbc4;border:1px solid #ae9b7b;padding:9px 18px;font-size:16px}.active{background:#d7d8bd;border-color:#6c795f}
+.content{display:grid;grid-template-columns:52% 48%;gap:12px;height:540px}.list,.detail{background:#f1e8d5aa;border:1px solid #c1b79e;overflow:auto}.list{display:flex;gap:8px;align-content:flex-start;padding:8px}
+.card{width:153px;min-width:153px;height:324px;background:#eee8d6;border:1px solid #a99b7e;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}.card.selected{background:#dedfca;outline:2px solid #7f8e70}.card img{width:75px;height:270px;object-fit:fill}.card .name{font-size:15px;margin:6px 0 0}.card .cost{font:12px system-ui;color:#778071;margin-top:1px}
+.detail{padding:12px 20px}.detail label{font-size:13px;letter-spacing:2px;color:#617658}.selectedart{display:flex;gap:16px;margin-top:12px;align-items:flex-start}.selectedart img{width:136px;height:490px;flex:none;object-fit:fill;cursor:zoom-in}.description{font-size:16px;line-height:1.65;max-height:490px;overflow:auto}.description h2{font-size:23px;font-weight:600;margin:2px 0 10px}.description p{margin:9px 0}
+.zoom{display:none;position:fixed;inset:0;background:#121911ef;z-index:3;align-items:center;justify-content:center;flex-direction:column;gap:12px}.zoom.open{display:flex}.zoom img{height:min(84vh,685px);width:auto;max-width:70vw}.zoom button{position:absolute;right:24px;top:20px;background:#e5dcc5;border:1px solid #99886b;padding:10px 20px;color:#28362b;font:16px "Songti SC",serif;cursor:pointer}
+.footer{display:flex;gap:12px;margin-top:15px}.button{background:#e5dcc5;border:1px solid #99886b;padding:9px 17px;font-size:15px}.badge{font:700 11px system-ui;color:#d9e1d1;background:#355541;padding:7px 10px;position:absolute;right:8px;top:-15px}.wrap{position:relative}
+@media(max-width:840px){.bag{min-height:unset;padding:25px}.content{height:auto;grid-template-columns:1fr}.list{min-height:324px}.detail{min-height:550px}}
+</style>
+<div class="stage"><div class="wrap"><div class="badge">布局预览 · 非 UE 实机截图</div><main class="bag">
+  <div class="head"><div><div class="eyebrow">随身物品</div><h1>背包</h1></div><small>B / ESC 关闭</small></div>
+  <div class="tabs"><div class="tab">元素小物</div><div class="tab active">今日日运 · 可用3张 · 已抽3/3</div></div>
+  <div class="content"><div class="list">
+    <article class="card selected" data-id="IV" data-name="皇帝" data-art="Major_04_Emperor.png" data-effect="让当前锅里的火点数翻倍，风、水不变。需要先有火，再把皇帝放到后面。"><img src="../Content/UI/Textures/MajorArcana/Major_04_Emperor.png"><div class="name">皇帝</div><div class="cost">IV · 额度 1</div></article>
+    <article class="card" data-id="XV" data-name="恶魔" data-art="Major_15_Devil.png" data-effect="放在想反向处理的素材或大牌前面。接素材时改为减去它的点数；接大牌时采用那张牌的反向规则；接副锅时让整口副锅的结果变号。"><img src="../Content/UI/Textures/MajorArcana/Major_15_Devil.png"><div class="name">恶魔</div><div class="cost">XV · 额度 1</div></article>
+    <article class="card" data-id="XVII" data-name="星" data-art="Major_17_Star.png" data-effect="让当前锅里的风点数翻倍，火、水保持原样。放在已经入锅的风元素后面使用。"><img src="../Content/UI/Textures/MajorArcana/Major_17_Star.png"><div class="name">星</div><div class="cost">XVII · 额度 1</div></article>
+  </div><div class="detail"><label>日运牌面 · 点按牌图放大</label><div class="selectedart"><img id="hero" src="../Content/UI/Textures/MajorArcana/Major_04_Emperor.png"><div class="description"><h2 id="cardtitle">IV · 皇帝</h2><p>日运牌 · 第1天</p><p id="effect">这张牌的作用：让当前锅里的火点数翻倍，风、水不变。需要先有火，再把皇帝放到后面。</p><p>今晚合成时，从「今日日运」栏选它放入一份委托。每张牌使用一次，今天结束后没用的牌也会消失。</p><p>今日已抽 3/3 张 · 此牌占1个槽位、花1点额度</p></div></div></div></div>
+  <div class="footer"><div class="button">合上背包</div><div class="button">翻开魔法书 · 今日日运</div></div>
+</main></div></div>
+<div class="zoom" id="zoom"><button id="closezoom">返回背包</button><img id="zoomart" src="../Content/UI/Textures/MajorArcana/Major_04_Emperor.png"></div>
+<script>
+for(const card of document.querySelectorAll('.card'))card.addEventListener('click',()=>{
+  document.querySelector('.card.selected')?.classList.remove('selected');card.classList.add('selected');
+  document.getElementById('hero').src='../Content/UI/Textures/MajorArcana/'+card.dataset.art;
+  document.getElementById('zoomart').src='../Content/UI/Textures/MajorArcana/'+card.dataset.art;
+  document.getElementById('cardtitle').textContent=card.dataset.id+' · '+card.dataset.name;
+  document.getElementById('effect').textContent='这张牌的作用：'+card.dataset.effect;
+});
+document.getElementById('hero').addEventListener('click',()=>document.getElementById('zoom').classList.add('open'));
+document.getElementById('closezoom').addEventListener('click',()=>document.getElementById('zoom').classList.remove('open'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('zoom').classList.remove('open')});
+</script>
