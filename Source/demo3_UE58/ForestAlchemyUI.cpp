@@ -55,10 +55,37 @@ void UForestBrewWidget::Refresh()
  if(!Body.IsValid() || !Owner.IsValid())return;Body->ClearChildren();auto* A=Owner.Get();int32 Cost=0;for(const auto& C:A->Sequence)Cost+=C.Card.Cost;
  if(const auto* R=A->PendingResult())
  {
-  if(SettlementReceiptId!=R->ReceiptId){SettlementReceiptId=R->ReceiptId;bShowSettlementDetails=false;}
-  const auto& E=R->Result;
-  Body->AddSlot().AutoHeight()[BrewUI::Text(R->Day==3?FString(TEXT("第三夜 · 最终合成结果")):FString::Printf(TEXT("次日破晓 · 第 %d 天的合成结果"),R->Day),23)];
-  Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(R->Customer+TEXT(" · 结果与推演"),13)];
+  if(SettlementReceiptId!=R->ReceiptId){SettlementReceiptId=R->ReceiptId;SettlementPageIndex=0;bShowSettlementDetails=false;}
+  const auto Records=A->GetBrewRecords();int32 Sealed=0;
+  for(const auto& Item:Records)if(Item.Day==R->Day && Item.Result.bValid)++Sealed;
+  if(!A->IsDayResolved(R->Day))
+  {
+   Body->AddSlot().AutoHeight()[BrewUI::Text(FString::Printf(TEXT("第 %d 天 · 已封存 %d / 3 份委托"),R->Day,Sealed),23)];
+   Body->AddSlot().AutoHeight().Padding(0,20,0,12)[BrewUI::Text(R->Customer+TEXT("的药剂已经封瓶交付。"),17)];
+   Body->AddSlot().AutoHeight().Padding(0,0,0,20)[BrewUI::Text(FString::Printf(TEXT("今晚还需封存 %d 份委托。三份全部封存后，破晓时会一起揭示结果，可以逐页查看。"),3-Sealed),16)];
+   Body->AddSlot().AutoHeight()[BrewUI::Text(A->bNarrativePending?TEXT("正在封存这份委托的推演……"):A->Status,12)];
+   Body->AddSlot().AutoHeight().Padding(0,16)[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
+    [BrewUI::Button(TEXT("继续今日委托"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+   return;
+  }
+  if(A->bNarrativePending)
+  {
+   Body->AddSlot().AutoHeight()[BrewUI::Text(TEXT("三份委托已封存"),23)];
+   Body->AddSlot().AutoHeight().Padding(0,20)[BrewUI::Text(TEXT("破晓的三份结算正在整理，请稍候。"),16)];
+   return;
+  }
+  TArray<const FForestBrewRecord*> Pages;
+  for(int32 Offset=0;Offset<=6;Offset+=3)if(const auto* Item=Records.FindByPredicate([R,Offset](const auto& Record){return Record.Day==R->Day && Record.CommissionId==R->Day+Offset && Record.Result.bValid;}))Pages.Add(Item);
+  if(Pages.Num()!=3)
+  {
+   Body->AddSlot().AutoHeight()[BrewUI::Text(TEXT("今日结算记录不完整，请重新打开工作台。"),18)];
+   return;
+  }
+  SettlementPageIndex=FMath::Clamp(SettlementPageIndex,0,2);
+  const auto* Shown=Pages[SettlementPageIndex];
+  const auto& E=Shown->Result;
+  Body->AddSlot().AutoHeight()[BrewUI::Text(R->Day==3?TEXT("三日旅程的破晓 · 三份委托结算"):FString::Printf(TEXT("次日破晓 · 第 %d 天的三份委托结算"),R->Day),23)];
+  Body->AddSlot().AutoHeight().Padding(0,8,0,20)[BrewUI::Text(FString::Printf(TEXT("第 %d / 3 页 · %s · 结果与推演"),SettlementPageIndex+1,*Shown->Customer),13)];
   auto Scores=SNew(SVerticalBox);
   Scores->AddSlot().AutoHeight()[BrewUI::Text(TEXT("本次合成"),18)];
   Scores->AddSlot().AutoHeight().Padding(0,8,0,18)[BrewUI::Text(E.Verdict,17)];
@@ -76,7 +103,7 @@ void UForestBrewWidget::Refresh()
   AddElement(TEXT("水"),E.Target.Water,E.Actual.Water);
   FString Need;
   FAlchemyCommissionDefinition ResolvedCommission;
-  if(auto* GI=GetWorld()->GetGameInstance())if(auto* Gameplay=GI->GetSubsystem<UAlchemyGameplaySubsystem>();Gameplay && Gameplay->GetCommission(R->CommissionId,ResolvedCommission))
+  if(auto* GI=GetWorld()->GetGameInstance())if(auto* Gameplay=GI->GetSubsystem<UAlchemyGameplaySubsystem>();Gameplay && Gameplay->GetCommission(Shown->CommissionId,ResolvedCommission))
   {
    const bool SameTarget=E.Target.Fire==ResolvedCommission.Target.Fire && E.Target.Wind==ResolvedCommission.Target.Wind && E.Target.Water==ResolvedCommission.Target.Water;
    if(SameTarget)Need=AlchemyDialogueKnowledge::Reveal(ResolvedCommission);
@@ -87,17 +114,22 @@ void UForestBrewWidget::Refresh()
   if(bShowSettlementDetails)Scores->AddSlot().AutoHeight().Padding(0,0,0,12)
    [BrewUI::Text(FString::Printf(TEXT("判定依据：%s\n\n元素作用总量 %.0f / 24\n灵验度 %.2f · 非目标方向偏离 %.2f\n方向吻合 %.1f%% · 剂量比 %.0f%%"),*E.Reason,E.SumAbsolute,E.Projection,E.PerpendicularCost,E.Cosine*100,E.DoseRatio*100),12)];
   auto Story=SNew(SVerticalBox);
-  Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 使用现场与森林余波"),18)];
-  Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(A->bNarrativePending?TEXT("正在依据本次成品推演……"):R->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
-  Story->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(A->bNarrativePending?TEXT("瓶口的封蜡渐渐冷却。林间尚未传回消息。愿望能否实现，取决于这一锅里真正留下的药性。"):R->Narrative,16)];
+  Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 本份委托的使用结果"),18)];
+  Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(Shown->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
+  Story->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Shown->Narrative.IsEmpty()?TEXT("这份委托的推演文本未保存。结算数值仍可在左侧查看。") : Shown->Narrative,16)];
   if(bCompact)Body->AddSlot().FillHeight(1)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)
    +SScrollBox::Slot()[Scores]+SScrollBox::Slot().Padding(0,22,0,0)[Story]];
   else Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
    +SHorizontalBox::Slot().FillWidth(.48f).Padding(0,0,24,0)[SNew(SScrollBox)+SScrollBox::Slot()[Scores]]
    +SHorizontalBox::Slot().FillWidth(.52f)[SNew(SScrollBox)+SScrollBox::Slot()[Story]]];
   Body->AddSlot().AutoHeight().Padding(0,14)[BrewUI::Text(A->Status,10)];
-  Body->AddSlot().AutoHeight()[SNew(SBox).HAlign(HAlign_Right).IsEnabled(!A->bNarrativePending)
-   [BrewUI::Button(!A->IsDayResolved(R->Day)?TEXT("记下结果 · 继续今日委托"):R->Day==3?TEXT("完成今日委托 · 查看结局"):TEXT("今日委托已结算 · 开始下一天"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)]];
+  auto Navigation=SNew(SHorizontalBox);
+  if(SettlementPageIndex>0)Navigation->AddSlot().AutoWidth().Padding(0,0,12,0)
+   [BrewUI::Button(TEXT("上一份"),FOnClicked::CreateLambda([this](){--SettlementPageIndex;bShowSettlementDetails=false;Refresh();return FReply::Handled();}))];
+  Navigation->AddSlot().FillWidth(1)[SNew(SBox)];
+  Navigation->AddSlot().AutoWidth()
+   [BrewUI::Button(SettlementPageIndex<2?TEXT("下一份"):R->Day==3?TEXT("三份已看完 · 查看结局"):TEXT("三份已看完 · 开始下一天"),FOnClicked::CreateLambda([this](){if(SettlementPageIndex<2){++SettlementPageIndex;bShowSettlementDetails=false;Refresh();}else if(Owner.IsValid())Owner->FinishResult();return FReply::Handled();}),true)];
+  Body->AddSlot().AutoHeight()[Navigation];
   return;
  }
  if(A->IsCampaignCompleted())
@@ -133,7 +165,7 @@ void UForestBrewWidget::Refresh()
    TEXT("先选已接取的委托对象。回想白天对话里提到的用途：需要热量、气流还是水分？需要多强？元素图鉴说明各个档位能做到什么，委托的标准值要等交付后才揭示。切换委托会清空本次选料。"),
    TEXT("先从背包中选元素小物，放进槽位。它们提供火、风、水：两件火3，在没有其他变换时合成火6。下方「当前试配」会显示锅里的结果。选料、移除都不会扣物品；放好后再决定要不要加入日运牌。"),
    TEXT("如果想使用日运牌，从「今日大牌」栏选一张放入。注意放牌顺序：有些牌只影响放牌前加入的元素。先点「查阅今日大牌」看这张牌的具体作用，再决定放在哪里。也可以不放牌。"),
-   TEXT("查看当前试配，判断它是否符合客人描述的用途。正数表示给予，负数表示取走；0表示不额外改变这一种性质。三种元素的绝对值合计超过24会使药剂报废。第一次点「封瓶交付」只弹出确认提示，第二次确认才消耗槽内物品与大牌。之后揭示标准、成品和偏离，并显示推演；前两夜确认结算后换天，第三夜进入结局。")};
+   TEXT("查看当前试配，判断它是否符合客人描述的用途。正数表示给予，负数表示取走；0表示不额外改变这一种性质。三种元素的绝对值合计超过24会使药剂报废。第一次点「封瓶交付」只弹出确认提示，第二次确认才消耗槽内物品与大牌。当天三份委托都封瓶后，破晓时逐页揭示各自的标准、成品、偏离与推演；看完三页后才开始下一天，第三天则进入结局。")};
   GuidePage=FMath::Clamp(GuidePage,0,3);
   Guide->AddSlot().AutoHeight().Padding(0,12,0,8)[BrewUI::Text(Titles[GuidePage],15)];
   Guide->AddSlot().AutoHeight().Padding(0,0,0,10)[BrewUI::Text(Copy[GuidePage],14)];

@@ -81,6 +81,7 @@ private:
  bool bGuideExpanded=true;
  bool bShowSettlementDetails=false;
  FString SettlementReceiptId;
+ int32 SettlementPageIndex=0;
  int32 GuidePage=0;
  int32 GuideCommission=0;
  bool bGuideSawMaterial=false,bGuideWasConfirming=false;

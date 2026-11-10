@@ -1053,6 +1053,7 @@ FString UAlchemyGameplaySubsystem::BuildWorldConsequencePrompt(
     Prompt += FString::Printf(TEXT("【人物身份】\n- 现在：%s\n- 过去：%s\n"), *PresentIdentity, *PastIdentity);
     Prompt += TEXT("- 现在身份和本单委托是场景的主要约束。过去身份只可通过她或他对眼前工作的短暂停顿、态度或一句含蓄的话留下暗示，也可以完全不出现；不得直接交代往事、写过去的机构或受害者，更不得据此发动追查、监听、禁书等新事件。\n\n");
     Prompt += FString::Printf(TEXT("【本单委托】\n- 愿望：%s\n- 工序：%s\n- 已审核的完整任务情境与效果依据：%s\n"), *Commission.Wish, *Commission.SensoryPrompt, *AlchemyDialogueKnowledge::Reveal(Commission));
+    Prompt += FString::Printf(TEXT("- 当前进度：第 %d 天，三位同伴各有一份委托；这一段只推演%s的这一份（委托编号 %d）。另外两份的内容、结果和人物状态不得并入。\n"), Commission.CustomerOrderIndex, *Commission.Customer, Commission.OrderIndex);
     Prompt += FString::Printf(TEXT("- 目标向量：[%d, %d, %d]\n"), Commission.Target.Fire, Commission.Target.Wind, Commission.Target.Water);
     Prompt += FString::Printf(TEXT("- 实际向量：[%d, %d, %d]\n"), Evaluation.Actual.Fire, Evaluation.Actual.Wind, Evaluation.Actual.Water);
     Prompt += FString::Printf(TEXT("- 灵验度：%.2f\n- 代价垂线：%.2f\n- 剂量比：%.2f\n- 最终评级：%s\n- 判定依据：%s\n\n"),
@@ -1063,6 +1064,7 @@ FString UAlchemyGameplaySubsystem::BuildWorldConsequencePrompt(
         *Evaluation.Reason);
     Prompt += TEXT("【叙事要求】\n");
     Prompt += TEXT("- 合成、封瓶和交付已经结束；故事发生在委托所述工作的使用现场，不回到女巫小屋或合成台，不再次调配、封瓶或交付。\n");
+    Prompt += TEXT("- 当天三份委托封瓶后，玩家会在破晓时逐页看到各自结果。这一页只推演当前这一份从使用现场到破晓的后续；不得写另外两份的结果，也不得宣称仅完成这一份就换天。\n");
     Prompt += TEXT("- 只写本委托情境已有的人物、地点、材料、工序，以及实际药效能直接造成的变化。不得新增哨卡、村民、学徒、商人、追查者、其他NPC或与本次工作无关的物品和事件；不能把当前人物拆成两个人。\n");
     Prompt += TEXT("- 大功业：本次委托的用途准确达成，不添加与实际元素无关的损害；后续变化只在当前工作和当事人的直接范围内。\n");
     Prompt += TEXT("- 副作用：本次工作得到部分效果，但多出的实际元素对同一工作造成具体妨碍；不扩大成远处的灾祸。\n");

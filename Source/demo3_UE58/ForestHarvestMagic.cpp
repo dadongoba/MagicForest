@@ -244,7 +244,7 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
      +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,4,42,0))
       [SNew(SHorizontalBox)
        +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
-       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日大牌 · 可用%d张 · 已抽%d/%d"),A?A->GetTodayMajors().Num():0,A?A->GetTodayDrawCount():0,A?A->GetMaxDailyDraws():3));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
+       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日日运 · 可用%d张 · 已抽%d/%d"),A?A->GetTodayMajors().Num():0,A?A->GetTodayDrawCount():0,A?A->GetMaxDailyDraws():3));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
      +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(42,12,42,4))
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(.59f).Padding(0,0,12,0)
@@ -268,7 +268,7 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
        [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){const bool Daily=bMajorsTab;Close();if(auto* Book=GetWorld()->GetSubsystem<UForestElementCodex>()){if(Daily)Book->OpenTodayMajors();else {Book->ShowDailyMajors(false);Book->Open();}}return FReply::Handled();})
-       [SNew(STextBlock).Text_Lambda([this](){return FText::FromString(bMajorsTab?TEXT("翻开魔法书 · 今日大牌"):TEXT("翻开魔法书 · 元素图鉴"));}).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
+       [SNew(STextBlock).Text_Lambda([this](){return FText::FromString(bMajorsTab?TEXT("翻开魔法书 · 今日日运"):TEXT("翻开魔法书 · 元素图鉴"));}).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]]
     ]]]]];
 }
 void UForestMagicInventoryWidget::Refresh()
@@ -299,8 +299,8 @@ void UForestMagicInventoryWidget::Refresh()
    SelectedMajor.Reset();
    const int32 Drawn=A?A->GetTodayDrawCount():0,Limit=A?A->GetMaxDailyDraws():3;
    Detail->SetText(FText::FromString(A && A->IsCampaignCompleted()?TEXT("三日旅程已经结束，日运牌随结局退去。"):
-    Limit>0 && Drawn>=Limit?TEXT("今日大牌\n\n今天的日运牌已经用在药里，抽取次数不会补回。"):
-    FString::Printf(TEXT("今日大牌\n\n工作台药瓶能抽出今天的日运牌。晚上合成时，它可以改变火、风、水的效果。靠近药瓶按 E 抽取。今天已抽 %d/%d 张。"),Drawn,Limit)));
+    Limit>0 && Drawn>=Limit?TEXT("今日日运\n\n今天的日运牌已经用在药里，抽取次数不会补回。"):
+    FString::Printf(TEXT("今日日运\n\n工作台药瓶能抽出今天的日运牌。晚上合成时，它可以改变火、风、水的效果。靠近药瓶按 E 抽取。今天已抽 %d/%d 张。"),Drawn,Limit)));
   }
   else if(!Cards.ContainsByPredicate([this](const auto& C){return C.InstanceId==SelectedMajor;}))SelectMajor(Cards[0].InstanceId);else SelectMajor(SelectedMajor);
   return;
@@ -335,7 +335,7 @@ void UForestMagicInventoryWidget::Refresh()
 void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
 {
  SelectedMajor=Id;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
- for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D)){FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* Gameplay=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;const FString Effect=ForestAlchemyGuide::Major(Gameplay,D.Id,Guide)?Guide.HowToUse:D.Description;Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n今日大牌 · 第%d天\n\n这张牌的作用：%s\n\n今晚合成时，从「今日大牌」栏选它放入一份委托。每张牌使用一次，今天结束后没用的牌也会消失。\n\n今日已抽 %d/%d 张 · 此牌占1个槽位、花%d点额度"),*D.Id.ToString(),*D.Name,C.Day,*Effect,A->GetTodayDrawCount(),A->GetMaxDailyDraws(),D.Cost)));}return;}
+ for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D)){FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* Gameplay=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;const FString Effect=ForestAlchemyGuide::Major(Gameplay,D.Id,Guide)?Guide.HowToUse:D.Description;Detail->SetText(FText::FromString(FString::Printf(TEXT("%s · %s\n\n日运牌 · 第%d天\n\n这张牌的作用：%s\n\n今晚合成时，从「今日日运」栏选它放入一份委托。每张牌使用一次，今天结束后没用的牌也会消失。\n\n今日已抽 %d/%d 张 · 此牌占1个槽位、花%d点额度"),*D.Id.ToString(),*D.Name,C.Day,*Effect,A->GetTodayDrawCount(),A->GetMaxDailyDraws(),D.Cost)));}return;}
 }
 void UForestMagicInventoryWidget::Select(const FString& Key)
 {
