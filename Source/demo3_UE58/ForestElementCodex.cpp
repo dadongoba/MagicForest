@@ -126,7 +126,8 @@ void UForestElementCodex::Close()
 void UForestElementCodex::OpenTaskJournal()
 {
  if(!bReady)Setup();auto* PC=Player.Get();if(!bReady || !PC || IsOpen() || OtherMenuOpen())return;
- if(!JournalWidget){JournalWidget=CreateWidget<UForestTaskJournalWidget>(PC);if(!JournalWidget)return;JournalWidget->Owner=this;}
+ // Rebuild the standalone journal on each open so newly accepted commissions appear immediately.
+ JournalWidget=CreateWidget<UForestTaskJournalWidget>(PC);if(!JournalWidget)return;JournalWidget->Owner=this;
  bJournalOldCursor=PC->bShowMouseCursor;PC->StopMovement();JournalWidget->AddToViewport(126);
  FInputModeUIOnly Mode;Mode.SetWidgetToFocus(JournalWidget->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
 }

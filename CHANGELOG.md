@@ -8,7 +8,7 @@
 - **修改文件**：`Source/demo3_UE58/ForestAlchemy.h/.cpp`、`ForestElementCodex.h/.cpp`、`ForestHarvestMagic.cpp`、`Config/ForestMajorGuide.json`。新增存档字段 `DiscoveredMajorIds`；抽牌时落表，旧存档从现持牌与历史合成记录恢复可识别的牌。日运牌当日失效规则不变。
 - **应用 / 依赖**：按原相对路径合并至匹配完整 Air 工程，重新编译。沿用现有 22 张牌图、说明书 JSON、纸张样式和存档槽；不含地图或新增二进制资源。
 - **验证**：完整工程 UE5.8 Mac Development Editor 源码编译链接成功；JSON 解析和 `git diff --check` 通过。未打开 UE/PIE，实际 Slate 排版、K 键与旧存档迁移仍需游戏内检查。旧存档中曾抽到但未使用、隔天失效的牌没有历史记录，无法追溯解锁。
-- **上传状态**：待上传；推送后核对远端 SHA。
+- **上传状态**：首批功能提交 `de9a115` 已推送并核对远端；本次刷新修正随补充提交上传。
 
 ## 2026-11-11-02：背包内容对齐纸张底图；整理大牌说明书审核稿
 
