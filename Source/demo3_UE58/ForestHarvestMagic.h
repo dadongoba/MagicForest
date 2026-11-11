@@ -97,6 +97,7 @@ public:
 private:
  TSharedPtr<SWrapBox> List;
  TSharedPtr<STextBlock> Detail;
+ TSharedPtr<STextBlock> MajorEffect,MajorFlavor,MajorTitle;
  FString Selected;
  FString SelectedMajor;
  bool bMajorsTab=false;
