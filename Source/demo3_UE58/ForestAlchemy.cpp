@@ -45,6 +45,12 @@ bool UForestAlchemy::IsCampaignCompleted() const
 void UForestAlchemy::ExitJourney(){if(IsCampaignCompleted() && !PendingResult())UKismetSystemLibrary::QuitGame(this,Player.Get(),EQuitPreference::Quit,false);}
 bool UForestAlchemy::Persist(){return Save && UGameplayStatics::SaveGameToSlot(Save,TEXT("ForestDailyArcana"),0);}
 TArray<FForestDailyMajor> UForestAlchemy::GetTodayMajors() const{return Save && !IsCampaignCompleted() && Save->Day==GetDay()?Save->Majors:TArray<FForestDailyMajor>();}
+bool UForestAlchemy::HasDiscoveredMajor(FName Id) const
+{
+ if(!Save)return false;
+ if(Save->DiscoveredMajorIds.Contains(Id) || Save->Majors.ContainsByPredicate([Id](const auto& C){return C.CardId==Id;}))return true;
+ return Save->Brews.ContainsByPredicate([Id](const auto& B){return B.Sequence.ContainsByPredicate([Id](const auto& C){return C.CardId==Id && C.Type!=EAlchemyCardType::Pip;});});
+}
 int32 UForestAlchemy::GetTodayDrawCount() const{return Save && !IsCampaignCompleted() && Save->Day==GetDay()?Save->ClaimedBottles.Num():0;}
 int32 UForestAlchemy::GetMaxDailyDraws() const{return FMath::Max(0,GetDefault<UForestAlchemyRules>()->MaxDailyDraws);}
 TArray<FForestBrewRecord> UForestAlchemy::GetBrewRecords() const{return Save?Save->Brews:TArray<FForestBrewRecord>();}
@@ -194,7 +200,8 @@ bool UForestAlchemy::TakeBottle(AActor* Actor)
  if(Pool.IsEmpty()){Tell(TEXT("今天可抽取的大牌都已出现。"));return false;}
  FRandomStream RNG(static_cast<int32>(HashCombine(static_cast<uint32>(Save->Seed),FCrc::StrCrc32(*B->Key))));const auto Card=Pool[RNG.RandRange(0,Pool.Num()-1)];
  FForestDailyMajor Entry;Entry.InstanceId=FGuid::NewGuid().ToString();Entry.CardId=Card.Id;Entry.SourceBottle=B->Key;Entry.Day=GetDay();Save->Majors.Add(Entry);Save->ClaimedBottles.Add(B->Key);
- if(!Persist()){Save->Majors.Pop();Save->ClaimedBottles.Pop();Tell(TEXT("保存失败，药瓶没有被取走，请重试。"));return false;}
+ const bool bNewDiscovery=!Save->DiscoveredMajorIds.Contains(Card.Id);if(bNewDiscovery)Save->DiscoveredMajorIds.Add(Card.Id);
+ if(!Persist()){Save->Majors.Pop();Save->ClaimedBottles.Pop();if(bNewDiscovery)Save->DiscoveredMajorIds.Remove(Card.Id);Tell(TEXT("保存失败，药瓶没有被取走，请重试。"));return false;}
  ApplyBottleState(*B,true);
  Tell(FString::Printf(TEXT("瓶中显出：%s · %s。已收进背包「今日大牌」（%d/%d）。"),*Card.Id.ToString(),*Card.Name,GetTodayDrawCount(),GetMaxDailyDraws()));
  OpenMajorDrawReveal(Card);

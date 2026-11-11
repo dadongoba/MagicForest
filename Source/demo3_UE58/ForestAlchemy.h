@@ -52,6 +52,7 @@ public:
  UPROPERTY() int32 Seed=0;
  UPROPERTY() TArray<FString> ClaimedBottles;
  UPROPERTY() TArray<FForestDailyMajor> Majors;
+ UPROPERTY() TArray<FName> DiscoveredMajorIds;
  UPROPERTY() TArray<FForestBrewRecord> Brews;
  UPROPERTY() TArray<int32> AcceptedCommissions;
  UPROPERTY() int32 PendingAdvanceFromDay=0;
@@ -119,6 +120,7 @@ public:
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetTodayDrawCount() const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetMaxDailyDraws() const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") bool GetMajorDefinition(FName Id,FAlchemyCardDefinition& Out) const;
+ UFUNCTION(BlueprintPure,Category="Alchemy|Daily") bool HasDiscoveredMajor(FName Id) const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Daily") int32 GetDay() const;
  UFUNCTION(BlueprintPure,Category="Alchemy|Brews") TArray<FForestBrewRecord> GetBrewRecords() const;
  UFUNCTION(BlueprintCallable,Category="Alchemy|Daily") bool TakeBottle(AActor* Bottle);

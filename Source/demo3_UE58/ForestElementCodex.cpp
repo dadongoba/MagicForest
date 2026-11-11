@@ -83,11 +83,14 @@ void UForestElementCodex::Setup()
 {
  auto* PC=UGameplayStatics::GetPlayerController(this,0);if(!PC || !PC->GetPawn())return;Player=PC;
  LoadEntries();Input=NewObject<UInputComponent>(PC);Input->RegisterComponent();Input->Priority=210;
- Input->BindKey(EKeys::J,IE_Pressed,this,&UForestElementCodex::Toggle);PC->PushInputComponent(Input);bReady=true;
+ Input->BindKey(EKeys::J,IE_Pressed,this,&UForestElementCodex::Toggle);
+ Input->BindKey(EKeys::K,IE_Pressed,this,&UForestElementCodex::ToggleTaskJournal);PC->PushInputComponent(Input);bReady=true;
 }
 bool UForestElementCodex::IsOpen() const{return Widget && Widget->IsInViewport();}
+bool UForestElementCodex::IsTaskJournalOpen() const{return JournalWidget && JournalWidget->IsInViewport();}
 bool UForestElementCodex::OtherMenuOpen() const
 {
+ if(IsTaskJournalOpen())return true;
  if(auto* H=GetWorld()->GetSubsystem<UForestHarvestMagic>();H && H->IsInventoryOpen())return true;
  if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();A && (A->IsCampaignCompleted() || (A->IsWorkbenchOpen() && !A->IsWorkbenchGuideSuspended())))return true;
  if(auto* M=Cast<AForestNPCInteraction>(UGameplayStatics::GetActorOfClass(this,AForestNPCInteraction::StaticClass()));M && (M->IsDialogueOpen() || M->IsFinderMenuOpen()))return true;
@@ -120,22 +123,38 @@ void UForestElementCodex::Close()
   if(bOldCursor){FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);PC->SetInputMode(Mode);}else PC->SetInputMode(FInputModeGameOnly());
  }
 }
+void UForestElementCodex::OpenTaskJournal()
+{
+ if(!bReady)Setup();auto* PC=Player.Get();if(!bReady || !PC || IsOpen() || OtherMenuOpen())return;
+ if(!JournalWidget){JournalWidget=CreateWidget<UForestTaskJournalWidget>(PC);if(!JournalWidget)return;JournalWidget->Owner=this;}
+ bJournalOldCursor=PC->bShowMouseCursor;PC->StopMovement();JournalWidget->AddToViewport(126);
+ FInputModeUIOnly Mode;Mode.SetWidgetToFocus(JournalWidget->TakeWidget());PC->SetInputMode(Mode);PC->bShowMouseCursor=true;
+}
+void UForestElementCodex::CloseTaskJournal()
+{
+ if(!IsTaskJournalOpen())return;JournalWidget->RemoveFromParent();
+ if(auto* PC=Player.Get())
+ {
+  PC->bShowMouseCursor=bJournalOldCursor;
+  if(APawn* Pawn=PC->GetPawn())if(auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>()){View->RefreshGameplayInput();return;}
+  if(bJournalOldCursor){FInputModeGameAndUI Mode;Mode.SetHideCursorDuringCapture(false);PC->SetInputMode(Mode);}else PC->SetInputMode(FInputModeGameOnly());
+ }
+}
+void UForestElementCodex::ToggleTaskJournal(){if(IsTaskJournalOpen())CloseTaskJournal();else OpenTaskJournal();}
 void UForestElementCodex::Select(int32 E,int32 Strength)
-{bTaskJournal=false;bDailyMajors=false;SelectedElement=FMath::Clamp(E,0,2);SelectedStrength=FMath::Clamp(Strength,1,10);if(IsOpen())Widget->Refresh();}
+{bDailyMajors=false;SelectedElement=FMath::Clamp(E,0,2);SelectedStrength=FMath::Clamp(Strength,1,10);if(IsOpen())Widget->Refresh();}
 void UForestElementCodex::TurnPage(int32 Direction)
 {
- if(bTaskJournal)return;
  if(bDailyMajors){const auto Cards=DailyCards();if(Cards.IsEmpty())return;int32 I=Cards.IndexOfByPredicate([this](const auto& D){return D.Id==SelectedMajor;});SelectMajor(Cards[FMath::Clamp((I==INDEX_NONE?0:I)+Direction,0,Cards.Num()-1)].Id);return;}
  const int32 Index=FMath::Clamp(SelectedElement*10+SelectedStrength-1+Direction,0,29);Select(Index/10,Index%10+1);
 }
-void UForestElementCodex::OpenTodayMajors(){bTaskJournal=false;bDailyMajors=true;Open();if(IsOpen())Widget->Refresh();}
-void UForestElementCodex::ShowDailyMajors(bool bDaily){bTaskJournal=false;bDailyMajors=bDaily;if(IsOpen())Widget->Refresh();}
-void UForestElementCodex::ShowTaskJournal(){bTaskJournal=true;bDailyMajors=false;if(IsOpen())Widget->Refresh();}
-void UForestElementCodex::SelectMajor(FName Id){bTaskJournal=false;SelectedMajor=Id;bDailyMajors=true;if(IsOpen())Widget->Refresh();}
+void UForestElementCodex::OpenTodayMajors(){bDailyMajors=true;Open();if(IsOpen())Widget->Refresh();}
+void UForestElementCodex::ShowDailyMajors(bool bDaily){bDailyMajors=bDaily;if(IsOpen())Widget->Refresh();}
+void UForestElementCodex::SelectMajor(FName Id){SelectedMajor=Id;bDailyMajors=true;if(IsOpen())Widget->Refresh();}
 TArray<FAlchemyCardDefinition> UForestElementCodex::DailyCards() const
 {
  TArray<FAlchemyCardDefinition> Out;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();auto* GI=GetWorld()->GetGameInstance();auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
- if(A && G)for(const auto& D:G->GetMajorCards())if(DailyCount(D.Id)>0)Out.Add(D);return Out;
+ if(A && G)for(const auto& D:G->GetMajorCards())Out.Add(D);return Out;
 }
 int32 UForestElementCodex::DailyCount(FName Id) const
 {int32 Count=0;if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())for(const auto& C:A->GetTodayMajors())if(C.CardId==Id)++Count;return Count;}
@@ -159,7 +178,23 @@ void UForestElementCodex::Tick(float DT)
 }
 TStatId UForestElementCodex::GetStatId() const{RETURN_QUICK_DECLARE_CYCLE_STAT(UForestElementCodex,STATGROUP_Tickables);}
 void UForestElementCodex::Deinitialize()
-{if(Widget)Widget->RemoveFromParent();if(auto* A=BookVisual.Get())A->Destroy();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);Super::Deinitialize();}
+{if(Widget)Widget->RemoveFromParent();if(JournalWidget)JournalWidget->RemoveFromParent();if(auto* A=BookVisual.Get())A->Destroy();if(auto* PC=Player.Get())if(Input)PC->PopInputComponent(Input);Super::Deinitialize();}
+
+TSharedRef<SWidget> UForestTaskJournalWidget::RebuildWidget()
+{
+ SetIsFocusable(true);
+ const auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();
+ return SNew(SOverlay)+SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+ [SNew(SBox).WidthOverride(700).HeightOverride(610)
+  [SNew(SBorder).BorderImage(ElementBook::PagePaper()).Padding(FMargin(42,36))
+   [SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight()[ElementBook::Text(TEXT("委托手札"),28,true)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,8,0,18)[ElementBook::Text(TEXT("与森林里的人谈妥的委托记在这里。晚上回小屋，在工作台交付药剂。"),16)]
+    +SVerticalBox::Slot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[ElementBook::Text(A?A->TaskJournal():TEXT("正在读取委托记录。"),19)]]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,18,0,0)[ElementBook::Button(TEXT("合上手札 · K / Esc"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->CloseTaskJournal();return FReply::Handled();}))]]]];
+}
+FReply UForestTaskJournalWidget::NativeOnPreviewKeyDown(const FGeometry& G,const FKeyEvent& E)
+{if((E.GetKey()==EKeys::K || E.GetKey()==EKeys::Escape) && Owner.IsValid()){Owner->CloseTaskJournal();return FReply::Handled();}return Super::NativeOnPreviewKeyDown(G,E);}
 
 TSharedRef<SWidget> UForestElementCodexWidget::RebuildWidget()
 {
@@ -182,37 +217,47 @@ void UForestElementCodexWidget::Refresh()
  if(!Body || !Owner.IsValid())return;Body->ClearChildren();auto* A=Owner.Get();
  const auto Cards=A->DailyCards();
  if(A->bDailyMajors && !Cards.ContainsByPredicate([A](const auto& C){return C.Id==A->SelectedMajor;}))A->SelectedMajor=Cards.IsEmpty()?NAME_None:Cards[0].Id;
- const FString Intro=A->bTaskJournal?TEXT("已经接取的委托，以及下一步去哪里完成。未接取的委托不会写入手札。"):A->bDailyMajors?ForestAlchemyGuide::Introduction():A->Introduction;
- const FString Notes=A->bTaskJournal?TEXT("J 打开魔法书 → 委托手札。每次接取都会保存；重新进入游戏仍可查阅。"):A->bDailyMajors?ForestAlchemyGuide::Notes():A->Notes;
+ const FString Intro=A->bDailyMajors?ForestAlchemyGuide::Introduction():A->Introduction;
+ const FString Notes=A->bDailyMajors?ForestAlchemyGuide::Notes():A->Notes;
+ auto MakeMajorTile=[this,A](const FAlchemyCardDefinition& D)->TSharedRef<SWidget>
+ {
+  const auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();const bool Unlocked=Alchemy && Alchemy->HasDiscoveredMajor(D.Id);
+  return SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(5,6))
+   .ButtonColorAndOpacity(A->SelectedMajor==D.Id?ForestTheme::SelectedPaper:FLinearColor::White)
+   .OnClicked_Lambda([this,Id=D.Id](){if(Owner.IsValid())Owner->SelectMajor(Id);return FReply::Handled();})
+   [SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+     [SNew(SBox).WidthOverride(39).HeightOverride(140)
+      [SNew(SOverlay)+SOverlay::Slot()[SNew(SImage).Image(ForestMajorArt::BrushFor(D.Id))]
+       +SOverlay::Slot()[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(Unlocked?FLinearColor(0,0,0,0):FLinearColor(0,0,0,.83f))]]]
+    +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,4,0,0)
+     [ElementBook::Text(Unlocked?D.Id.ToString():TEXT("?"),13,true)]];
+ };
  auto Detail=SNew(SVerticalBox);
- if(A->bTaskJournal)
- {
-  Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(TEXT("委托手札"),24,true)];
-  auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();
-  Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(Alchemy?Alchemy->TaskJournal():TEXT("正在读取委托记录。"),19)];
- }
- else if(A->bDailyMajors)
+ if(A->bDailyMajors)
  {
   auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();
-  Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(FString::Printf(TEXT("今日大牌 · 第 %d 天"),Alchemy?Alchemy->GetDay():1),24,true)];
+  Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(FString::Printf(TEXT("日运牌图鉴 · 已遇见 %d / 22"),([&](){int32 N=0;for(const auto& C:Cards)if(Alchemy && Alchemy->HasDiscoveredMajor(C.Id))++N;return N;})()),24,true)];
   if(bSinglePage)
   {
    Detail->AddSlot().AutoHeight().Padding(0,10)[ElementBook::Text(Intro,18)];
    auto List=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(5,5));
-   for(const auto& D:Cards)List->AddSlot()[ElementBook::Button(D.Id.ToString()+TEXT(" · ")+D.Name,FOnClicked::CreateLambda([this,D](){if(Owner.IsValid())Owner->SelectMajor(D.Id);return FReply::Handled();}),A->SelectedMajor==D.Id)];
+   for(const auto& D:Cards)List->AddSlot()[MakeMajorTile(D)];
    Detail->AddSlot().AutoHeight().Padding(0,10)[List];
   }
   if(const auto* D=Cards.FindByPredicate([A](const auto& C){return C.Id==A->SelectedMajor;}))
   {
-   Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(D->Id.ToString()+TEXT(" · ")+D->Name,25,true)];
-   Detail->AddSlot().AutoHeight().Padding(0,0,0,18)[ElementBook::Text(FString::Printf(TEXT("今日持有 %d 张 · 每张占1槽、花%d点额度"),A->DailyCount(D->Id),D->Cost),18)];
+   const bool bUnlocked=Alchemy && Alchemy->HasDiscoveredMajor(D->Id);
+   Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(bUnlocked?D->Id.ToString()+TEXT(" · ")+D->Name:TEXT("尚未遇见的日运牌"),25,true)];
+   Detail->AddSlot().AutoHeight().Padding(0,0,0,18)[ElementBook::Text(bUnlocked?FString::Printf(TEXT("曾经遇见 · 今日持有 %d 张 · 每张占1槽、花%d点额度"),A->DailyCount(D->Id),D->Cost):TEXT("尚未遇见 · 抽到后解锁牌面与说明"),18)];
    // The complete printed card remains visible while the explanation is read.
    // The source art is 142×512; preserve that tall proportion on the page.
    if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D->Id))
     Detail->AddSlot().AutoHeight().Padding(0,0,0,18)
-     [SNew(SBox).WidthOverride(112).HeightOverride(404).HAlign(HAlign_Left)[SNew(SImage).Image(Art)]];
+     [SNew(SBox).WidthOverride(112).HeightOverride(404).HAlign(HAlign_Left)[SNew(SOverlay)+SOverlay::Slot()[SNew(SImage).Image(Art)]+SOverlay::Slot()[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(bUnlocked?FLinearColor(0,0,0,0):FLinearColor(0,0,0,.82f))]]];
    FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
-   if(ForestAlchemyGuide::Major(G,D->Id,Guide))
+   if(!bUnlocked)Detail->AddSlot().AutoHeight().Padding(0,8)[ElementBook::Text(TEXT("这张牌还没有从药瓶中出现过。"),19)];
+   else if(ForestAlchemyGuide::Major(G,D->Id,Guide))
    {
     const FString Titles[]={TEXT("怎么使用"),TEXT("试一次就明白"),TEXT("前面接「恶魔」时"),TEXT("放置提醒")};
     const FString Texts[]={Guide.HowToUse,Guide.Example,Guide.Reverse,Guide.Caution};
@@ -247,14 +292,13 @@ void UForestElementCodexWidget::Refresh()
  }
  if(bSinglePage)
  {
-  if(!A->bDailyMajors && !A->bTaskJournal)Detail->AddSlot().AutoHeight().Padding(0,16)[ElementBook::Text(Intro,16)];
+  if(!A->bDailyMajors)Detail->AddSlot().AutoHeight().Padding(0,16)[ElementBook::Text(Intro,16)];
   Detail->AddSlot().AutoHeight().Padding(0,14)[ElementBook::Text(Notes,16)];
  }
  auto Right=SNew(SVerticalBox);
  auto Sections=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(6,4));
- Sections->AddSlot()[ElementBook::Button(TEXT("元素效果"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ShowDailyMajors(false);return FReply::Handled();}),!A->bDailyMajors && !A->bTaskJournal)];
- Sections->AddSlot()[ElementBook::Button(TEXT("今日大牌"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ShowDailyMajors(true);return FReply::Handled();}),A->bDailyMajors)];
- Sections->AddSlot()[ElementBook::Button(TEXT("委托手札"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ShowTaskJournal();return FReply::Handled();}),A->bTaskJournal)];
+ Sections->AddSlot()[ElementBook::Button(TEXT("元素效果"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ShowDailyMajors(false);return FReply::Handled();}),!A->bDailyMajors)];
+ Sections->AddSlot()[ElementBook::Button(TEXT("日运牌图鉴"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->ShowDailyMajors(true);return FReply::Handled();}),A->bDailyMajors)];
  Right->AddSlot().AutoHeight().Padding(0,0,0,8)[Sections];
  Right->AddSlot().FillHeight(1)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)+SScrollBox::Slot()[Detail]];
  auto PageNavigation=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(5,5));
@@ -263,16 +307,16 @@ void UForestElementCodexWidget::Refresh()
  PageNavigation->AddSlot()[ElementBook::Button(GetWorld()->GetSubsystem<UForestAlchemy>()->IsWorkbenchGuideSuspended()?TEXT("回到调配 · J / Esc"):TEXT("合上书 · J / Esc"),FOnClicked::CreateLambda([this](){if(Owner.IsValid())Owner->Close();return FReply::Handled();}))];
  Right->AddSlot().AutoHeight().Padding(0,12)[PageNavigation];
  const int32 MajorPage=Cards.IndexOfByPredicate([A](const auto& C){return C.Id==A->SelectedMajor;})+1;
- const FString Page=A->bTaskJournal?TEXT("— 委托手札 —"):A->bDailyMajors?FString::Printf(TEXT("— %d / %d —"),MajorPage,Cards.Num()):FString::Printf(TEXT("— %d —"),A->SelectedElement*10+A->SelectedStrength);
+ const FString Page=A->bDailyMajors?FString::Printf(TEXT("— %d / %d —"),MajorPage,Cards.Num()):FString::Printf(TEXT("— %d —"),A->SelectedElement*10+A->SelectedStrength);
  Right->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,10,0,0)[ElementBook::Text(Page,16)];
  auto Spread=SNew(SHorizontalBox);
  if(!bSinglePage)
  {
   auto Index=SNew(SVerticalBox);Index->AddSlot().AutoHeight().Padding(0,0,0,18)[ElementBook::Text(TEXT("查阅目录"),24,true)];
   Index->AddSlot().AutoHeight().Padding(0,0,0,16)[ElementBook::Text(Intro,16)];
-  if(A->bDailyMajors)for(const auto& D:Cards)
-  {Index->AddSlot().AutoHeight().Padding(0,3)[ElementBook::Button(D.Id.ToString()+TEXT(" · ")+D.Name+FString::Printf(TEXT(" ×%d"),A->DailyCount(D.Id)),FOnClicked::CreateLambda([this,D](){if(Owner.IsValid())Owner->SelectMajor(D.Id);return FReply::Handled();}),A->SelectedMajor==D.Id)];}
-  if(!A->bDailyMajors && !A->bTaskJournal)for(const auto& E:A->Entries)if(E.Element==ElementBook::Keys[A->SelectedElement])
+  if(A->bDailyMajors)
+  {auto Shelf=SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(5,5));for(const auto& D:Cards)Shelf->AddSlot()[MakeMajorTile(D)];Index->AddSlot().AutoHeight()[Shelf];}
+  if(!A->bDailyMajors)for(const auto& E:A->Entries)if(E.Element==ElementBook::Keys[A->SelectedElement])
   {const int32 Strength=E.Strength;Index->AddSlot().AutoHeight().Padding(0,3)[ElementBook::Button(FString::Printf(TEXT("%d   %s"),Strength,*E.Title),FOnClicked::CreateLambda([this,Strength](){if(Owner.IsValid())Owner->Select(Owner->SelectedElement,Strength);return FReply::Handled();}),Strength==A->SelectedStrength)];}
   Index->AddSlot().AutoHeight().Padding(0,22,0,0)[ElementBook::Text(Notes,16)];
   Spread->AddSlot().FillWidth(.43f)[SNew(SBorder).BorderImage(ElementBook::PagePaper()).Padding(FMargin(34,32,28,24))[SNew(SScrollBox)+SScrollBox::Slot()[Index]]];

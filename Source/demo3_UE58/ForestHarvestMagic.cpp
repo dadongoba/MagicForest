@@ -283,10 +283,10 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
           +SScrollBox::Slot()[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]
         +SOverlay::Slot()
          [SNew(SHorizontalBox).Visibility_Lambda([this](){return bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
-          +SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(0,0,6,0)
-           [SNew(SVerticalBox)
+          +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)
+           [SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
             +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("牌的功效"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
-            +SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[SAssignNew(MajorEffect,STextBlock).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]
+            +SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[SAssignNew(MajorEffect,STextBlock).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]
           +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
            [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Edge.CopyWithNewOpacity(.32f)).Padding(5.f)
             [SNew(SBox).WidthOverride(136).HeightOverride(490)
@@ -386,7 +386,9 @@ void UForestMagicInventoryWidget::SelectMajor(const FString& Id)
 {
  SelectedMajor=Id;bMajorArtExpanded=false;auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();if(!A)return;
  for(const auto& C:A->GetTodayMajors())if(C.InstanceId==Id){FAlchemyCardDefinition D;if(A->GetMajorDefinition(C.CardId,D)){
-  MajorEffect->SetText(FText::FromString(FString::Printf(TEXT("%s\n\n花 %d 点额度\n占 1 个槽位"),*D.ShortExpression,D.Cost)));
+  FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
+  const FString Full=ForestAlchemyGuide::Major(G,D.Id,Guide)?FString::Printf(TEXT("怎么使用\n%s\n\n试一次就明白\n%s\n\n前面接「恶魔」时\n%s\n\n放置提醒\n%s"),*Guide.HowToUse,*Guide.Example,*Guide.Reverse,*Guide.Caution):D.Description;
+  MajorEffect->SetText(FText::FromString(Full+FString::Printf(TEXT("\n\n花 %d 点额度 · 占 1 个槽位"),D.Cost)));
   MajorTitle->SetText(FText::FromString(D.Id.ToString()+TEXT(" · ")+D.Name));
   MajorFlavor->SetText(FText::FromString(HarvestMagic::MajorFlavor(D.Id)));
  }return;}

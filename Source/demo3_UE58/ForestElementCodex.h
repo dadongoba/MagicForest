@@ -28,6 +28,16 @@ private:
  TSharedPtr<SVerticalBox> Body;
  bool bSinglePage=false;
 };
+UCLASS()
+class DEMO3_UE58_API UForestTaskJournalWidget : public UUserWidget
+{
+ GENERATED_BODY()
+public:
+ TWeakObjectPtr<UForestElementCodex> Owner;
+protected:
+ virtual TSharedRef<SWidget> RebuildWidget() override;
+ virtual FReply NativeOnPreviewKeyDown(const FGeometry&,const FKeyEvent&) override;
+};
 /** Read-only, table-backed element reference. Contains no commission targets. */
 UCLASS()
 class DEMO3_UE58_API UForestElementCodex : public UTickableWorldSubsystem
@@ -45,7 +55,10 @@ public:
  UFUNCTION(BlueprintPure,Category="Magic Book") bool IsOpen() const;
  void OpenTodayMajors();
  void ShowDailyMajors(bool bDaily);
- void ShowTaskJournal();
+ UFUNCTION(BlueprintCallable,Category="Task Journal") void ToggleTaskJournal();
+ UFUNCTION(BlueprintCallable,Category="Task Journal") void OpenTaskJournal();
+ UFUNCTION(BlueprintCallable,Category="Task Journal") void CloseTaskJournal();
+ UFUNCTION(BlueprintPure,Category="Task Journal") bool IsTaskJournalOpen() const;
  void SelectMajor(FName Id);
  TArray<FAlchemyCardDefinition> DailyCards() const;
  int32 DailyCount(FName Id) const;
@@ -56,11 +69,12 @@ public:
  TArray<FForestCodexEntry> Entries;
  FString Introduction,Notes,LoadError;
  int32 SelectedElement=0,SelectedStrength=1;
- bool bDailyMajors=false,bTaskJournal=false;
+ bool bDailyMajors=false;
  FName SelectedMajor=NAME_None;
 private:
  UPROPERTY() TObjectPtr<UInputComponent> Input;
  UPROPERTY() TObjectPtr<UForestElementCodexWidget> Widget;
+ UPROPERTY() TObjectPtr<UForestTaskJournalWidget> JournalWidget;
  UPROPERTY() TObjectPtr<USkeletalMesh> BookMesh;
  UPROPERTY() TObjectPtr<UAnimSequence> OpenAnimation;
  UPROPERTY() TObjectPtr<UAnimSequence> FoldAnimation;
@@ -68,6 +82,7 @@ private:
  TWeakObjectPtr<AActor> BookVisual;
  bool bReady=false,bOldCursor=false;
  bool bReturnToWorkbench=false;
+ bool bJournalOldCursor=false;
  float OpeningTime=0;
  void Setup();
  void LoadEntries();
