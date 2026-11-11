@@ -247,23 +247,23 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
  return SNew(SOverlay)
  +SOverlay::Slot().Padding(FMargin(24))
  [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
- [SNew(SBox).WidthOverride(1080.f).HeightOverride(740.f)
+ [SNew(SBox).WidthOverride(1240.f).HeightOverride(780.f)
   [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(0.f)
-   [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(0.f)
+   [SNew(SForestPaperBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Paper).Padding(FMargin(104,28,104,32))
     [SNew(SVerticalBox)
      +SVerticalBox::Slot().AutoHeight()
-     [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(42,32,42,6))
+     [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(16,4,16,6))
       [SNew(SHorizontalBox)
        +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[SNew(STextBlock).Text(FText::FromString(TEXT(""))).Font(HarvestMagic::Font(19)).ColorAndOpacity(HarvestMagic::Moss)]
        +SHorizontalBox::Slot().FillWidth(1.f)[SNew(SVerticalBox)
         +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("随身物品"))).Font(HarvestMagic::Font(9,true)).ColorAndOpacity(HarvestMagic::Muted)]
         +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("背包"))).Font(HarvestMagic::Font(19)).ColorAndOpacity(HarvestMagic::Ink)]]
        +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("B / ESC 关闭"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Muted)]]]
-     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,4,42,0))
+     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(16,4,16,0))
       [SNew(SHorizontalBox)
        +SHorizontalBox::Slot().AutoWidth().Padding(0,0,10,0)[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=false;bMajorArtExpanded=false;Refresh();return FReply::Handled();})[SNew(STextBlock).Text(FText::FromString(TEXT("元素小物"))).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]
        +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).OnClicked_Lambda([this](){bMajorsTab=true;Refresh();return FReply::Handled();})[SNew(STextBlock).Text_Lambda([this](){auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();return FText::FromString(FString::Printf(TEXT("今日日运 · 可用%d张 · 已抽%d/%d"),A?A->GetTodayMajors().Num():0,A?A->GetTodayDrawCount():0,A?A->GetMaxDailyDraws():3));}).Font(HarvestMagic::Font(12)).ColorAndOpacity(HarvestMagic::Ink)]]]
-     +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(42,12,42,4))
+     +SVerticalBox::Slot().FillHeight(1.f).Padding(FMargin(16,12,16,4))
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(.52f).Padding(0,0,12,0)
       [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(FLinearColor::Transparent).Padding(FMargin(0))
@@ -302,7 +302,7 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
            [SNew(SVerticalBox)
             +SVerticalBox::Slot().AutoHeight()[SAssignNew(MajorTitle,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]
             +SVerticalBox::Slot().AutoHeight().Padding(0,18,0,0)[SAssignNew(MajorFlavor,STextBlock).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Moss).AutoWrapText(true)]]]]]]
-     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(42,0,42,35))
+     +SVerticalBox::Slot().AutoHeight().Padding(FMargin(16,0,16,4))
      [SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(12,8))
       +SWrapBox::Slot()[SNew(SButton).ButtonStyle(&ForestTheme::SecondaryButton()).ContentPadding(FMargin(16,10)).OnClicked_Lambda([this](){Close();return FReply::Handled();})
        [SNew(STextBlock).Text(FText::FromString(TEXT("合上背包"))).Font(HarvestMagic::Font(14,true)).ColorAndOpacity(HarvestMagic::Ink)]]
