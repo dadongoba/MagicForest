@@ -283,10 +283,10 @@ TSharedRef<SWidget> UForestMagicInventoryWidget::RebuildWidget()
           +SScrollBox::Slot()[SAssignNew(Detail,STextBlock).Font(HarvestMagic::Font(16)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]
         +SOverlay::Slot()
          [SNew(SHorizontalBox).Visibility_Lambda([this](){return bMajorsTab && !SelectedMajor.IsEmpty()?EVisibility::Visible:EVisibility::Collapsed;})
-          +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,6,0)
-           [SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
-            +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("牌的功效"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss)]
-            +SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[SAssignNew(MajorEffect,STextBlock).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Ink).AutoWrapText(true)]]]
+          +SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(0,0,6,0)
+           [SNew(SBox).MaxDesiredHeight(460)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
+            +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("牌的功效"))).Font(HarvestMagic::Font(10,true)).ColorAndOpacity(HarvestMagic::Moss).Justification(ETextJustify::Center)]
+            +SVerticalBox::Slot().AutoHeight().Padding(0,14,0,0)[SAssignNew(MajorEffect,STextBlock).Font(HarvestMagic::Font(15)).ColorAndOpacity(HarvestMagic::Ink).Justification(ETextJustify::Center).AutoWrapText(true)]]]]
           +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
            [SNew(SBorder).BorderImage(HarvestMagic::Fill()).BorderBackgroundColor(HarvestMagic::Edge.CopyWithNewOpacity(.32f)).Padding(5.f)
             [SNew(SBox).WidthOverride(136).HeightOverride(490)
