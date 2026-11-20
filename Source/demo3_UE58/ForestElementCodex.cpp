@@ -249,22 +249,32 @@ void UForestElementCodexWidget::Refresh()
   if(const auto* D=Cards.FindByPredicate([A](const auto& C){return C.Id==A->SelectedMajor;}))
   {
    const bool bUnlocked=Alchemy && Alchemy->HasDiscoveredMajor(D->Id);
-   Detail->AddSlot().AutoHeight().Padding(0,12)[ElementBook::Text(bUnlocked?D->Id.ToString()+TEXT(" · ")+D->Name:TEXT("尚未遇见的日运牌"),25,true)];
-   Detail->AddSlot().AutoHeight().Padding(0,0,0,18)[ElementBook::Text(bUnlocked?FString::Printf(TEXT("曾经遇见 · 今日持有 %d 张 · 每张占1槽、花%d点额度"),A->DailyCount(D->Id),D->Cost):TEXT("尚未遇见 · 抽到后解锁牌面与说明"),18)];
-   // The complete printed card remains visible while the explanation is read.
-   // The source art is 142×512; preserve that tall proportion on the page.
-   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D->Id))
-    Detail->AddSlot().AutoHeight().Padding(0,0,0,18)
-     [SNew(SBox).WidthOverride(112).HeightOverride(404).HAlign(HAlign_Left)[SNew(SOverlay)+SOverlay::Slot()[SNew(SImage).Image(Art)]+SOverlay::Slot()[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(bUnlocked?FLinearColor(0,0,0,0):FLinearColor(0,0,0,.82f))]]];
    FForestMajorGuide Guide;auto* GI=GetWorld()->GetGameInstance();auto* G=GI?GI->GetSubsystem<UAlchemyGameplaySubsystem>():nullptr;
-   if(!bUnlocked)Detail->AddSlot().AutoHeight().Padding(0,8)[ElementBook::Text(TEXT("这张牌还没有从药瓶中出现过。"),19)];
-   else if(ForestAlchemyGuide::Major(G,D->Id,Guide))
+   const bool bHasGuide=bUnlocked && ForestAlchemyGuide::Major(G,D->Id,Guide);
+   auto Summary=SNew(SVerticalBox);
+   Summary->AddSlot().AutoHeight().Padding(0,22,0,12)[ElementBook::Text(bUnlocked?D->Id.ToString()+TEXT(" · ")+D->Name:TEXT("尚未遇见的日运牌"),25,true)];
+   Summary->AddSlot().AutoHeight().Padding(0,0,0,24)[ElementBook::Text(bUnlocked?FString::Printf(TEXT("曾经遇见 · 今日持有 %d 张\n占 1 个槽位 · 花 %d 点额度"),A->DailyCount(D->Id),D->Cost):TEXT("抽到后解锁牌面与说明"),16)];
+   if(bUnlocked)
    {
-    const FString Titles[]={TEXT("怎么使用"),TEXT("试一次就明白"),TEXT("前面接「恶魔」时"),TEXT("放置提醒")};
-    const FString Texts[]={Guide.HowToUse,Guide.Example,Guide.Reverse,Guide.Caution};
-    for(int32 I=0;I<4;++I){Detail->AddSlot().AutoHeight().Padding(0,14,0,8)[ElementBook::Text(Titles[I],20,true)];Detail->AddSlot().AutoHeight().Padding(0,0,0,16)[ElementBook::Text(Texts[I],19)];}
+    Summary->AddSlot().AutoHeight().Padding(0,0,0,8)[ElementBook::Text(TEXT("怎么使用"),20,true)];
+    Summary->AddSlot().AutoHeight()[ElementBook::Text(bHasGuide?Guide.HowToUse:TEXT("详细书页暂时无法读取。原有运算说明：\n")+D->Description,19)];
    }
-   else Detail->AddSlot().AutoHeight()[ElementBook::Text(TEXT("详细书页暂时无法读取。原有运算说明：\n")+D->Description,19)];
+   else Summary->AddSlot().AutoHeight()[ElementBook::Text(TEXT("这张牌还没有从药瓶中出现过。"),19)];
+   auto Feature=SNew(SHorizontalBox);
+   if(const FSlateBrush* Art=ForestMajorArt::BrushFor(D->Id))
+    Feature->AddSlot().AutoWidth().Padding(0,0,24,0)
+     [SNew(SBox).WidthOverride(bSinglePage?84:112).HeightOverride(bSinglePage?303:404)
+      [SNew(SOverlay)+SOverlay::Slot()[SNew(SImage).Image(Art)]
+       +SOverlay::Slot()[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(bUnlocked?FLinearColor(0,0,0,0):FLinearColor(0,0,0,.82f))]]];
+   Feature->AddSlot().FillWidth(1)[Summary];
+   Detail->AddSlot().AutoHeight().Padding(0,12,0,24)[Feature];
+   if(bHasGuide)
+   {
+    Detail->AddSlot().AutoHeight().Padding(0,0,0,12)[SNew(SBox).HeightOverride(1)[SNew(SBorder).BorderImage(ForestTheme::Fill()).BorderBackgroundColor(ForestTheme::Edge)]];
+    const FString Titles[]={TEXT("试一次就明白"),TEXT("前面接「恶魔」时"),TEXT("放置提醒")};
+    const FString Texts[]={Guide.Example,Guide.Reverse,Guide.Caution};
+    for(int32 I=0;I<3;++I){Detail->AddSlot().AutoHeight().Padding(0,14,0,8)[ElementBook::Text(Titles[I],20,true)];Detail->AddSlot().AutoHeight().Padding(0,0,0,16)[ElementBook::Text(Texts[I],19)];}
+   }
   }
   else
   {
