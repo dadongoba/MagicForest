@@ -2,6 +2,16 @@
 
 本文件记录增量仓库每次提交上传的内容。最新更新放在最前面；每次上传前必须把本条记录与对应文件一起提交。验证状态应区分“本次验证”“历史记录”与“未验证”。
 
+## 2026-11-23-01：合成结果驱动次日区块、最坏断线与跨日任务记忆
+
+- **基线 / 前置**：`39f2a7d`，前批2026-11-20-02；按已确认五档、状态转移、角色断线和全部结果进入次日人设实施。
+- **新增**：`Config/ForestWorldRules.json`、`Source/demo3_UE58/ForestOutcomePolicy.h`、`ForestWorldOutcome.h/.cpp`、`Tools/Tests/run_world_outcome_checks.py`、[接入说明](Docs/World_Outcome_Integration_2026-11-23.md)。
+- **修改**：`Config/ForestZones.json`；游戏源码 `ForestAlchemy.h/.cpp`、`ForestAlchemyUI.cpp`、`ForestNPCDialogueSubsystem.h/.cpp`、`ForestRoadAIController.h/.cpp`、`ForestNPCInteraction.cpp`、`ForestHarvestMagic.cpp`、`demo3_UE58.Build.cs`；DialogueMemoryTable插件内 `Public/DailyMushroomSubsystem.h`、`AlchemyCampaignPolicy.h`、`Private/DailyMushroomSubsystem.cpp`、`AlchemyGameplaySubsystem.cpp`、`AlchemyDialogueKnowledge.cpp`。
+- **行为**：收据保存确定的任务结果和区块变化；角色对应A/B区按表更新，保护入口保底；最差档次日不再发任务、仍可交谈指责；所有历史结果进入生成/复核，保留原记忆接口。任务数量、结算页数、全断线提前结局和恢复路径同步调整。旧收据不追溯处罚。
+- **应用**：按原路径合并源码、配置并重编译；新增规则JSON有NonUFS打包声明。保留原地图/二进制资产、九份审核委托和图鉴，完整参数与迁移边界见接入说明。
+- **验证**：完整Air工程UE5.8 Mac Development Editor编译链接成功；生产评分/日历便携回归与20条转移/九份分支/十二个预设检查通过；原NPC知识回归通过。未打开UE/PIE，未做引擎存档、地图跨日、UI或DeepSeek线上复测。
+- **上传状态**：待上传；提交推送后核对远端SHA。
+
 ## 2026-11-20-02：日运图鉴右页接入并排布局
 
 - **基线 / 前置**：`2f202c0`，前批 2026-11-20-01。

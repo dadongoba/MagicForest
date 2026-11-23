@@ -119,6 +119,333 @@
         "A": 1
       },
       "GroundOpacity": 0.7
+    },
+    {
+      "Id": "weakened_s1",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.23,
+        "B": 0.17,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.28,
+        "G": 0.2,
+        "B": 0.1,
+        "A": 1
+      },
+      "FogDensity": 0.175,
+      "FogRadius": 850,
+      "ResourceScale": 0.9475,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.2,
+        "G": 0.13,
+        "B": 0.065,
+        "A": 1
+      },
+      "GroundOpacity": 0.21
+    },
+    {
+      "Id": "weakened_s2",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.23,
+        "B": 0.17,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.28,
+        "G": 0.2,
+        "B": 0.1,
+        "A": 1
+      },
+      "FogDensity": 0.35,
+      "FogRadius": 850,
+      "ResourceScale": 0.895,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.2,
+        "G": 0.13,
+        "B": 0.065,
+        "A": 1
+      },
+      "GroundOpacity": 0.42
+    },
+    {
+      "Id": "weakened_s3",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.23,
+        "B": 0.17,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.28,
+        "G": 0.2,
+        "B": 0.1,
+        "A": 1
+      },
+      "FogDensity": 0.5,
+      "FogRadius": 850,
+      "ResourceScale": 0.85,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.2,
+        "G": 0.13,
+        "B": 0.065,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
+    },
+    {
+      "Id": "overgrown_s1",
+      "FogColor": {
+        "R": 0.55,
+        "G": 0.27,
+        "B": 0.07,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 1,
+        "G": 0.38,
+        "B": 0.08,
+        "A": 1
+      },
+      "FogDensity": 0.105,
+      "FogRadius": 850,
+      "ResourceScale": 1.07,
+      "Glow": 0.22749999999999998,
+      "bShowInactiveResources": true,
+      "bUseRegionColor": true,
+      "GroundColor": {
+        "R": 0.4,
+        "G": 0.2,
+        "B": 0.05,
+        "A": 1
+      },
+      "GroundOpacity": 0.21
+    },
+    {
+      "Id": "overgrown_s2",
+      "FogColor": {
+        "R": 0.55,
+        "G": 0.27,
+        "B": 0.07,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 1,
+        "G": 0.38,
+        "B": 0.08,
+        "A": 1
+      },
+      "FogDensity": 0.21,
+      "FogRadius": 850,
+      "ResourceScale": 1.14,
+      "Glow": 0.45499999999999996,
+      "bShowInactiveResources": true,
+      "bUseRegionColor": true,
+      "GroundColor": {
+        "R": 0.4,
+        "G": 0.2,
+        "B": 0.05,
+        "A": 1
+      },
+      "GroundOpacity": 0.42
+    },
+    {
+      "Id": "overgrown_s3",
+      "FogColor": {
+        "R": 0.55,
+        "G": 0.27,
+        "B": 0.07,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 1,
+        "G": 0.38,
+        "B": 0.08,
+        "A": 1
+      },
+      "FogDensity": 0.3,
+      "FogRadius": 850,
+      "ResourceScale": 1.2,
+      "Glow": 0.65,
+      "bShowInactiveResources": true,
+      "bUseRegionColor": true,
+      "GroundColor": {
+        "R": 0.4,
+        "G": 0.2,
+        "B": 0.05,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
+    },
+    {
+      "Id": "disturbed_s1",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.13,
+        "B": 0.48,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.6,
+        "G": 0.2,
+        "B": 1,
+        "A": 1
+      },
+      "FogDensity": 0.1575,
+      "FogRadius": 850,
+      "ResourceScale": 1.0,
+      "Glow": 0.1575,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.22,
+        "G": 0.08,
+        "B": 0.32,
+        "A": 1
+      },
+      "GroundOpacity": 0.21
+    },
+    {
+      "Id": "disturbed_s2",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.13,
+        "B": 0.48,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.6,
+        "G": 0.2,
+        "B": 1,
+        "A": 1
+      },
+      "FogDensity": 0.315,
+      "FogRadius": 850,
+      "ResourceScale": 1.0,
+      "Glow": 0.315,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.22,
+        "G": 0.08,
+        "B": 0.32,
+        "A": 1
+      },
+      "GroundOpacity": 0.42
+    },
+    {
+      "Id": "disturbed_s3",
+      "FogColor": {
+        "R": 0.28,
+        "G": 0.13,
+        "B": 0.48,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.6,
+        "G": 0.2,
+        "B": 1,
+        "A": 1
+      },
+      "FogDensity": 0.45,
+      "FogRadius": 850,
+      "ResourceScale": 1.0,
+      "Glow": 0.45,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.22,
+        "G": 0.08,
+        "B": 0.32,
+        "A": 1
+      },
+      "GroundOpacity": 0.6
+    },
+    {
+      "Id": "inactive_s1",
+      "FogColor": {
+        "R": 0.18,
+        "G": 0.22,
+        "B": 0.25,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.2,
+        "G": 0.23,
+        "B": 0.25,
+        "A": 1
+      },
+      "FogDensity": 0.22749999999999998,
+      "FogRadius": 850,
+      "ResourceScale": 0.9475,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.1,
+        "G": 0.115,
+        "B": 0.12,
+        "A": 1
+      },
+      "GroundOpacity": 0.24499999999999997
+    },
+    {
+      "Id": "inactive_s2",
+      "FogColor": {
+        "R": 0.18,
+        "G": 0.22,
+        "B": 0.25,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.2,
+        "G": 0.23,
+        "B": 0.25,
+        "A": 1
+      },
+      "FogDensity": 0.45499999999999996,
+      "FogRadius": 850,
+      "ResourceScale": 0.895,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.1,
+        "G": 0.115,
+        "B": 0.12,
+        "A": 1
+      },
+      "GroundOpacity": 0.48999999999999994
+    },
+    {
+      "Id": "inactive_s3",
+      "FogColor": {
+        "R": 0.18,
+        "G": 0.22,
+        "B": 0.25,
+        "A": 1
+      },
+      "ResourceColor": {
+        "R": 0.2,
+        "G": 0.23,
+        "B": 0.25,
+        "A": 1
+      },
+      "FogDensity": 0.65,
+      "FogRadius": 850,
+      "ResourceScale": 0.85,
+      "Glow": 0.0,
+      "bShowInactiveResources": true,
+      "GroundColor": {
+        "R": 0.1,
+        "G": 0.115,
+        "B": 0.12,
+        "A": 1
+      },
+      "GroundOpacity": 0.7
     }
   ]
 }

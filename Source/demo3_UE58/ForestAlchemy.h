@@ -4,6 +4,7 @@
 #include "GameFramework/SaveGame.h"
 #include "Blueprint/UserWidget.h"
 #include "AlchemyGameplayTypes.h"
+#include "ForestWorldOutcome.h"
 #include "ForestAlchemy.generated.h"
 class UInputComponent;class APlayerController;class UStaticMeshComponent;class UForestAlchemy;class UForestMajorDrawWidget;
 struct FForestMagicItem;
@@ -42,6 +43,7 @@ struct FForestBrewRecord
  UPROPERTY(BlueprintReadOnly) int32 CommissionId=0;
  UPROPERTY(BlueprintReadOnly) FAlchemyEvaluationResult Result;
  UPROPERTY(BlueprintReadOnly) TArray<FAlchemyCardSequenceItem> Sequence;
+ UPROPERTY() FForestWorldOutcome WorldOutcome;
 };
 UCLASS()
 class DEMO3_UE58_API UForestAlchemySave : public USaveGame
@@ -142,6 +144,13 @@ public:
  bool IsCommissionAccepted(int32 Id) const;
  bool IsCommissionResolved(int32 Id) const;
  bool IsDayResolved(int32 Day) const;
+ TArray<int32> RequiredCommissions(int32 Day) const;
+ bool IsNpcDisconnected(FName NpcId,int32 Day=0) const;
+ bool AllLinesDisconnectedAfter(int32 Day) const;
+ FString OutcomeMemory(FName NpcId) const;
+ FString OutcomeCatalog(FName NpcId,TArray<FName>& FactIds) const;
+ FString OutcomeFallback(FName NpcId) const;
+ int32 NpcWorkState(FName NpcId) const;
  FString TaskJournal() const;
  FString TaskStatusForNpc(FName NpcId) const;
  void ChooseCommission(int32 Id);
@@ -177,6 +186,9 @@ private:
  float ScanTime=1,SpawnTime=0,ToastUntil=0;
  FString Toast;
  float ConsequenceStarted=0;
+ bool PrepareWorldForDay(int32 Day);
+ int32 PreviousRegionState(FName Persona,int32 Day) const;
+ bool CompleteDay(int32 Day);
  void GenerateConsequence();
  void Setup();bool Persist();bool SyncDay();void Discover();void StartInCabin();void Interact();
  void OpenMajorDrawReveal(const FAlchemyCardDefinition& Card);

@@ -57,6 +57,9 @@ public:
  int32 Topics=1,ReplyRepairs=0,PlanRepairs=0;
  int32 Day=0,Familiarity=1,CommissionId=0;
  TArray<FDialogueMessage> Evidence;
+ bool bLineDisconnected=false;
+ FString OutcomeContext,OutcomeHistory,OutcomeReplyFallback;
+ TArray<FName> OutcomeFactIds;
  FString AcceptanceNotice;
  FString PlanRepairNotice;
  bool bPresentation=false,bVerifiedReply=false;

@@ -435,6 +435,7 @@ void AForestNPCInteraction::Tick(float DT)
  EnableInput(PC);if(InputComponent && !bInputBound){auto& InteractBinding=InputComponent->BindKey(EKeys::E,IE_Pressed,this,&AForestNPCInteraction::InteractNearby);InteractBinding.bConsumeInput=false;auto& FinderBinding=InputComponent->BindKey(EKeys::C,IE_Pressed,this,&AForestNPCInteraction::ToggleNpcFinder);FinderBinding.bConsumeInput=true;bInputBound=true;}
  if(FinderStage==EFinderStage::Travelling){UpdateNpcFinder();UpdateNpcFinderFacing(DT);return;}
  if(FinderStage==EFinderStage::Selecting || FinderStage==EFinderStage::Confirming)return;
+ if(auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>())for(TActorIterator<ACharacter> It(GetWorld());It;++It)if(const FName Id=PersonaId(*It);!Id.IsNone())if(auto* Road=Cast<AForestRoadAIController>(It->GetController()))Road->SetCommissionWorkState(Alchemy->NpcWorkState(Id));
  UpdateFirstDayTutorial();
  if(Active.IsValid()){if(!Cast<AForestRoadAIController>(Active.Get()))Active->StopMovement();if((PC->WasInputKeyJustPressed(EKeys::Escape) && !bItemPresentationOpen && GetWorld()->GetTimeSeconds()>=IgnoreDialogueEscapeUntil) || PC->GetViewTarget()!=PC->GetPawn() || !Active->GetPawn() || FVector::Dist(Active->GetPawn()->GetActorLocation(),PC->GetPawn()->GetActorLocation())>InteractionRange*1.8f)FinishInteraction();return;}
  if(bLockedMovement)FinishInteraction();if(bSuppressInteractUntilRelease){if(!PC->IsInputKeyDown(EKeys::E))bSuppressInteractUntilRelease=false;else return;}

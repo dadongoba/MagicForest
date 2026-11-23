@@ -188,7 +188,7 @@ void UForestHarvestMagic::RefreshFieldUI()
  if(auto* Pawn=BagOwner.Get();Pawn && Pawn->FindComponentByClass<UForestIsometricPlayer>())
  {
   Context.Reset();
-  Action=TEXT("WASD 移动\n左键 选中采集 · E 交互/采集\nF 攀爬/松手\nB 背包 · J 魔法书\nC 找人 · V 视角 · M 地图");
+  Action=TEXT("WASD 移动\n左键 选中采集 · E 交互/采集\nF 攀爬/松手\nB 背包 · J 魔法书 · K 委托手札\nC 找人 · V 视角 · M 地图");
   if(auto* Regions=GetWorld()->GetSubsystem<UForestElementRegions>();Regions && Regions->IsRegionalWorld())
   {
    const auto* View=Pawn->FindComponentByClass<UForestIsometricPlayer>();

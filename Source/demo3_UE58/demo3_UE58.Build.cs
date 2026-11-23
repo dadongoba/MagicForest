@@ -8,6 +8,7 @@ public class demo3_UE58 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		RuntimeDependencies.Add("$(ProjectDir)/Config/ForestZones.json", StagedFileType.NonUFS);
+		RuntimeDependencies.Add("$(ProjectDir)/Config/ForestWorldRules.json", StagedFileType.NonUFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Config/ForestElementCodex.json", StagedFileType.NonUFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Config/ForestMajorGuide.json", StagedFileType.NonUFS);
 		// File-backed Slate brush must be staged as a loose file in packaged builds.

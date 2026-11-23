@@ -115,7 +115,7 @@ void AForestRoadAIController::HandleRouteFailure(const FString& Reason)
 void AForestRoadAIController::CompleteWalk()
 {
  if(!GetPawn())return;if(FVector::Dist2D(GetPawn()->GetActorLocation(),ApproachPoint)>DestinationArrivalRadius){HandleRouteFailure(TEXT("Move finished before reaching road point"));return;}
- ++CompletedWalks;RecentGoals.Add(ApproachPoint);if(RecentGoals.Num()>6)RecentGoals.RemoveAt(0);Request=FAIRequestID::InvalidRequest;NextDecision=GetWorld()->GetTimeSeconds()+0.05;
+ ++CompletedWalks;RecentGoals.Add(ApproachPoint);if(RecentGoals.Num()>6)RecentGoals.RemoveAt(0);Request=FAIRequestID::InvalidRequest;NextDecision=GetWorld()->GetTimeSeconds()+(CommissionWorkState==1?12.0:0.05);
  UE_LOG(LogForestRoadAI,Log,TEXT("%s: ROAM_REACHED %d, choose next road"),*GetNameSafe(GetPawn()),CompletedWalks);
 }
 void AForestRoadAIController::OnMoveCompleted(FAIRequestID ID,const FPathFollowingResult& Result)
@@ -170,6 +170,12 @@ void AForestRoadAIController::EndInteraction()
 }
 void AForestRoadAIController::RestartPatrol()
 {EndInteraction();bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;RecoveryUntil=0;RebuildRoadNetwork();NextDecision=GetWorld()->GetTimeSeconds()+0.3;}
+void AForestRoadAIController::SetCommissionWorkState(int32 State)
+{
+ State=FMath::Clamp(State,0,3);if(State==CommissionWorkState)return;
+ if(const auto* C=GetPawn()?GetPawn()->FindComponentByClass<UForestAutoCrouchComponent>():nullptr;C && C->IsInPassage())return;CommissionWorkState=State;
+ if(!bInteracting && !bApproachingPlayer){bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;RecoveryUntil=0;NextDecision=GetWorld()->GetTimeSeconds()+(State==1?12:0.3);}
+}
 void AForestRoadAIController::Tick(float DT)
 {
  Super::Tick(DT);DisableLegacyWanderTimer();if(!GetPawn())return;const double Now=GetWorld()->GetTimeSeconds();
@@ -178,9 +184,10 @@ void AForestRoadAIController::Tick(float DT)
  if(Now>=NextHistorySample){const FVector P=GetPawn()->GetActorLocation();if(MovementHistory.IsEmpty() || FVector::Dist2D(P,MovementHistory.Last())>50){MovementHistory.Add(P);if(MovementHistory.Num()>12)MovementHistory.RemoveAt(0);}NextHistorySample=Now+0.5;}
  if(auto* C=GetPawn()->FindComponentByClass<UForestAutoCrouchComponent>();C && C->IsInPassage()){ProgressTime=Now;ProgressLocation=GetPawn()->GetActorLocation();return;}
  if(Now<RecoveryUntil){StatusNote=TEXT("Backing away from obstruction");GetPawn()->AddMovementInput((RecoveryPoint-GetPawn()->GetActorLocation()).GetSafeNormal2D());if(FVector::Dist2D(RecoveryPoint,GetPawn()->GetActorLocation())<60)RecoveryUntil=0;return;}
+ if(CommissionWorkState>=2){if(Request.IsValid()){bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;Request=FAIRequestID::InvalidRequest;}StatusNote=CommissionWorkState==3?TEXT("Commission line ended; available for conversation"):TEXT("Handling previous commission failure");return;}
  if(Request.IsValid())
  {if(FVector::Dist2D(ProgressLocation,GetPawn()->GetActorLocation())>25){ProgressLocation=GetPawn()->GetActorLocation();ProgressTime=Now;}else if(Now-ProgressTime>StuckTimeout){bSuppressCompletion=true;StopMovement();bSuppressCompletion=false;HandleRouteFailure(TEXT("No movement progress"));}}
- else if(Now>=NextDecision)StartRoaming();
+ else if(Now>=NextDecision){StartRoaming();if(CommissionWorkState==1 && !Request.IsValid())NextDecision=Now+12;}
 }
 FString AForestRoadAIController::GetRoadDebugStatus() const
 {const auto* C=GetPawn()?GetPawn()->FindComponentByClass<UForestAutoCrouchComponent>():nullptr;return FString::Printf(TEXT("%s | completed walks %d | avoided routes %d | %s\n%s"),bInteracting?TEXT("Talking"):Request.IsValid()?TEXT("Moving"):TEXT("Choosing road"),CompletedWalks,RouteFailures,C?*C->GetCrouchStatus():TEXT("Standing"),*StatusNote);}

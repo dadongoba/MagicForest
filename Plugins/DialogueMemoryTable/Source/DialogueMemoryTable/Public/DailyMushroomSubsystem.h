@@ -151,7 +151,7 @@ public:
     bool IsCampaignCompleted() const { return Save && Save->bCampaignCompleted; }
 
     UFUNCTION(BlueprintCallable, Category = "World|Day")
-    bool ConfirmSynthesisForDay(int32 ReceiptDay);
+    bool ConfirmSynthesisForDay(int32 ReceiptDay, bool bEndJourney = false);
 
     // Native authority supplied by the receipt owner; absent authority cannot advance time.
     FAlchemyDayCompletionGate DayCompletionGate;

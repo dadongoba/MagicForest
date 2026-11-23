@@ -110,7 +110,7 @@ bool UForestNPCDialogueSubsystem::IsFirstDayMessengerTutorialPending() const
 bool UForestNPCDialogueSubsystem::BeginFirstDayMessengerTutorial()
 {
  if(!IsFirstDayMessengerTutorialPending() || !BeginConversation(TEXT("fawnia")))return false;
- const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；接到的委托会记在魔法书的委托手札里。收齐材料后回小屋，在合成台选好委托、调配并封瓶，不用把原料拿给我们。我们三人的今日委托都结算完，才会迎来下一天。路和人我熟，下一步找不着就来问我。");
+ const FString Opening=TEXT("嗐，终于找到你了。新来的女巫，对吧？第一天先听我说清楚：林子里的蘑菇每天不一样，摘之前留意它带的是火、风还是水。接了委托，就拿当天能找到的材料去配；接到的委托会记在手札里，按 K 可以查阅。收齐材料后回小屋，在合成台选好委托、调配并封瓶，不用把原料拿给我们。当天还在托付你的同伴，他们的委托都结算完，才会迎来下一天。路和人我熟，下一步找不着就来问我。");
  auto& R=Row(TEXT("fawnia"));const auto Message=ForestDialogue::Message(TEXT("assistant"),Opening);
  R.History.Add(Message);while(R.History.Num()>8)R.History.RemoveAt(0);
  Save->bFirstDayMessengerTutorialDelivered=true;Status=TEXT("Fawnia 找到了你。可以继续问她，或按 Esc 结束交谈。");
@@ -176,7 +176,10 @@ bool UForestNPCDialogueSubsystem::SendPlayerMessageInternal(const FString& Raw,b
  for(int32 I=FMath::Max(0,R.History.Num()-8);I<R.History.Num();++I)Context->Evidence.Add(R.History[I]);
  auto* Alchemy=GetWorld()->GetSubsystem<UForestAlchemy>();
  if(R.KnowledgeDay!=WorldDay || R.KnowledgeCommission!=CommissionOrderIndex){R.KnowledgeDay=WorldDay;R.KnowledgeCommission=CommissionOrderIndex;R.DisclosedTopics=0;R.DeliveredTaskFacts.Reset();}
- Context->bAllowAcceptance=!bPresentation && Alchemy && !Alchemy->IsCommissionAccepted(CommissionOrderIndex);
+ Context->bLineDisconnected=Alchemy && Alchemy->IsNpcDisconnected(ActiveNpc);
+ if(Alchemy){Context->OutcomeContext=Alchemy->OutcomeMemory(ActiveNpc);Context->OutcomeHistory=Alchemy->OutcomeCatalog(ActiveNpc,Context->OutcomeFactIds);Context->OutcomeReplyFallback=Alchemy->OutcomeFallback(ActiveNpc);}
+ Context->bAllowAcceptance=!Context->bLineDisconnected && !bPresentation && Alchemy && !Alchemy->IsCommissionAccepted(CommissionOrderIndex);
+ if(Context->bLineDisconnected){Context->CommissionId=0;Context->Intent=TEXT("smalltalk");RequestNpcReply(Context);return true;}
  FAlchemyCommissionDefinition KnowledgeCommission;const bool HasKnowledge=Gameplay->GetCommission(CommissionOrderIndex,KnowledgeCommission) && AlchemyDialogueKnowledge::HasReviewedEntry(KnowledgeCommission);
  if(Context->bAllowAcceptance || HasKnowledge)RequestAcceptanceCheck(Context);else RequestNpcReply(Context);
  return true;
@@ -188,6 +191,7 @@ void UForestNPCDialogueSubsystem::RequestAcceptanceCheck(UForestDialogueRequestC
  if(!G || !G->GetCommission(Context->CommissionId,C)){HandleResponse(Context,false,TEXT("commission_missing"));return;}
  auto Data=MakeShared<FJsonObject>();Data->SetStringField(TEXT("task_catalog"),AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity));
  TSharedPtr<FJsonObject> MemoryCatalog;FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Context->MemoryCatalog),MemoryCatalog);if(MemoryCatalog)Data->SetObjectField(TEXT("memory_catalog"),MemoryCatalog);
+ Data->SetStringField(TEXT("authoritative_previous_commissions"),Context->OutcomeContext);
  Data->SetBoolField(TEXT("may_accept"),Context->bAllowAcceptance);Data->SetBoolField(TEXT("presentation"),Context->bPresentation);Data->SetNumberField(TEXT("current_layer"),Context->Familiarity);
  Data->SetBoolField(TEXT("format_retry"),Context->PlanRepairs>0);
  if(!Context->PlanRepairNotice.IsEmpty())Data->SetStringField(TEXT("plan_validation_error"),Context->PlanRepairNotice);
@@ -210,19 +214,22 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
 {
  Context->bAcceptanceCheck=false;Requests.AddUnique(Context);
  auto* G=GetGameInstance()->GetSubsystem<UAlchemyGameplaySubsystem>();auto* AI=GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
- FAlchemyCommissionDefinition C;if(!G || !AI || !G->GetCommission(Context->CommissionId,C)){HandleResponse(Context,false,TEXT("dialogue_service_missing"));return;}
+ FAlchemyCommissionDefinition C;if(!G || !AI || (!Context->bLineDisconnected && !G->GetCommission(Context->CommissionId,C))){HandleResponse(Context,false,TEXT("dialogue_service_missing"));return;}
  TArray<FName> Known=Row(Context->NpcId).DeliveredTaskFacts;for(const auto& Id:Row(Context->NpcId).DeliveredPersonaFacts)Known.AddUnique(Id);
- Context->AllowedFacts=AlchemyDialogueKnowledge::AllowedFacts(C,Context->Familiarity,Context->SelectedFacts,Known);
+ Context->AllowedFacts=Context->bLineDisconnected?TArray<FName>():AlchemyDialogueKnowledge::AllowedFacts(C,Context->Familiarity,Context->SelectedFacts,Known);
+ for(const auto Id:Context->OutcomeFactIds)Context->AllowedFacts.AddUnique(Id);
  FString Prompt=G->BuildPersonaSystemPrompt(Context->NpcId,Context->Familiarity,Context->CommissionId,Context->MemoryView,{});
- Prompt+=AlchemyDialogueKnowledge::FactGuidance(C,Context->Familiarity,Context->AllowedFacts,Known);
+ if(!Context->bLineDisconnected)Prompt+=AlchemyDialogueKnowledge::FactGuidance(C,Context->Familiarity,Context->AllowedFacts,Known);
+ Prompt+=TEXT("\n【已发生的任务事实与当前委托线约束，优先于旧聊天】\n")+Context->OutcomeContext;
  Prompt+=DialogueCompactMemoryRuntime::ContextRules();
  Prompt+=TEXT("\n【本轮意图】\n")+Context->Intent;
  // Action receipts constrain what has happened; they are not dialogue to quote.
  auto Authority=MakeShared<FJsonObject>();
  Authority->SetStringField(TEXT("visibility"),TEXT("internal_only"));
- if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())Authority->SetStringField(TEXT("commission_state"),A->IsCommissionResolved(Context->CommissionId)?TEXT("resolved"):A->IsCommissionAccepted(Context->CommissionId)?TEXT("accepted"):TEXT("not_accepted"));
+ if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>())Authority->SetStringField(TEXT("commission_state"),Context->bLineDisconnected?TEXT("disconnected"):A->IsCommissionResolved(Context->CommissionId)?TEXT("resolved"):A->IsCommissionAccepted(Context->CommissionId)?TEXT("accepted"):TEXT("not_accepted"));
  Authority->SetStringField(TEXT("action_receipt"),Context->AcceptanceNotice.IsEmpty()?TEXT("none"):Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("accepted_saved"):TEXT("not_saved"));
  Prompt+=AlchemyDialogueKnowledge::StateRules()+ForestDialogue::Json(Authority);
+ Prompt+=TEXT("\n【已发生任务的回复核验】不能否认、遗忘或改写任务历史。未断线时，即使抱怨也不得永久拒绝当日新委托。断线时不得提出、暗示或接受新委托，不得安排再调一瓶恢复关系；玩家愿意帮忙也不能改变状态。历史事实只谈结果和具体作用，不报数字配方，不透露未解锁身份。只在问题相关时提及历史，不每句机械重复指责。\n");
  TArray<FDialogueMessage> Messages;Messages.Add(ForestDialogue::Message(TEXT("system"),Prompt));
  for(int32 I=FMath::Max(0,Context->Evidence.Num()-8);I<Context->Evidence.Num();++I)Messages.Add(Context->Evidence[I]);
  FName Fallback=TEXT("task.purpose");
@@ -232,13 +239,19 @@ void UForestNPCDialogueSubsystem::RequestNpcReply(UForestDialogueRequestContext*
  else if(Context->Intent==TEXT("backstory") || Context->Intent==TEXT("smalltalk") || Context->Intent==TEXT("show_item")){FallbackText=AlchemyPersonaPolicy::CleanReply(Context->NpcId,FString());Fallback=NAME_None;}
  else if(Context->Intent==TEXT("other")){FallbackText=TEXT("你想问委托的用途，还是调配步骤？要回小屋合成台调配并封瓶，不用把原料当面交给我。");Fallback=NAME_None;}
  if(Context->bPresentation){FallbackText=TEXT("东西我看到了。你想问它的性质，还是它和这份委托的关系？");Fallback=NAME_None;}
- if(!Context->AcceptanceNotice.IsEmpty())FallbackText=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("这份委托记下了。回小屋合成台调配并封瓶，接到的事可以在魔法书里查。"):TEXT("这次还没记下委托，稍后再确认。回小屋合成台调配，不用把原料交给我。");
+ if(!Context->AcceptanceNotice.IsEmpty())FallbackText=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("这份委托记下了。回小屋合成台调配并封瓶，接到的事可以按 K 在手札里查。"):TEXT("这次还没记下委托，稍后再确认。回小屋合成台调配，不用把原料交给我。");
  if(!Context->AcceptanceNotice.IsEmpty())Fallback=NAME_None;
  FAlchemyNpcReplyCompletion Callback;Callback.BindDynamic(Context,&UForestDialogueRequestContext::ReplyCompleted);
- AI->RequestNpcTurn(Context->NpcId,Messages,AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity),Context->AllowedFacts,Fallback,FallbackText,Callback,Context->Scope,Context->MemoryAnalysis);
+ FString Catalog=Context->bLineDisconnected?TEXT("{\"facts\":[]}"):AlchemyDialogueKnowledge::Catalog(C,Context->Familiarity);
+ TSharedPtr<FJsonObject> CatalogObject;FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Catalog),CatalogObject);
+ if(CatalogObject){auto Rows=CatalogObject->GetArrayField(TEXT("facts"));for(const FName Id:Context->OutcomeFactIds){auto F=MakeShared<FJsonObject>();F->SetStringField(TEXT("id"),Id.ToString());F->SetStringField(TEXT("topic"),TEXT("authoritative_outcome"));F->SetStringField(TEXT("text"),Context->OutcomeHistory);Rows.Add(MakeShared<FJsonValueObject>(F));}CatalogObject->SetArrayField(TEXT("facts"),Rows);Catalog=ForestDialogue::Json(CatalogObject.ToSharedRef());}
+ if(Context->bLineDisconnected){Fallback=Context->OutcomeFactIds.IsEmpty()?NAME_None:Context->OutcomeFactIds.Last();FallbackText=Context->OutcomeReplyFallback;}
+ else if(!Context->OutcomeReplyFallback.IsEmpty() && Context->Intent==TEXT("other")){Fallback=Context->OutcomeFactIds.Last();FallbackText=Context->OutcomeReplyFallback;}
+ AI->RequestNpcTurn(Context->NpcId,Messages,Catalog,Context->AllowedFacts,Fallback,FallbackText,Callback,Context->Scope,Context->MemoryAnalysis);
 }
 FString UForestNPCDialogueSubsystem::OfflineReply(const FString& Text) const
 {
+ if(auto* A=GetWorld()->GetSubsystem<UForestAlchemy>();A && A->IsNpcDisconnected(ActiveNpc))return A->OutcomeFallback(ActiveNpc);
  const FString Name=ActiveNpc==TEXT("natta")?TEXT("Natta"):ActiveNpc==TEXT("fawnia")?TEXT("Fawnia"):TEXT("森林女巫");
  FString Previous;for(const auto& S:GetGameInstance()->GetSubsystem<UDialogueMemoryTableSubsystem>()->GetLedgerSnapshot().NpcStates)if(S.NpcId==ActiveNpc)Previous=AlchemyPersonaPolicy::ContextText(ActiveNpc,S.LastExchangeSummary);
  if(Text.Contains(TEXT("记得")) && !Previous.IsEmpty())return FString::Printf(TEXT("我是%s。记得，上次我们聊到：%s"),*Name,*Previous);
@@ -329,7 +342,7 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
    Context->AcceptanceNotice=Saved?TEXT("本轮对话已确认玩家承担委托且登记保存成功。自然回应玩家的答应，提醒回小屋合成；不报目标数值。"):TEXT("本轮登记保存失败，未接取。请告知尚未记下，让玩家稍后再次确认；不得声称任务已登记。");
   }
   else if(Context->bAllowAcceptance && (Accepted))Context->AcceptanceNotice=TEXT("本轮接取识别暂不可用，未登记。若玩家是在答应承担委托，请说明还需再次确认；不得声称已接取。");
-  if(!Context->AcceptanceNotice.IsEmpty()){R.LastActionReceipt=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("委托已接取，已记入魔法书。回小屋合成台调配并封瓶。"):TEXT("委托尚未登记，可继续交谈确认。");Persist();Status=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("委托已接取，已记入魔法书；对方正在回答…"):TEXT("本轮尚未登记委托；对方正在回答…");OnConversationUpdated.Broadcast();}
+  if(!Context->AcceptanceNotice.IsEmpty()){R.LastActionReceipt=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("委托已接取，已记入委托手札。回小屋合成台调配并封瓶。"):TEXT("委托尚未登记，可继续交谈确认。");Persist();Status=Context->AcceptanceNotice.Contains(TEXT("登记保存成功"))?TEXT("委托已接取，已记入委托手札；对方正在回答…"):TEXT("本轮尚未登记委托；对方正在回答…");OnConversationUpdated.Broadcast();}
   RequestNpcReply(Context);return;
  }
  bWaiting=false;
@@ -338,7 +351,7 @@ void UForestNPCDialogueSubsystem::HandleResponse(UForestDialogueRequestContext* 
   if(Context->bVerifiedReply)
   {
    TArray<FName> Task,Persona;
-   for(const auto& Id:Context->VerifiedReply.DeliveredFacts)(Id.ToString().StartsWith(TEXT("person."))?Persona:Task).AddUnique(Id);
+   for(const auto& Id:Context->VerifiedReply.DeliveredFacts){if(Id.ToString().StartsWith(TEXT("person.")))Persona.AddUnique(Id);else if(Id.ToString().StartsWith(TEXT("task.")))Task.AddUnique(Id);}
    AlchemyDialogueTurnPolicy::CommitDelivered(Context->AllowedFacts,Task,R.DeliveredTaskFacts,true);
    AlchemyDialogueTurnPolicy::CommitDelivered(Context->AllowedFacts,Persona,R.DeliveredPersonaFacts,true);
    R.bLastReplyFallback=Context->VerifiedReply.bFallback;

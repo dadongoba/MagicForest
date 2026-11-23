@@ -28,6 +28,7 @@ public:
  UFUNCTION(BlueprintCallable,Category="NPC Interaction") void CancelPlayerApproach();
  UFUNCTION(BlueprintPure,Category="NPC Interaction") bool IsApproachingPlayer() const{return bApproachingPlayer;}
  void DrawRoadDebug() const;
+ void SetCommissionWorkState(int32 State);
 protected:
  virtual void OnPossess(APawn* InPawn) override;
  virtual void OnUnPossess() override;
@@ -42,6 +43,7 @@ private:
  FVector ApproachPoint=FVector::ZeroVector,ProgressLocation=FVector::ZeroVector,RecoveryPoint=FVector::ZeroVector;
  double ProgressTime=0,NextDecision=0,RecoveryUntil=0,NextHistorySample=0;
  int32 CompletedWalks=0,RouteFailures=0;
+ int32 CommissionWorkState=0;
  bool bSuppressCompletion=false,bInteracting=false,bApproachingPlayer=false;
  FString StatusNote;
  void StartRoaming();

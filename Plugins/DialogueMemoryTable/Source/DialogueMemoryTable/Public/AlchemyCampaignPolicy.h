@@ -7,8 +7,9 @@ constexpr int LastDay = 3;
 struct State { int Day = 1; int Confirmed = 0; bool Completed = false; };
 inline State Normalize(State S)
 {
-    if (S.Day > LastDay || S.Confirmed >= LastDay || S.Completed)
+    if (S.Day > LastDay || S.Confirmed >= LastDay)
         return {LastDay, LastDay, true};
+    if (S.Completed) return S; // Early ending after all three commission lines terminate.
     if (S.Day < 1) S.Day = 1;
     if (S.Confirmed < 0) S.Confirmed = 0;
     if (S.Day <= S.Confirmed) S.Day = S.Confirmed + 1;

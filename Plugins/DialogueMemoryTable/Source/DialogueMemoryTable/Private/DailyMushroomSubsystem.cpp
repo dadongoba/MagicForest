@@ -120,13 +120,14 @@ bool UDailyMushroomSubsystem::ConfirmDryPotSynthesis()
     return ConfirmSynthesisForDay(CurrentDay);
 }
 
-bool UDailyMushroomSubsystem::ConfirmSynthesisForDay(const int32 ReceiptDay)
+bool UDailyMushroomSubsystem::ConfirmSynthesisForDay(const int32 ReceiptDay, const bool bEndJourney)
 {
     if (!Save) return false;
     if (ReceiptDay > Save->LastConfirmedSynthesisDay && (!DayCompletionGate.IsBound() || !DayCompletionGate.Execute(ReceiptDay))) return false;
     const AlchemyCampaign::State Before{CurrentDay, Save->LastConfirmedSynthesisDay, Save->bCampaignCompleted};
     auto After = Before;
     if (!AlchemyCampaign::Confirm(After, ReceiptDay)) return false;
+    if (bEndJourney) { After.Day = ReceiptDay; After.Completed = true; }
     CurrentDay = After.Day;
     Save->LastConfirmedSynthesisDay = After.Confirmed;
     Save->bCampaignCompleted = After.Completed;
