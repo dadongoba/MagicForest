@@ -393,7 +393,7 @@ void UForestAlchemy::ConfirmBrew()
  auto* Memory=GetWorld()->GetGameInstance()->GetSubsystem<UForestNPCDialogueSubsystem>();
  if(!ForestOutcome::Build(CommissionId,Result,PreviousRegionState(Comm.CharacterId,GetDay()),R.WorldOutcome)){WriteBag(BeforeBag);Save->Majors=BeforeCards;Status=TEXT("委托后果配置无效，未封瓶。");return;}
  R.ConsequencePrompt=Gameplay->BuildWorldConsequencePrompt(CommissionId,Result,Memory?Memory->GetCompactMemoryJson(MemoryId):TEXT(""));
- R.ConsequencePrompt+=TEXT("\n【已确定的任务结果与后续约束，优先于一般评级模板】\n")+ForestOutcome::Memory(R.WorldOutcome)+TEXT("\n只把这些事实写成使用结果。严重偏差仍有后续委托，只有委托线终止才拒绝新托付。不可用药剂没有使用现场，只写未获得帮助导致工作中断。不得把角色写死、沉舟、毁掉全部资源，不能新增人物或事件。不要把本段约束措辞抄进正文。\n");
+ R.ConsequencePrompt+=TEXT("\n【已确定的结果资料，仅约束事实，不提供正文句式】\n现场事实：")+R.WorldOutcome.TaskFact+TEXT("\n人物后续状态：")+R.WorldOutcome.NpcFact+TEXT("\n连续性边界：")+R.WorldOutcome.Continuity+TEXT("\n以上是内部事实标签，不能逐句改写成总结报告。按前面的文学笔调把结果写成发生在眼前的情节；终止托付要通过该人物对具体损失的反应呈现，不能直接写委托线终止或不再产生新需求。严重偏差仍有后续委托，只有最坏档才拒绝新托付。不可用药剂没有使用现场；可写没有获得帮助后留下的物件和人物的处置，不虚构使用事故。不得把角色写死、沉舟、毁掉全部资源，不能新增人物或事件。\n");
  R.ConsequencePrompt+=TEXT("\n【该人物已发生的委托历史】\n")+OutcomeMemory(MemoryId);
  const auto& V=Result.Actual;
  R.ConsequencePrompt+=FString::Printf(TEXT("\n【实际元素含义】火：%s；风：%s；水：%s。只在委托已写明的用途内理解这些作用，不额外赋予药剂读心、召唤或远距离改变事物的能力。\n"),V.Fire>0?TEXT("增加热度"):V.Fire<0?TEXT("降低热度"):TEXT("无火"),V.Wind>0?TEXT("增加气流"):V.Wind<0?TEXT("减弱气流"):TEXT("无风"),V.Water>0?TEXT("增加湿润与水分"):V.Water<0?TEXT("减少湿润与水分"):TEXT("无水"));
