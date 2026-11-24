@@ -74,7 +74,9 @@ bool Build(int32 Id,const FAlchemyEvaluationResult& Result,int32 Previous,FFores
 FString Summary(const FForestWorldOutcome& O,bool FinalNight)
 {
  if(!O.Revision)return TEXT("");const FString Region=O.Region==TEXT("fire")?TEXT("火区"):O.Region==TEXT("wind")?TEXT("风区"):TEXT("水区");
- return FString::Printf(TEXT("%s：%s → %s。%s%s"),*Region,*StateName(O.PreviousState),*StateName(O.NextState),FinalNight?TEXT("此状态计入旅程结局，不生成第四天资源。"):*FString::Printf(TEXT("次日 A 区约 %.0f%%、B 区约 %.0f%% 的普通采集点可用，入口保底不受影响。"),O.AvailabilityA*100,O.AvailabilityB*100),O.bDisconnected?TEXT("该人物不再提出后续委托。"):FinalNight?TEXT("人物保留这次任务结果，旅程到此结束。"):TEXT("该人物仍会提出后续委托。"));
+ const FString Name=O.Persona==TEXT("blacksmith")?TEXT("铁匠"):O.Persona==TEXT("operator")?TEXT("接线员"):TEXT("小说家");
+ const FString Consequence=O.bDisconnected?TEXT("你搞砸了这次托付。")+Name+TEXT("不会再向你提出新的委托。你仍然可以找到对方、交谈或展示物品。\n\n"):TEXT("");
+ return Consequence+FString::Printf(TEXT("%s：%s → %s。%s"),*Region,*StateName(O.PreviousState),*StateName(O.NextState),FinalNight?TEXT("此状态计入旅程结局，不生成第四天资源。"):*FString::Printf(TEXT("次日 A 区约 %.0f%%、B 区约 %.0f%% 的普通采集点可用，入口保底不受影响。"),O.AvailabilityA*100,O.AvailabilityB*100));
 }
 FString Memory(const FForestWorldOutcome& O)
 {return O.TaskFact+TEXT("\n人物态度：")+O.NpcFact+TEXT("\n承接约束：")+O.Continuity;}

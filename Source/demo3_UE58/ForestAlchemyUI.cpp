@@ -117,7 +117,7 @@ void UForestBrewWidget::Refresh()
   Story->AddSlot().AutoHeight()[BrewUI::Text(TEXT("推演 · 本份委托的使用结果"),18)];
   Story->AddSlot().AutoHeight().Padding(0,12)[BrewUI::Text(Shown->bNarrativeFallback?TEXT("推演暂不可用 · 以下为本地结算记录"):TEXT("本次成品的推演记录"),10)];
   Story->AddSlot().AutoHeight().Padding(0,10)[BrewUI::Text(Shown->Narrative.IsEmpty()?TEXT("这份委托的推演文本未保存。结算数值仍可在左侧查看。") : Shown->Narrative,16)];
-  if(Shown->WorldOutcome.Revision){Story->AddSlot().AutoHeight().Padding(0,22,0,8)[BrewUI::Text(Shown->WorldOutcome.bDisconnected?TEXT("委托线已终止"):TEXT("世界变化"),18)];Story->AddSlot().AutoHeight()[BrewUI::Text(ForestOutcome::Summary(Shown->WorldOutcome,R->Day==3||A->AllLinesDisconnectedAfter(R->Day)),14)];}
+  if(Shown->WorldOutcome.Revision){Story->AddSlot().AutoHeight().Padding(0,22,0,8)[BrewUI::Text(Shown->WorldOutcome.bDisconnected?TEXT("对方不再委托你"):TEXT("世界变化"),18)];Story->AddSlot().AutoHeight()[BrewUI::Text(ForestOutcome::Summary(Shown->WorldOutcome,R->Day==3||A->AllLinesDisconnectedAfter(R->Day)),14)];}
   if(bCompact)Body->AddSlot().FillHeight(1)[SNew(SScrollBox).ScrollBarAlwaysVisible(true)
    +SScrollBox::Slot()[Scores]+SScrollBox::Slot().Padding(0,22,0,0)[Story]];
   else Body->AddSlot().FillHeight(1)[SNew(SHorizontalBox)
