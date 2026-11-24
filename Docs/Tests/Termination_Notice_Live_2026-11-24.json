@@ -1,0 +1,33 @@
+{
+  "source": "production ForestTerminationNotice.cpp templates with hosted immutable snapshots",
+  "model": "deepseek-chat",
+  "results": [
+    {
+      "case": "no_heat_extra_wind",
+      "text": "你这次把铁匠的托付搞砸了。炉壁没被烘透，深处还留着潮气，你多送的风又扰乱了均匀受热，炉子没法开，后面的活全停住了。铁匠不会再把这修复工作交给你。",
+      "review": {
+        "addresses_player": true,
+        "explains_actual_cause": true,
+        "consistent_with_facts": true,
+        "states_no_future_commissions": true
+      },
+      "passed": true
+    },
+    {
+      "case": "unusable_brew",
+      "text": "你这次送来的药剂根本没法用，火候完全不对，铁匠没法拿它把炉子准备好，后面的活儿全卡住了。这单托付就算失败了，铁匠以后不会再找你做修复工作。",
+      "review": {
+        "addresses_player": true,
+        "explains_actual_cause": true,
+        "consistent_with_facts": true,
+        "states_no_future_commissions": true
+      },
+      "passed": true
+    }
+  ],
+  "limitations": "No UE or SaveGame execution; semantic reviewer uses same model. Test uses supplied terminal snapshots rather than executing the game evaluator; first fixture uses reversed_effect status with zero effective heat. All gameplay state remains native and is not inferred from this test.",
+  "source_sha256": {
+    "Source/demo3_UE58/ForestTerminationNotice.h": "c68820b367771af56f4acbac80a7e30cede9d260df8466a4522dc1dabe8fc20b",
+    "Source/demo3_UE58/ForestTerminationNotice.cpp": "a6b20cd20e7162ff23410b08f8d0200b3f549f2dd9d1914c3c0228a25429c3b5"
+  }
+}

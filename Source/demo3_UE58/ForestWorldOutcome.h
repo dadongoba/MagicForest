@@ -34,6 +34,6 @@ namespace ForestOutcome
  FName PersonaForCommission(int32 Id);
  FString GradeName(int32 Grade);
  FString StateName(int32 State);
- FString Summary(const FForestWorldOutcome& Outcome,bool FinalNight);
+ FString Summary(const FForestWorldOutcome& Outcome,bool FinalNight,const FString& PlayerNotice=FString());
  FString Memory(const FForestWorldOutcome& Outcome);
 }

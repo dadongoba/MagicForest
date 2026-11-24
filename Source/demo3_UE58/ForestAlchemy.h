@@ -37,6 +37,8 @@ struct FForestBrewRecord
  UPROPERTY(BlueprintReadOnly) FString ReceiptId;
  UPROPERTY(BlueprintReadOnly) FString Customer;
  UPROPERTY(BlueprintReadOnly) FString Narrative;
+ UPROPERTY(BlueprintReadOnly) FString PlayerNotice;
+ UPROPERTY(BlueprintReadOnly) bool bPlayerNoticeFallback=false;
  UPROPERTY(BlueprintReadOnly) bool bNarrativeFallback=false;
  UPROPERTY() FString ConsequencePrompt;
  UPROPERTY(BlueprintReadOnly) int32 Day=1;
@@ -106,6 +108,8 @@ class DEMO3_UE58_API UForestConsequenceRequest : public UObject
 public:
  TWeakObjectPtr<UForestAlchemy> Owner;
  FString ReceiptId;
+ bool bNoticePending=false,bNoticeReview=false;
+ FString CandidateNotice;
  UFUNCTION() void Completed(bool bSuccess,const FString& Text);
 };
 /** Daily card inventory, bottle interaction, indoor day start and the evening workbench. */
@@ -189,6 +193,7 @@ private:
  bool PrepareWorldForDay(int32 Day);
  int32 PreviousRegionState(FName Persona,int32 Day) const;
  bool CompleteDay(int32 Day);
+ void StartPlayerNotice(UForestConsequenceRequest* Context);
  void GenerateConsequence();
  void Setup();bool Persist();bool SyncDay();void Discover();void StartInCabin();void Interact();
  void OpenMajorDrawReveal(const FAlchemyCardDefinition& Card);

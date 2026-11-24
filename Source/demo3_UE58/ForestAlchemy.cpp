@@ -1,4 +1,5 @@
 #include "ForestAlchemy.h"
+#include "ForestTerminationNotice.h"
 #include "ForestWorldZones.h"
 #include "ForestElementCodex.h"
 #include "ForestAlchemyGuide.h"
@@ -416,8 +417,9 @@ void UForestConsequenceRequest::Completed(bool bSuccess,const FString& Text)
 {if(Owner.IsValid())Owner->HandleConsequence(this,bSuccess,Text);}
 void UForestAlchemy::GenerateConsequence()
 {
- const auto* R=PendingResult();if(!R || bNarrativePending || !R->Narrative.IsEmpty())return;
+ const auto* R=PendingResult();if(!R || bNarrativePending || (!R->Narrative.IsEmpty() && (!R->WorldOutcome.bDisconnected || !R->PlayerNotice.IsEmpty())))return;
  auto* Context=NewObject<UForestConsequenceRequest>(this);Context->Owner=this;Context->ReceiptId=R->ReceiptId;ConsequenceRequest=Context;bNarrativePending=true;ConsequenceStarted=GetWorld()->GetTimeSeconds();
+ if(!R->Narrative.IsEmpty()){StartPlayerNotice(Context);return;}
  auto* AI=GetWorld()->GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
  if(!AI || !AI->HasApiKey() || R->ConsequencePrompt.IsEmpty()){HandleConsequence(Context,false,TEXT("unavailable"));return;}
  // The entire prompt was frozen before dispatch. Neither active UI nor day state is read by the callback.
@@ -429,11 +431,25 @@ void UForestAlchemy::HandleConsequence(UForestConsequenceRequest* Context,bool b
 {
  const auto* Pending=PendingResult();if(!Context || Context!=ConsequenceRequest || !Pending || Pending->ReceiptId!=Context->ReceiptId)return;
  auto* R=Save->Brews.FindByPredicate([Context](const auto& Item){return Item.ReceiptId==Context->ReceiptId;});if(!R)return;
+ if(Context->bNoticePending)
+ {
+  const FString Candidate=Text.TrimStartAndEnd();auto* AI=GetWorld()->GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
+  if(!Context->bNoticeReview && bSuccess && Candidate.Len()>=30 && Candidate.Len()<=240 && !Candidate.Contains(TEXT("```")) && AI && GetWorld()->GetTimeSeconds()-ConsequenceStarted<35)
+  {
+   Context->CandidateNotice=Candidate;Context->bNoticeReview=true;
+   FDialogueMessage Message;Message.Role=TEXT("user");Message.Content=ForestTerminationNotice::ReviewPrompt(R->WorldOutcome,R->Result,Candidate);
+   FDialogueAICompletion Done;Done.BindDynamic(Context,&UForestConsequenceRequest::Completed);AI->RequestChatCompletion({Message},0.f,220,Done);return;
+  }
+  const bool Approved=Context->bNoticeReview && bSuccess && ForestTerminationNotice::AcceptReview(Text);
+  R->PlayerNotice=Approved?Context->CandidateNotice:ForestTerminationNotice::Fallback(R->WorldOutcome);R->bPlayerNoticeFallback=!Approved;
+  bNarrativePending=false;Context->Owner.Reset();ConsequenceRequest=nullptr;Status=Persist()?TEXT(""):TEXT("结果保存失败，请继续重试。");RefreshUI();return;
+ }
  FString Story=Text.TrimStartAndEnd();const bool Good=bSuccess && Story.Len()>=80 && Story.Len()<=1800 && !Story.Contains(TEXT("```"));
  R->bNarrativeFallback=!Good;
  if(Good)R->Narrative=Story;
  else if(R->WorldOutcome.Revision)R->Narrative=R->WorldOutcome.TaskFact+TEXT("\n\n")+R->WorldOutcome.NpcFact;
  else R->Narrative=FString::Printf(TEXT("【物理结算记录】评级为【%s】，灵验度 %.2f，偏离 %.2f，剂量比 %.0f%%。%s\n\n%s"),*R->Result.Verdict,R->Result.Projection,R->Result.PerpendicularCost,R->Result.DoseRatio*100,*R->Result.Reason,R->Day==3?TEXT("第三夜这份委托的交付已经记下。待今日全部委托结算后，三日旅程才结束。"):TEXT("这份委托的结果已经记下。待今日全部委托结算后，这些影响才会随新一天展开。"));
+ if(R->WorldOutcome.bDisconnected && R->PlayerNotice.IsEmpty()){Persist();StartPlayerNotice(Context);return;}
  bNarrativePending=false;Context->Owner.Reset();ConsequenceRequest=nullptr;
  Status=Persist()?TEXT(""):TEXT("结果保存失败，请点击继续重试；不会再次扣料。");RefreshUI();
 }
@@ -540,4 +556,14 @@ bool UForestAlchemy::CompleteDay(int32 Day)
  // Future zone writes are idempotent and must all succeed before the calendar advances.
  if(!Ending && Daily->GetCurrentDay()<=Day && !PrepareWorldForDay(Day+1))return false;
  return Daily->ConfirmSynthesisForDay(Day,Ending);
+}
+
+void UForestAlchemy::StartPlayerNotice(UForestConsequenceRequest* Context)
+{
+ const auto* R=PendingResult();if(!R || !Context || Context!=ConsequenceRequest)return;
+ Context->bNoticePending=true;
+ auto* AI=GetWorld()->GetGameInstance()->GetSubsystem<UDialogueAIServiceSubsystem>();
+ if(!AI || !AI->HasApiKey() || GetWorld()->GetTimeSeconds()-ConsequenceStarted>=35){HandleConsequence(Context,false,TEXT("notice_unavailable"));return;}
+ FDialogueMessage Message;Message.Role=TEXT("user");Message.Content=ForestTerminationNotice::GeneratePrompt(R->WorldOutcome,R->Result);
+ FDialogueAICompletion Done;Done.BindDynamic(Context,&UForestConsequenceRequest::Completed);AI->RequestChatCompletion({Message},.7f,350,Done);
 }
